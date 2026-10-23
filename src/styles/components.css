@@ -2423,3 +2423,42 @@
     display: none;
   }
 }
+
+/* ============================================================
+   CATEGORY CARD SILHOUETTE — the three cards on the home page
+   are cut to the hand-torn outline the design draws, not to a
+   rounded rectangle. The path lives in CategorySection.jsx.
+
+   Scoped to .categories so the hampers card downstairs, which
+   shares the class, keeps its own shape.
+   ============================================================ */
+
+@supports (clip-path: url(#cat-card-blob)) {
+  .categories > .cat-card {
+    clip-path: url(#cat-card-blob);
+    /* A clip takes the border and the box-shadow with it: both are
+       painted on a rectangle that is no longer there. The shadow
+       comes back as a filter, which follows the cut silhouette
+       instead, and the border simply goes - the design has none. */
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    filter: drop-shadow(0 10px 22px rgba(96, 61, 66, 0.11));
+    /* the torn edge wanders a little outside the old rectangle, so
+       the picture needs to reach the whole way to it */
+    overflow: visible;
+  }
+
+  /* lifting a clipped card by its own transform would fight the
+     filter's shadow, so the lift is left on and the shadow deepens */
+  .categories > .cat-card:hover {
+    box-shadow: none;
+    filter: drop-shadow(0 16px 30px rgba(96, 61, 66, 0.16));
+  }
+
+  /* the media still has to clip its own image, or the photograph
+     covers the cream the words sit on */
+  .categories > .cat-card .cat-card__media {
+    overflow: hidden;
+  }
+}
