@@ -15,8 +15,10 @@ const PASSWORD_KEY = 'ws-admin-password';
 
 export const ADMIN_ID = 'admin';
 
-/* SHA-256 of "wrapped-admin". Change the password from the panel, or
-   replace this with a new hash:
+/* The hash of the password the site ships with. The password itself is
+   written nowhere in the repository on purpose - a hash cannot be
+   turned back into it, so this line gives a reader nothing to sign in
+   with. Replace it to set a different one:
      node -e "console.log(require('crypto').createHash('sha256').update('your-password').digest('hex'))" */
 const DEFAULT_HASH = '0d3ed9aadb3c4faff390e84e54c7ec620c59872ac51229d2f2eaf83614767d15';
 

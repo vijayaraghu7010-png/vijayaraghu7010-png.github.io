@@ -20,15 +20,30 @@ They are not the same login and never lead to each other.
 - **Studio** — `/admin`, with its own ID and password. There is no link
   to it from the shop.
 
-The administrator ID is `admin` and the password this ships with is
-`wrapped-admin`. Change it from **Password** in the admin bar; only a
-SHA-256 hash is stored, and only in that browser. To change the one in
-the source, replace `DEFAULT_HASH` in `src/lib/adminAuth.js` with the
-output of:
+The administrator ID is `admin`. The password is deliberately not
+written down here: this file is in the repository, and the repository
+may be public.
+
+Change it from **Password** in the admin bar once you are in. That
+stores a SHA-256 hash, in that browser only, and the plaintext is
+never written anywhere.
+
+To set the one the site ships with, put the hash of your password in
+`DEFAULT_HASH` in `src/lib/adminAuth.js` — the hash, never the
+password itself:
 
 ```
 node -e "console.log(require('crypto').createHash('sha256').update('your-password').digest('hex'))"
 ```
+
+A hash is safe to commit: it cannot be turned back into the password,
+so reading `adminAuth.js` tells you nothing you could sign in with. A
+short or common password can still be guessed by hashing candidates
+until one matches, so pick something that is not in a word list.
+
+If you have forgotten the password, set a new `DEFAULT_HASH` by the
+command above and clear `ws-admin-password` from the browser's local
+storage, which is where a password changed from the panel is kept.
 
 **What this login is and is not.** The site is static, so the check
 runs in the browser and everything it needs is in the bundle: somebody
