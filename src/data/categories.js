@@ -8,8 +8,8 @@ export const CATEGORIES = [
     description: 'Turn your moments into beautifully designed personalised magazines.',
     cta: 'Explore Magazines',
     to: '/magazines',
-    image: '/images/magazine-hero.jpg',
-    alt: 'Hands turning the pages of a personalised photo magazine filled with printed memories'
+    image: '/images/extracted/cat-magazines.jpg',
+    alt: 'An open personalised magazine spread, "A story of us", laid out with printed photographs'
   },
   {
     id: 'polaroid',
@@ -17,8 +17,8 @@ export const CATEGORIES = [
     description: 'Your favourite moments as insta-style polaroid prints.',
     cta: 'Shop Polaroids',
     to: '/polaroids',
-    image: '/images/polaroid-set.jpg',
-    alt: 'Polaroid prints laid out in rows on a warm wooden table'
+    image: '/images/extracted/cat-polaroids.jpg',
+    alt: 'Polaroid prints of a sunset beach, captioned by hand, scattered with dried flowers'
   },
   {
     id: 'bouquet',
@@ -26,8 +26,8 @@ export const CATEGORIES = [
     description: 'Handcrafted bouquets inspired by the calm, warmth and beauty of sunsets.',
     cta: 'Shop Bouquets',
     to: '/bouquets',
-    image: '/images/p-golden-hour.jpg',
-    alt: 'A handmade bouquet of coral and cream roses wrapped in soft paper'
+    image: '/images/extracted/cat-bouquets.jpg',
+    alt: 'A handmade bouquet of pink and cream roses wrapped in blush paper'
   },
   {
     id: 'hamper',
