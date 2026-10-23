@@ -33,11 +33,17 @@ export function CategoryCard({ category }) {
   );
 }
 
+/* The three the shop leads with, and the one that is given a panel of
+   its own further down the page. `wide` marks the difference in the
+   data, so adding a fourth lead category is a one-line change. */
+export const LEAD_CATEGORIES = CATEGORIES.filter((c) => !c.wide);
+export const FEATURE_CATEGORY = CATEGORIES.find((c) => c.wide);
+
 export default function CategorySection() {
   return (
     <section className="shell section" aria-label="Shop by category">
       <div className="categories">
-        {CATEGORIES.map((category) => (
+        {LEAD_CATEGORIES.map((category) => (
           <CategoryCard key={category.id} category={category} />
         ))}
       </div>

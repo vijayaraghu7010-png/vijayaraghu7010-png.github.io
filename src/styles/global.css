@@ -128,8 +128,12 @@ ol {
   color: var(--muted);
 }
 
+/* The picked-out word in the hero headline. --coral is the burgundy
+   the buttons use, which against the headline's own ink read as one
+   colour; the rose accent is what the design picks it out in. Used
+   only there, so nothing else shifts. */
 .text-coral {
-  color: var(--coral);
+  color: var(--accent);
 }
 
 /* ------------------------------------------------------------ buttons */

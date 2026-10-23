@@ -1,5 +1,5 @@
 import HeroSection from '../components/HeroSection';
-import CategorySection from '../components/CategorySection';
+import CategorySection, { CategoryCard, FEATURE_CATEGORY } from '../components/CategorySection';
 import BenefitsStrip from '../components/BenefitsStrip';
 import CustomGiftBanner from '../components/CustomGiftBanner';
 import Newsletter from '../components/Newsletter';
@@ -16,7 +16,8 @@ export default function Home() {
       <HeroSection />
       <CategorySection />
       <BenefitsStrip />
-      <section className="shell section" aria-label="Custom gifts">
+      <section className="shell section home-duo" aria-label="Hampers and custom gifts">
+        <CategoryCard category={FEATURE_CATEGORY} />
         <CustomGiftBanner />
       </section>
       <Newsletter />

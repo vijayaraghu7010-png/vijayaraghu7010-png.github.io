@@ -1979,54 +1979,28 @@
    ============================================================ */
 
 @media (min-width: 1101px) {
-  /* --- category mosaic: a checkerboard of one wide tile and one
-     tall tile per row, instead of three equal columns --- */
+  /* --- three equal cards in one row, which is what the design asked
+     for all along. The checkerboard that was here - one wide tile and
+     two tall ones, then another wide - gave four different card
+     shapes, so no two headings lined up and the eye had nowhere to
+     start. Three columns and one rhythm reads as a set. --- */
   .categories {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    grid-auto-rows: minmax(clamp(240px, 19vw, 310px), auto);
-  }
-
-  .categories > .cat-card:nth-child(1) { grid-column: span 4; }
-  .categories > .cat-card:nth-child(2) { grid-column: span 2; }
-  .categories > .cat-card:nth-child(3) { grid-column: span 2; }
-  .categories > .cat-card:nth-child(4) { grid-column: span 4; }
-
-  /* the narrow tiles stand the picture above the words */
-  .categories > .cat-card:nth-child(2),
-  .categories > .cat-card:nth-child(3) {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1.2fr) auto;
-  }
-
-  .categories > .cat-card:nth-child(2) .cat-card__media,
-  .categories > .cat-card:nth-child(3) .cat-card__media {
-    order: -1;
-  }
-
-  /* on those, the cream fade runs downward into the words */
-  .categories > .cat-card:nth-child(2) .cat-card__media::before,
-  .categories > .cat-card:nth-child(3) .cat-card__media::before {
-    background: linear-gradient(180deg, rgba(250, 246, 242, 0) 58%, var(--cream) 100%);
-  }
-
-  /* the wide tile leads with its words, then the photo strip */
-  .cat-card--wide {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 2.05fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: minmax(clamp(230px, 17vw, 290px), auto);
   }
 }
 
 /* --- each tile carries one swept corner, rotating around the
    mosaic so no two neighbours repeat the same silhouette --- */
+/* one swept corner per card, mirrored across the row so the three
+   read as a set rather than three copies of the same tile */
 .categories > .cat-card:nth-child(1) {
   border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) clamp(34px, 4vw, 78px);
 }
 .categories > .cat-card:nth-child(2) {
-  border-radius: clamp(34px, 4vw, 78px) var(--radius-xl) var(--radius-xl) var(--radius-xl);
+  border-radius: var(--radius-xl) var(--radius-xl) clamp(34px, 4vw, 78px) clamp(34px, 4vw, 78px);
 }
 .categories > .cat-card:nth-child(3) {
-  border-radius: var(--radius-xl) clamp(34px, 4vw, 78px) var(--radius-xl) var(--radius-xl);
-}
-.categories > .cat-card:nth-child(4) {
   border-radius: var(--radius-xl) var(--radius-xl) clamp(34px, 4vw, 78px) var(--radius-xl);
 }
 
@@ -2034,8 +2008,12 @@
   border: 1px solid var(--line);
 }
 
-/* the photo strip in the wide tile is cut into a fan of tall panes */
+/* the photo strip sits in the home duo now, at half the width it
+   had across the mosaic, so four tall panes would be slivers - it
+   folds into two by two instead */
 .cat-card__gallery {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 6px;
   padding: 10px 10px 10px 0;
 }
@@ -2109,9 +2087,9 @@
   border: 1px solid var(--line);
 }
 
-/* --- below the mosaic breakpoint the tiles stack, so they alternate
-   the side the picture sits on and swap their swept corner with it,
-   keeping the rhythm the mosaic has on a wide screen --- */
+/* --- below the three-up breakpoint the cards stack, so they
+   alternate the side the picture sits on and swap their swept corner
+   with it, keeping a rhythm down the column --- */
 @media (max-width: 1100px) {
   .categories > .cat-card:nth-child(even) {
     direction: rtl;
@@ -2161,22 +2139,15 @@
 }
 
 /* --------------------------------------------- hero colour grading
-   The photograph is lit far warmer than the palette, so its colour is
-   pulled down and re-tinted through the brand burgundy and rose. Only
-   the hero is graded; every other photograph is left as shot. */
+   The photograph used to be desaturated to 42% and re-tinted through
+   the brand burgundy, which turned a sunset into a flat mauve wash and
+   made the whole page look soft-focus. The sunset *is* the brand here,
+   so it is shown as shot and only lifted a little. What the grading
+   was really for - keeping the headline readable over a bright sky -
+   is the scrim's job, and the scrim does it without touching colour. */
 
 .hero__media img {
-  filter: saturate(0.42) contrast(0.97) brightness(1.03);
-}
-
-.hero__media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(118deg, var(--accent) 0%, var(--coral) 62%, var(--ink) 100%);
-  mix-blend-mode: color;
-  opacity: 0.52;
-  pointer-events: none;
+  filter: saturate(1.06) contrast(1.03);
 }
 
 /* ============================================================
@@ -2309,5 +2280,48 @@
 @media (max-width: 560px) {
   .offer-bar__note {
     display: none;
+  }
+}
+
+
+/* ============================================================
+   HOME DUO — the hampers card and the custom-gift panel side by
+   side, under the benefits ribbon. Two panels of different weights:
+   the hampers card leads, the invitation answers it.
+
+   Not .feature-row: that name already belongs to the featured-product
+   rail, and sharing it meant each one's rules landed on the other.
+   ============================================================ */
+
+.home-duo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
+  gap: clamp(14px, 1.6vw, 26px);
+  align-items: stretch;
+}
+
+.home-duo > * {
+  margin: 0;
+  min-height: clamp(250px, 20vw, 330px);
+  /* the hampers card is marked wide, which in the three-up grid means
+     "span the row". Here the row is the point, so the span is undone
+     - without this both panels claim every column and stack. */
+  grid-column: auto;
+  max-height: clamp(250px, 24vw, 400px);
+}
+
+.home-duo .cat-card {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  border-radius: var(--radius-xl) var(--radius-xl) var(--radius-xl) clamp(34px, 4vw, 78px);
+}
+
+/* the strip needs far less of the cream fade than a single image */
+.home-duo .cat-card__media::before {
+  background: linear-gradient(90deg, var(--cream) 0%, rgba(250, 246, 242, 0) 14%);
+}
+
+@media (max-width: 900px) {
+  .home-duo {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
