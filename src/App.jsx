@@ -21,6 +21,7 @@ import Magazines from './pages/Magazines';
 import Polaroids from './pages/Polaroids';
 import Bouquets from './pages/Bouquets';
 import Hampers from './pages/Hampers';
+import PhotoFrames from './pages/PhotoFrames';
 import CustomGifts from './pages/CustomGifts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
@@ -69,6 +70,7 @@ function Shop() {
               <Route path="/polaroids" element={<Polaroids />} />
               <Route path="/bouquets" element={<Bouquets />} />
               <Route path="/hampers" element={<Hampers />} />
+              <Route path="/photo-frames" element={<PhotoFrames />} />
               <Route path="/custom-gifts" element={<CustomGifts />} />
               <Route path="/product/:slug" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
