@@ -1,0 +1,48 @@
+:root {
+  /* brand palette */
+  --coral: #603D42;
+  --coral-dark: #4C3135;
+  --coral-soft: #EFE2E2;
+  --burgundy: #603D42;
+  --burgundy-soft: #7A5257;
+  --cream: #FAF6F2;
+  --cream-2: #FFFCF9;
+  --peach: #F1E8E2;
+  --peach-deep: #E5D9D1;
+  --blush: #E5D9D1;
+  --orange: #B98285;
+  --brown: #827674;
+  --white: #ffffff;
+
+  --ink: #2E2425;
+  --ink-2: #3F3233;
+  --muted: var(--brown);
+  --accent: #B98285;
+  --btn-text: #FAF6F2;
+
+  --line: #E5D9D1;
+  --line-2: #D8C8BE;
+
+  /* type */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-script: 'Caveat', 'Segoe Script', cursive;
+
+  /* shape */
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 6px 18px rgba(46, 36, 37, 0.08);
+  --shadow-md: 0 14px 34px rgba(46, 36, 37, 0.12);
+  --shadow-lg: 0 24px 60px rgba(46, 36, 37, 0.18);
+
+  /* rhythm */
+  --page-max: 1536px;
+  --gutter: clamp(16px, 2.2vw, 34px);
+  --section-gap: clamp(18px, 2vw, 30px);
+
+  --header-h: 86px;
+}

@@ -1,0 +1,549 @@
+/* ============================================================
+   Breakpoints: 1280, 1024, 860, 768, 560, 390.
+   The layout adapts at each step — it is never just scaled down.
+   ============================================================ */
+
+@media (max-width: 1280px) {
+  .featured__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .hero__script {
+    right: clamp(20px, 22vw, 320px);
+  }
+}
+
+@media (max-width: 1100px) {
+  .feature-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gift-banner {
+    min-height: 280px;
+  }
+  .gift-banner__copy {
+    width: min(100%, 420px);
+  }
+  .categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .categories > :last-child {
+    grid-column: 1 / -1;
+  }
+  .pdp {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pdp__main {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (max-width: 1024px) {
+  .nav {
+    gap: 16px;
+  }
+  .nav a {
+    font-size: 13.5px;
+  }
+  .hero__copy {
+    max-width: 58%;
+  }
+  .footer__inner {
+    grid-template-columns: 1.4fr 1fr 1fr;
+  }
+  .footer__contact-col {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .nav {
+    display: none;
+  }
+  .burger {
+    display: grid;
+    place-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: var(--ink);
+  }
+  .burger:hover {
+    background: var(--peach);
+  }
+  .header__tools {
+    margin-left: auto;
+  }
+
+  .hero {
+    min-height: 0;
+    display: block;
+  }
+  .hero__media {
+    position: relative;
+    height: clamp(230px, 52vw, 340px);
+  }
+  .hero__media img {
+    object-position: 68% 50%;
+  }
+  .hero__scrim {
+    background: linear-gradient(180deg, rgba(250, 246, 242, 0.1) 40%, rgba(229, 217, 209, 0.9) 100%);
+  }
+  .hero__inner {
+    padding-top: 20px;
+  }
+  .hero__copy {
+    max-width: none;
+  }
+  .hero__script {
+    position: static;
+    transform: rotate(-4deg);
+    transform-origin: left center;
+    margin: 16px 0 0;
+    padding: 0 var(--gutter);
+    text-align: left;
+  }
+
+  .benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 0;
+  }
+  .benefit:nth-child(odd) {
+    border-left: 0;
+  }
+  .benefit:nth-child(3) {
+    border-left: 0;
+  }
+
+  .two-col {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .featured__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cat-card {
+    min-height: 0;
+  }
+  .newsletter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .newsletter__form input {
+    width: min(100%, 420px);
+  }
+  .footer__script {
+    text-align: left;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --radius-xl: 22px;
+    --radius-lg: 18px;
+  }
+  .categories {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .categories > :last-child {
+    grid-column: auto;
+  }
+  .cat-card {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  }
+  .footer__inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .footer__brand-col {
+    grid-column: 1 / -1;
+  }
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .drawer {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  body {
+    font-size: 14.5px;
+  }
+  .hero__title {
+    font-size: clamp(32px, 10vw, 44px);
+  }
+  .cat-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cat-card__media {
+    order: -1;
+    height: 170px;
+  }
+  .cat-card__media::before {
+    background: linear-gradient(180deg, rgba(250, 246, 242, 0) 40%, rgba(250, 246, 242, 0.9) 100%);
+  }
+  .cat-card__text {
+    max-width: none;
+  }
+  .benefits {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .benefit {
+    border-left: 0 !important;
+  }
+  .filters__sort {
+    margin-left: 0;
+    width: 100%;
+  }
+  .pdp__thumbs button {
+    width: 64px;
+    height: 54px;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --gutter: 14px;
+  }
+  .featured__grid,
+  .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer__inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .brand__name {
+    font-size: 18px;
+  }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .icon-btn__count {
+    top: 0;
+    right: 0;
+  }
+  .toast {
+    left: 12px;
+    right: 12px;
+    transform: none;
+    justify-content: center;
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .studio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .studio__rail {
+    position: static;
+  }
+  .polaroid-preview img {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 900px) {
+  /* the header is tight on phones: the icon speaks for itself */
+  .account-btn__text {
+    display: none;
+  }
+  .account-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+  }
+}
+
+/* ============================================================
+   Full-range responsive pass: 320px phones through 2560px desks,
+   plus landscape phones and touch-sized tap targets.
+   ============================================================ */
+
+/* ---- ultra-wide: let the layout breathe instead of stranding it */
+@media (min-width: 1800px) {
+  :root {
+    --page-max: 1680px;
+  }
+}
+
+@media (min-width: 2200px) {
+  :root {
+    --page-max: 1840px;
+  }
+  .hero {
+    min-height: clamp(520px, 30vw, 660px);
+  }
+}
+
+/* ---- tablets: two category cards read better than one tall column */
+@media (min-width: 701px) and (max-width: 1100px) {
+  .categories {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .categories > :last-child {
+    grid-column: 1 / -1;
+  }
+  .categories > :last-child .cat-card__media {
+    height: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .categories {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .categories > :last-child {
+    grid-column: auto;
+  }
+}
+
+/* ---- touch devices: nothing smaller than a fingertip */
+@media (pointer: coarse) {
+  .btn--sm {
+    min-height: 42px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+  .link-all {
+    padding: 8px 0;
+  }
+  .icon-btn,
+  .burger {
+    width: 42px;
+    height: 42px;
+  }
+  .qty button {
+    width: 34px;
+    height: 34px;
+  }
+  .account__avatar,
+  .account-btn {
+    width: 42px;
+    height: 42px;
+  }
+  .border-chip,
+  .chip {
+    min-height: 40px;
+  }
+}
+
+/* ---- header has to fit a brand, a burger, three icons and an account
+        control; below 560px it sheds what the menu already offers */
+@media (max-width: 900px) {
+  :root {
+    --header-h: 68px;
+  }
+}
+
+@media (max-width: 620px) {
+  .header__inner {
+    gap: 6px;
+  }
+  .brand__logo {
+    height: 46px;
+  }
+  .header__tools {
+    gap: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon-btn--search {
+    display: none; /* search lives in the mobile menu at this size */
+  }
+  .brand__logo {
+    height: 44px;
+  }
+  .eyebrow {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 380px) {
+  :root {
+    --gutter: 12px;
+  }
+  .brand__logo {
+    height: 40px;
+  }
+  .hero__title {
+    font-size: clamp(28px, 9vw, 36px);
+  }
+  .hero__media {
+    height: clamp(190px, 46vw, 250px);
+  }
+  .section-title {
+    font-size: 24px;
+  }
+  .summary-card__total strong {
+    font-size: 19px;
+  }
+}
+
+/* ---- phones held sideways: a short viewport should not be all hero */
+@media (orientation: landscape) and (max-height: 560px) and (max-width: 1024px) {
+  .hero {
+    min-height: 0;
+  }
+  .hero__media {
+    height: clamp(150px, 38vh, 220px);
+  }
+  .hero__title {
+    font-size: clamp(26px, 5vw, 38px);
+  }
+  .mobile-menu__panel {
+    max-height: 92vh;
+    overflow: auto;
+  }
+  .auth-modal,
+  .search-modal {
+    margin-top: 16px;
+    max-height: 92vh;
+  }
+}
+
+/* ---- very short desktop windows */
+@media (min-width: 1025px) and (max-height: 620px) {
+  .hero {
+    min-height: 0;
+    padding: 18px 0;
+  }
+  .studio__rail {
+    position: static;
+  }
+}
+
+.mobile-menu__search {
+  margin-top: 12px;
+}
+
+/* ---- 360px and under: drop every auto-fit minimum so no grid track
+        can be wider than the screen it is sitting on */
+@media (max-width: 400px) {
+  .option-grid,
+  .format-grid,
+  .border-row,
+  .form-grid,
+  .fields,
+  .product-grid,
+  .featured__grid,
+  .previews {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .previews {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .summary-rows > div,
+  .totals__row {
+    gap: 8px;
+  }
+}
+
+/* ---- a table's min-content width is what was pushing the magazine
+        customiser wider than the phone; on small screens the summary
+        rows read better stacked anyway */
+@media (max-width: 440px) {
+  .customiser > *,
+  .step > *,
+  .info-card > * {
+    min-width: 0;
+  }
+
+  .summary-table,
+  .summary-table tbody,
+  .summary-table tr,
+  .summary-table th,
+  .summary-table td {
+    display: block;
+    width: auto;
+  }
+
+  .summary-table tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .summary-table th {
+    padding: 0 0 2px;
+    border: 0;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .summary-table td {
+    padding: 0;
+    border: 0;
+  }
+
+  .review__table th {
+    width: auto;
+  }
+}
+
+/* ---- below the desktop breakpoint, assume fingers regardless of what
+        the browser reports for pointer type ---- */
+@media (max-width: 1024px) {
+  .btn--sm {
+    min-height: 42px;
+  }
+  .link-all {
+    padding: 8px 0;
+  }
+  .eyebrow {
+    font-size: 11px;
+  }
+  .wish-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .add-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .preview button {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* ---- text links are wide but short; give them a finger-sized row ---- */
+@media (max-width: 1024px) {
+  .product-card__name a {
+    display: block;
+    padding: 5px 0;
+  }
+  .footer__links a,
+  .footer__contact a {
+    padding: 5px 0;
+  }
+  .brand {
+    padding: 5px 0;
+  }
+  .breadcrumbs a,
+  .pdp__thumbs button {
+    padding: 4px 0;
+  }
+}
+
+
+/* ---- hampers: the wide category card and its four-photo strip */
+@media (min-width: 1101px) {
+  .cat-card--wide {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 3fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cat-card__gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
