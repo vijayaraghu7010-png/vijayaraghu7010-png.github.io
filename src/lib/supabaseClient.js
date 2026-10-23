@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-/* The browser only ever holds the anon key. It is used for one thing:
-   signing the administrator in. Every write goes to /api/admin/*,
-   which checks the token server-side before touching the database. */
+/* The browser only ever holds the anon key. The site is served as
+   static files, so there is no server behind it: the panel reads and
+   writes the database directly, and row-level security decides what
+   the signed-in administrator is allowed to touch. */
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -90,6 +91,16 @@ export async function adminFetch(path, options = {}) {
   const run = (async () => {
     const token = await authToken();
 
+    /* Hosted: the database is the backend, and adminApi answers the
+       same paths the panels ask for. Local SQLite mode still has a
+       real server on 4000, so there the request goes out as a request.
+       Imported here rather than at the top because adminApi needs the
+       client this module creates. */
+    if (supabase) {
+      const { callAdmin } = await import('./adminApi');
+      return callAdmin(path, options);
+    }
+
     const res = await fetch(path, {
       ...options,
       headers: {
@@ -134,10 +145,16 @@ export function prefetchAdmin() {
   );
 }
 
-/* Sends one picture to the backend and returns the URL the shop should
-   use. The body is the file itself - no form encoding to go wrong. */
+/* Puts one picture where the shop can load it from and returns its
+   URL: straight into the Storage bucket when the hosted database is
+   in use, through the local server when it is not. */
 export async function adminUpload(file) {
   const token = await authToken();
+
+  if (supabase) {
+    const { uploadMedia } = await import('./adminApi');
+    return uploadMedia(file);
+  }
 
   const res = await fetch(`/api/admin/upload?name=${encodeURIComponent(file.name)}`, {
     method: 'POST',

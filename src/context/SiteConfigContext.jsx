@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { setLiveProducts } from '../data/products';
 import { onSiteChange } from '../lib/liveUpdates';
+import { loadSiteConfig } from '../lib/siteConfig';
+import { supabase } from '../lib/supabaseClient';
 
 /* One request on load brings back everything the admin controls:
    the catalogue, every editable string, the theme that is live right
@@ -45,12 +47,17 @@ export function SiteConfigProvider({ children }) {
 
   async function load() {
     try {
-      const res = await fetch('/api/site-config', {
-        headers: { accept: 'application/json' },
-        cache: 'no-store'
-      });
-      if (!res.ok) throw new Error(`site-config ${res.status}`);
-      const data = await res.json();
+      const data = supabase
+        ? await loadSiteConfig()
+        : await (async () => {
+            /* local SQLite mode: the dev server still serves this */
+            const res = await fetch('/api/site-config', {
+              headers: { accept: 'application/json' },
+              cache: 'no-store'
+            });
+            if (!res.ok) throw new Error(`site-config ${res.status}`);
+            return res.json();
+          })();
 
       if (Array.isArray(data.products) && data.products.length) setLiveProducts(data.products);
       if (data.theme?.tokens) applyTheme(data.theme.tokens);
