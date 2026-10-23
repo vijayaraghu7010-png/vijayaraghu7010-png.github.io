@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import MagazineCustomiser from '../components/MagazineCustomiser';
 import PolaroidStudio from '../components/PolaroidStudio';
 import BouquetOptions from '../components/BouquetOptions';
+import FrameOptions from '../components/FrameOptions';
 import NotFound from './NotFound';
 import usePageMeta from '../hooks/usePageMeta';
 import { PRODUCTS, getProductBySlug } from '../data/products';
@@ -14,8 +15,23 @@ import { formatRupees } from '../utils/currency';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { bestOfferFor } from '../utils/offers';
 
-const CATEGORY_PATHS = { magazine: '/magazines', polaroid: '/polaroids', bouquet: '/bouquets' };
-const CATEGORY_NAMES = { magazine: 'Magazines', polaroid: 'Polaroids', bouquet: 'Bouquets' };
+/* hamper was missing from both of these, so the breadcrumb on a hamper
+   linked to undefined and read "All undefined"; frame would have done
+   the same. */
+const CATEGORY_PATHS = {
+  magazine: '/magazines',
+  polaroid: '/polaroids',
+  bouquet: '/bouquets',
+  hamper: '/hampers',
+  frame: '/photo-frames'
+};
+const CATEGORY_NAMES = {
+  magazine: 'Magazines',
+  polaroid: 'Polaroids',
+  bouquet: 'Bouquets',
+  hamper: 'Hampers',
+  frame: 'Photo Frames'
+};
 
 export default function ProductDetails() {
   const { slug } = useParams();
@@ -107,6 +123,8 @@ export default function ProductDetails() {
           {product.customiser === 'magazine' && <MagazineCustomiser product={product} />}
 
           {product.customiser === 'bouquet' && <BouquetOptions product={product} />}
+
+          {product.customiser === 'frame' && <FrameOptions product={product} />}
         </div>
       </div>
 

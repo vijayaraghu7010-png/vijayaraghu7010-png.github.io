@@ -4,12 +4,15 @@ import { ArrowRight } from 'lucide-react';
 
 /* The wide frames banner that sits under the three category cards.
 
-   The artwork is not in the repository yet. Rather than ship a broken
-   picture onto the home page while it is missing, the image reports a
-   failure to load and the banner falls back to the painted panel it
-   sits on - the words and the button are unaffected either way. Drop
-   the file at the path below and it appears. */
-const ART = '/images/photo-frames.jpg';
+   It carries the couple eye frame for now - a tall photograph in a
+   wide band, so it is held to the right of the copy and cropped to
+   the frames themselves rather than the plant behind them. If the
+   banner artwork from the design turns up, point ART at it instead.
+
+   The image still reports a failure to load, and the banner falls
+   back to the painted panel it sits on, so a missing or renamed file
+   never ships a broken picture to the home page. */
+const ART = '/images/frames/couple-eye-frame.jpg';
 
 export default function PhotoFramesBanner() {
   const [hasArt, setHasArt] = useState(true);
@@ -19,7 +22,7 @@ export default function PhotoFramesBanner() {
       {hasArt ? (
         <img
           src={ART}
-          alt="Framed photographs of a couple at sunset, propped among dried flowers"
+          alt="Two framed prints of a couple’s eyes, held up beside a houseplant"
           loading="lazy"
           onError={() => setHasArt(false)}
         />

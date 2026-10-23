@@ -2346,34 +2346,23 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* A tall photograph in a wide band. Filling the band with it meant
+   cropping into the frames until only a pair of eyes was left, so it
+   is shown whole instead - sized to the band's height, sitting on the
+   cream at the right like a product on a shelf. */
 .frames-banner img {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 48%;
+  inset: clamp(12px, 1.4vw, 22px) clamp(16px, 2vw, 34px) clamp(12px, 1.4vw, 22px) auto;
+  width: auto;
+  max-width: 46%;
+  height: calc(100% - clamp(24px, 2.8vw, 44px));
+  object-fit: contain;
+  object-position: center;
+  border-radius: clamp(10px, 1vw, 18px);
 }
 
-/* the copy has to stay readable over the artwork, so the cream is
-   carried across the left third the way the hero's scrim is */
-.frames-banner::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    94deg,
-    rgba(250, 246, 242, 0.95) 0%,
-    rgba(250, 246, 242, 0.82) 22%,
-    rgba(250, 246, 242, 0.2) 42%,
-    rgba(250, 246, 242, 0) 56%
-  );
-}
-
-/* with no artwork there is nothing to hold back, so the wash goes */
-.frames-banner--plain::after {
-  display: none;
-}
+/* The photograph no longer runs under the words, so there is nothing
+   for a scrim to hold back and none is drawn. */
 
 .frames-banner__copy {
   position: relative;
@@ -2402,7 +2391,7 @@
 .frames-banner__script {
   position: absolute;
   z-index: 2;
-  right: clamp(18px, 3vw, 54px);
+  right: clamp(140px, 30vw, 460px);
   top: 50%;
   transform: translateY(-50%) rotate(-6deg);
   font-family: var(--font-script);

@@ -49,6 +49,23 @@ export const BOUQUET_OCCASIONS = [
   'Just Because'
 ];
 
+/* Frames are sold by paper size, each at its own price. Listed in the
+   order the shop quotes them. */
+export const FRAME_SIZES = [
+  { id: 'frame-a4', label: 'A4', blurb: '21 x 29.7 cm', price: 450 },
+  { id: 'frame-a3', label: 'A3', blurb: '29.7 x 42 cm', price: 750 },
+  { id: 'frame-a2', label: 'A2', blurb: '42 x 59.4 cm', price: 300 }
+];
+
+export const FRAME_OCCASIONS = [
+  'Love',
+  'Anniversary',
+  'Birthday',
+  'Valentine',
+  'Long Distance',
+  'Just Because'
+];
+
 export const HAMPER_OCCASIONS = [
   'Love',
   'Birthday',
@@ -257,6 +274,37 @@ export const PRODUCTS = [
     customiser: 'bouquet',
     featured: false,
     addedAt: '2026-04-06'
+  },
+  /* -------------------------------------------------- frames */
+  {
+    id: 'frame-couple-eye',
+    slug: 'couple-eye-frame',
+    name: 'Couple Eye Frame',
+    category: 'frame',
+    categoryLabel: 'Photo Frame',
+    price: 450,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/frames/couple-eye-frame.jpg',
+    alt: 'Two framed prints of a couple’s eyes above the line "Of all the eyes I’ve met, yours felt like home"',
+    gallery: ['/images/frames/couple-eye-frame.jpg'],
+    shortDescription: 'Your favourite eyes, framed — with the year it started and the year it bloomed.',
+    description:
+      'A little piece of your forever. Your two pairs of eyes printed side by side under the line "Of all the eyes I’ve met, yours felt like home", finished with the year it started and the year it is still blooming. A quiet reminder of your love, your journey and everything in between.',
+    details: [
+      'A4 ₹450, A3 ₹750, A2 ₹300',
+      'Printed and framed to order',
+      'Send two close-up photographs and your two years',
+      'Shipping charged separately'
+    ],
+    occasions: ['Love', 'Anniversary', 'Birthday', 'Valentine', 'Long Distance', 'Just Because'],
+    keywords: ['frame', 'photo frame', 'couple', 'eyes', 'anniversary', 'valentine', 'gift', 'personalised'],
+    customiser: 'frame',
+    sizeId: 'frame-a4',
+    featured: true,
+    published: true,
+    sortOrder: 60,
+    addedAt: '2026-10-23'
   },
   /* ------------------------------------------------- hampers */
   {
