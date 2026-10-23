@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Plus, Save } from 'lucide-react';
 
-import { adminFetch } from '../../lib/supabaseClient';
+import { adminFetch } from '../../lib/adminClient';
 
 /* Every sentence on the site that has been given a key can be edited
    here. Adding a key is possible too, for copy wired up later. */

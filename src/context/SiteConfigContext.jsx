@@ -1,14 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { setLiveProducts } from '../data/products';
-import { onSiteChange } from '../lib/liveUpdates';
-import { loadSiteConfig } from '../lib/siteConfig';
-import { supabase } from '../lib/supabaseClient';
+import { getAll, onStoreChange } from '../lib/store';
+import { pickActiveTheme } from '../lib/shape';
 
-/* One request on load brings back everything the admin controls:
-   the catalogue, every editable string, the theme that is live right
-   now and any running offers. Until it lands — or if it never does —
-   the site runs on the data it was built with. */
+/* Everything the admin controls, read from the local store: the
+   catalogue, every editable string, the theme that is live right now
+   and any running offers. The store seeds itself from the files the
+   site ships with, so there is no loading state to sit through and
+   nothing to fail. */
 
 const SiteConfigContext = createContext({
   ready: false,
@@ -45,35 +45,21 @@ export function SiteConfigProvider({ children }) {
     version: 0
   });
 
-  async function load() {
-    try {
-      const data = supabase
-        ? await loadSiteConfig()
-        : await (async () => {
-            /* local SQLite mode: the dev server still serves this */
-            const res = await fetch('/api/site-config', {
-              headers: { accept: 'application/json' },
-              cache: 'no-store'
-            });
-            if (!res.ok) throw new Error(`site-config ${res.status}`);
-            return res.json();
-          })();
+  function load() {
+    const data = getAll();
+    const theme = pickActiveTheme(data.themes);
 
-      if (Array.isArray(data.products) && data.products.length) setLiveProducts(data.products);
-      if (data.theme?.tokens) applyTheme(data.theme.tokens);
+    setLiveProducts(data.products.filter((p) => p.published !== false));
+    if (theme?.tokens) applyTheme(theme.tokens);
 
-      setState((s) => ({
-        ready: true,
-        source: 'database',
-        content: data.content || {},
-        theme: data.theme || null,
-        offers: data.offers || [],
-        version: s.version + 1
-      }));
-    } catch {
-      /* no backend yet, or it is down: keep the built-in content */
-      setState((s) => ({ ...s, ready: true, source: 'built-in', version: s.version + 1 }));
-    }
+    setState((s) => ({
+      ready: true,
+      source: 'local',
+      content: Object.fromEntries(data.content.map((r) => [r.key, r.value])),
+      theme,
+      offers: data.offers,
+      version: s.version + 1
+    }));
   }
 
   useEffect(() => {
@@ -82,13 +68,12 @@ export function SiteConfigProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* The database says when something changed, so an edit on a laptop
-     reaches a phone that is sitting open on the shop. The focus and
-     interval checks stay as a safety net: a websocket can drop on a
-     phone that has been asleep, and a scheduled festival theme turns
-     itself on at a time nobody is editing. */
+  /* A save in the panel shows in the shop at once, in this tab and in
+     any other tab of the same browser. The focus and interval checks
+     stay because a scheduled festival theme turns itself on at a time
+     when nobody is editing anything. */
   useEffect(() => {
-    const stop = onSiteChange(load);
+    const stop = onStoreChange(load);
     const onFocus = () => {
       if (document.visibilityState === 'visible') load();
     };

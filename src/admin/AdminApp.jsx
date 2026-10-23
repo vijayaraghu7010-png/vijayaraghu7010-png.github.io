@@ -1,21 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, KeyRound, LogOut, Palette, Percent, RefreshCw, Type } from 'lucide-react';
+import { Boxes, KeyRound, LogOut, Palette, Percent, Type } from 'lucide-react';
 
-import {
-  supabase,
-  supabaseConfigured,
-  adminFetch,
-  localMode,
-  localToken,
-  setLocalToken,
-  canChangePassword,
-  prefetchAdmin,
-  clearAdminCache
-} from '../lib/supabaseClient';
+import { currentAdmin, signOut as endSession } from '../lib/adminAuth';
 import AdminLogin from './AdminLogin';
 import ChangePassword from './ChangePassword';
-import { onSiteChange } from '../lib/liveUpdates';
 import ProductsPanel from './panels/ProductsPanel';
 import ContentPanel from './panels/ContentPanel';
 import ThemePanel from './panels/ThemePanel';
@@ -30,103 +19,26 @@ const TABS = [
 ];
 
 export default function AdminApp() {
-  const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(true);
   const [admin, setAdmin] = useState(null);
-  const [denied, setDenied] = useState('');
   const [tab, setTab] = useState('products');
-  const [busting, setBusting] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
 
-  /* Local mode keeps its own token; there is no Supabase session. */
+  /* The session is a record in this browser, so the check is local
+     and instant - no round trip, and nothing to be denied by. */
   useEffect(() => {
-    if (!localMode) return;
-    if (!localToken()) {
-      setChecking(false);
-      return;
-    }
-    adminFetch('/api/admin/session')
-      .then((r) => setAdmin(r.admin))
-      .catch(() => setLocalToken(''))
-      .finally(() => setChecking(false));
+    setAdmin(currentAdmin());
+    setChecking(false);
   }, []);
 
-  useEffect(() => {
-    if (!supabaseConfigured) {
-      setChecking(false);
-      return undefined;
-    }
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data?.session || null);
-      setChecking(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub?.subscription?.unsubscribe();
-  }, []);
-
-  /* A session only proves who signed in. The server decides whether
-     that address may administer anything. */
-  useEffect(() => {
-    if (localMode) return;
-    if (!session) {
-      setAdmin(null);
-      return;
-    }
-    adminFetch('/api/admin/session')
-      .then((r) => {
-        setAdmin(r.admin);
-        setDenied('');
-      })
-      .catch((err) => {
-        setAdmin(null);
-        setDenied(
-          /database/i.test(err.message) ? err.message : session.user?.email || 'this account'
-        );
-      });
-  }, [session]);
-
-  /* Once we know who they are, fetch all four tabs at once rather than
-     waiting for each to be opened. And when another device changes
-     something, drop what we are holding so the next look is current. */
-  useEffect(() => {
-    if (!admin) return undefined;
-    prefetchAdmin();
-    return onSiteChange(() => {
-      clearAdminCache();
-      prefetchAdmin();
-    });
-  }, [admin]);
-
-  async function signOut() {
-    if (localMode) setLocalToken('');
-    else await supabase.auth.signOut();
-    clearAdminCache();
-    setSession(null);
+  function signOut() {
+    endSession();
     setAdmin(null);
-  }
-
-  async function clearCache() {
-    setBusting(true);
-    try {
-      clearAdminCache();
-      await adminFetch('/api/admin/session', { method: 'POST' });
-      prefetchAdmin();
-    } finally {
-      setBusting(false);
-    }
   }
 
   if (checking) return <div className="admin admin--center">Checking your session…</div>;
 
-  if (!admin) {
-    return (
-      <AdminLogin
-        denied={denied}
-        onSignOut={session ? signOut : null}
-        onLocalSignIn={(who) => setAdmin(who)}
-      />
-    );
-  }
+  if (!admin) return <AdminLogin onSignedIn={setAdmin} />;
 
   const Panel = TABS.find((t) => t.id === tab)?.panel || ProductsPanel;
 
@@ -137,7 +49,7 @@ export default function AdminApp() {
           <img src="/images/logo.png" alt="" width="512" height="512" />
           <div>
             <strong>Studio admin</strong>
-            <span>{admin.email}</span>
+            <span>{admin.id}</span>
           </div>
         </div>
 
@@ -155,18 +67,13 @@ export default function AdminApp() {
         </nav>
 
         <div className="admin__bar-actions">
-          <button type="button" className="admin__ghost" onClick={clearCache} disabled={busting}>
-            <RefreshCw size={15} /> {busting ? 'Clearing…' : 'Clear cache'}
+          <button
+            type="button"
+            className="admin__ghost"
+            onClick={() => setPasswordOpen(true)}
+          >
+            <KeyRound size={15} /> Password
           </button>
-          {canChangePassword ? (
-            <button
-              type="button"
-              className="admin__ghost"
-              onClick={() => setPasswordOpen(true)}
-            >
-              <KeyRound size={15} /> Password
-            </button>
-          ) : null}
           <Link className="admin__ghost" to="/">
             View shop
           </Link>
@@ -181,7 +88,7 @@ export default function AdminApp() {
       </main>
 
       {passwordOpen ? (
-        <ChangePassword email={admin.email} onClose={() => setPasswordOpen(false)} />
+        <ChangePassword id={admin.id} onClose={() => setPasswordOpen(false)} />
       ) : null}
     </div>
   );

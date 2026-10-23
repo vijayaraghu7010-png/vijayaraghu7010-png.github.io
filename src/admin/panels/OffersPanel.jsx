@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Save, Trash2 } from 'lucide-react';
 
-import { adminFetch } from '../../lib/supabaseClient';
+import { adminFetch } from '../../lib/adminClient';
 import { discountOf, offerCovers } from '../../utils/offers';
 
 const BLANK = {

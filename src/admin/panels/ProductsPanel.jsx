@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ImagePlus, Plus, Save, Trash2, X } from 'lucide-react';
 
-import { adminFetch, adminUpload } from '../../lib/supabaseClient';
+import { adminFetch, adminUpload } from '../../lib/adminClient';
 
 const BLANK = {
   name: '',

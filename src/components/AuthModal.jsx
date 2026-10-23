@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Info, ShieldCheck, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { isAdminEmail } from '../lib/adminEmails';
+
+/* The shop's login, and only the shop's. Signing in here makes a
+   customer profile - it never leads to the studio panel, whoever is
+   typing. The panel has its own door at /admin, with its own
+   credentials. */
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function AuthModal({ open, mode = 'login', onClose }) {
   const { signUp, logIn } = useAuth();
   const { notify } = useCart();
-  const navigate = useNavigate();
 
   const [tab, setTab] = useState(mode);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
@@ -50,23 +52,8 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
     setErrors((prev) => ({ ...prev, [key]: undefined, form: undefined }));
   };
 
-  const goingToAdmin = !isSignUp && isAdminEmail(form.email);
-
-  const toAdmin = () => {
-    onClose();
-    navigate('/admin');
-  };
-
   const submit = (e) => {
     e.preventDefault();
-
-    /* An administrator typing their own address wants the panel, not a
-       shopper profile. The password they have is the Supabase one, and
-       this box cannot check it, so hand them straight over. */
-    if (goingToAdmin) {
-      toAdmin();
-      return;
-    }
 
     const next = {};
 
@@ -210,18 +197,11 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
             </p>
           )}
 
-          {goingToAdmin && (
-            <p className="auth-note auth-note--admin">
-              <ShieldCheck size={13} aria-hidden="true" />
-              <span>That is an administrator address — this takes you to the studio panel.</span>
-            </p>
-          )}
-
           <button className="btn btn--primary btn--block" type="submit">
-            {goingToAdmin ? 'Go to admin panel' : isSignUp ? 'Create account' : 'Log in'}
+            {isSignUp ? 'Create account' : 'Log in'}
           </button>
 
-          <p className="auth-note" hidden={goingToAdmin}>
+          <p className="auth-note">
             <Info size={13} aria-hidden="true" />
             <span>
               No accounts server is connected yet, so this profile is kept on this device only and your password is

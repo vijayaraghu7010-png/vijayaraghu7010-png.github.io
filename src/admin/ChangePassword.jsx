@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
-import { changePassword } from '../lib/supabaseClient';
+import { changePassword } from '../lib/adminAuth';
 
-/* Until this existed the only way to rotate a password was to write
-   bcrypt into auth.users by hand in the SQL editor, which meant nobody
-   ever did it. */
-export default function ChangePassword({ email, onClose }) {
+/* The password that opens the panel. Only its hash is kept, and only
+   in this browser, so changing it here changes it on this machine. */
+export default function ChangePassword({ id, onClose }) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [again, setAgain] = useState('');
@@ -33,7 +32,7 @@ export default function ChangePassword({ email, onClose }) {
 
     setBusy(true);
     try {
-      await changePassword(email, current, next);
+      await changePassword(current, next);
       setDone(true);
     } catch (err) {
       setError(err.message);
@@ -52,7 +51,7 @@ export default function ChangePassword({ email, onClose }) {
           </button>
         </header>
 
-        <p className="admin__hint">Signed in as {email}.</p>
+        <p className="admin__hint">Signed in as {id}.</p>
 
         {done ? (
           <>
@@ -96,8 +95,8 @@ export default function ChangePassword({ email, onClose }) {
             />
 
             <p className="admin__hint">
-              At least 10 characters. Avoid a name or a date — this login can
-              change what the whole shop shows.
+              At least 10 characters. It is kept as a hash in this browser
+              only, so it has to be set again on another machine.
             </p>
 
             {error ? <p className="admin__error">{error}</p> : null}

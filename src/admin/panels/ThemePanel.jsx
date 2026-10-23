@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, Plus, Save, Trash2 } from 'lucide-react';
 
-import { adminFetch } from '../../lib/supabaseClient';
+import { adminFetch } from '../../lib/adminClient';
 
 /* The palette the shop wears, and the festival palettes waiting their
    turn. A festival theme can be given a window, and it takes over by
