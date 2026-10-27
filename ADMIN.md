@@ -8,7 +8,7 @@ customer never downloads it.
 | --- | --- |
 | `src/data/` | the catalogue and copy the site ships with |
 | `src/lib/store.js` | the editable copy of that, kept in the browser |
-| `src/lib/adminAuth.js` | the one ID and password that open the panel |
+| `src/lib/adminAuth.js` | the administrator ID that opens the panel |
 
 ## Two separate doors
 
@@ -17,40 +17,28 @@ They are not the same login and never lead to each other.
 - **Shop** — the Log in button in the header. It makes a customer
   profile (name, wishlist, cart) and lives in `AuthContext`. Whatever
   address is typed, it stays in the shop.
-- **Studio** — `/admin`, with its own ID and password. There is no link
-  to it from the shop.
+- **Studio** — `/admin`, which asks for the administrator ID. There is
+  no link to it from the shop.
 
-The administrator ID is `admin`. The password is deliberately not
-written down here: this file is in the repository, and the repository
-may be public.
+Sign in at `/admin` by typing the administrator ID, `admin`. There is
+no password.
 
-Change it from **Password** in the admin bar once you are in. That
-stores a SHA-256 hash, in that browser only, and the plaintext is
-never written anywhere.
+**What this is and is not.** It is a door marked *staff*, not a lock.
+Anyone who types `admin` is in, and the word is not hard to guess.
 
-To set the one the site ships with, put the hash of your password in
-`DEFAULT_HASH` in `src/lib/adminAuth.js` — the hash, never the
-password itself:
+That costs less than it sounds like, for two reasons. The site is
+static, so any check would run in the browser with everything it needs
+sitting in the bundle — a password here could be stepped past with the
+developer tools in about a minute, so it was buying the look of
+security rather than security. And what is behind the door changes
+nothing for anybody else: an edit made in the panel is written to that
+browser's own storage, so the worst a stranger can do is rearrange
+their own copy of the shop and then clear it by emptying site data.
 
-```
-node -e "console.log(require('crypto').createHash('sha256').update('your-password').digest('hex'))"
-```
-
-A hash is safe to commit: it cannot be turned back into the password,
-so reading `adminAuth.js` tells you nothing you could sign in with. A
-short or common password can still be guessed by hashing candidates
-until one matches, so pick something that is not in a word list.
-
-If you have forgotten the password, set a new `DEFAULT_HASH` by the
-command above and clear `ws-admin-password` from the browser's local
-storage, which is where a password changed from the panel is kept.
-
-**What this login is and is not.** The site is static, so the check
-runs in the browser and everything it needs is in the bundle: somebody
-determined can step past it with the developer tools. It keeps the
-panel out of the way of ordinary visitors, which is all it has to do —
-there is nothing behind it worth taking, because an edit made there
-only changes that one browser.
+**This stops being true the moment the panel writes somewhere shared.**
+If a backend is ever added — a database, an API, a hosted admin — this
+has to become a real check, done on the server, before that lands.
+That is the condition to watch for, not the passing of time.
 
 ## Where an edit goes
 

@@ -13,6 +13,13 @@ import { formatRupees } from '../utils/currency';
 function configSummary(config) {
   if (!config) return null;
   const parts = [];
+  /* A hamper built in the studio describes itself, and carries the
+     reference the studio can look the design up by. */
+  if (config.designRef) {
+    parts.push(config.summary || 'custom hamper');
+    parts.push(`ref ${config.designRef}`);
+    return parts.join(' · ');
+  }
   if (config.sizeLabel) parts.push(config.sizeLabel);
   if (config.themeName) parts.push(`${config.themeName} theme`);
   if (config.border) parts.push(config.border);
@@ -37,7 +44,7 @@ export default function CartLine({ item }) {
 
   return (
     <article className="cart-line">
-      <img src={item.image} alt={item.alt || item.name} loading="lazy" />
+      <img src={item.image} alt={item.alt || item.name} loading="lazy" decoding="async" />
 
       <div>
         <p className="cart-line__name">{item.name}</p>

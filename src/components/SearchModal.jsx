@@ -93,7 +93,7 @@ export default function SearchModal({ open, onClose }) {
             </p>
             {results.map((product) => (
               <button key={product.id} className="search-result" type="button" onClick={() => goTo(product)}>
-                <img src={product.image} alt="" loading="lazy" />
+                <img src={product.image} alt="" loading="lazy" decoding="async" />
                 <span>
                   <span className="search-result__name">{product.name}</span>
                   <span className="search-result__meta">

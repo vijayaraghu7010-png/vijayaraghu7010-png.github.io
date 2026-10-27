@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 
-import { ADMIN_ID, signIn, usingDefaultPassword } from '../lib/adminAuth';
+import { ADMIN_ID, signIn } from '../lib/adminAuth';
 
 /* The studio's own door. A customer signing in to the shop uses a
    different form entirely and never arrives here: a shop account buys
    things, this one changes what is for sale. */
 export default function AdminLogin({ onSignedIn }) {
   const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -18,7 +17,7 @@ export default function AdminLogin({ onSignedIn }) {
     setError('');
     setBusy(true);
     try {
-      const admin = await signIn(id, password);
+      const admin = await signIn(id);
       onSignedIn?.(admin);
     } catch (err) {
       setError(err.message || 'Could not sign in');
@@ -46,27 +45,10 @@ export default function AdminLogin({ onSignedIn }) {
             onChange={(e) => setId(e.target.value)}
           />
 
-          <label htmlFor="admin-password">Password</label>
-          <input
-            id="admin-password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
           <button className="admin__btn" type="submit" disabled={busy}>
             <LogIn size={16} />
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
-
-          {usingDefaultPassword() ? (
-            <p className="admin__hint">
-              Still on the password this shipped with — change it from
-              <strong> Password</strong> once you are in.
-            </p>
-          ) : null}
 
           {error ? <p className="admin__error">{error}</p> : null}
         </form>

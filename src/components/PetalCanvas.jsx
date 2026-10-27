@@ -26,7 +26,9 @@ export default function PetalCanvas() {
     if (reduced) return undefined;
 
     const ctx = canvas.getContext('2d');
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    /* 1.5 is plenty for a soft blurred petal, and costs a third of
+       the pixels that 2 does on a retina screen. */
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     let w = 0;
     let h = 0;
@@ -63,8 +65,10 @@ export default function PetalCanvas() {
     }
 
     function build() {
-      /* a phone gets fewer petals than a desktop */
-      const want = Math.max(10, Math.min(30, Math.round(w / 52)));
+      /* a phone gets fewer petals than a desktop. Roughly half what
+         this used to ask for: 30 petals, each a two-curve path drawn
+         under its own save/rotate/scale, was the bulk of the frame. */
+      const want = Math.max(6, Math.min(16, Math.round(w / 110)));
       drifting = [];
       for (let i = 0; i < want; i += 1) drifting.push(seed({}, false));
     }
@@ -72,7 +76,7 @@ export default function PetalCanvas() {
     /* petals thrown from a tap: own velocity, gravity and a fade */
     function burst(x, y) {
       const n = 7 + ((Math.random() * 5) | 0);
-      if (pops.length > 90) pops.splice(0, pops.length - 90);
+      if (pops.length > 48) pops.splice(0, pops.length - 48);
 
       for (let i = 0; i < n; i += 1) {
         const p = seed({}, false);
@@ -101,14 +105,28 @@ export default function PetalCanvas() {
       ctx.closePath();
     }
 
-    function frame() {
+    /* ~30fps. The drift is slow enough that half the frames are
+       indistinguishable, and the main thread gets the other half back
+       for scrolling and React. Positions advance by the real elapsed
+       time, so the petals fall at the same speed either way. */
+    const STEP = 1000 / 30;
+    let prev = 0;
+
+    function frame(now) {
+      if (!running) return;
+      raf = window.requestAnimationFrame(frame);
+
+      if (now - prev < STEP) return;
+      const dt = prev ? Math.min((now - prev) / STEP, 3) : 1;
+      prev = now;
+
       ctx.clearRect(0, 0, w, h);
 
       for (let i = 0; i < drifting.length; i += 1) {
         const p = drifting[i];
-        p.phase += p.drift;
-        p.angle += p.spin;
-        p.y += p.speed;
+        p.phase += p.drift * dt;
+        p.angle += p.spin * dt;
+        p.y += p.speed * dt;
 
         const x = p.x + Math.sin(p.phase) * p.sway;
         if (p.y - p.size > h) {
@@ -129,13 +147,13 @@ export default function PetalCanvas() {
 
       for (let j = pops.length - 1; j >= 0; j -= 1) {
         const q = pops[j];
-        q.vy += 0.055; /* gravity */
-        q.vx *= 0.987; /* air */
-        q.vy *= 0.993;
-        q.x += q.vx;
-        q.y += q.vy;
-        q.angle += q.spin;
-        q.life -= q.fade;
+        q.vy += 0.055 * dt; /* gravity */
+        q.vx *= 1 - 0.013 * dt; /* air */
+        q.vy *= 1 - 0.007 * dt;
+        q.x += q.vx * dt;
+        q.y += q.vy * dt;
+        q.angle += q.spin * dt;
+        q.life -= q.fade * dt;
 
         if (q.life <= 0 || q.y - q.size > h) {
           pops.splice(j, 1);
@@ -151,18 +169,18 @@ export default function PetalCanvas() {
         ctx.fill();
         ctx.restore();
       }
-
-      raf = window.requestAnimationFrame(frame);
     }
 
     function go() {
       if (running || document.hidden) return;
       running = true;
+      prev = 0;
       raf = window.requestAnimationFrame(frame);
     }
 
     function stop() {
       running = false;
+      prev = 0;
       window.cancelAnimationFrame(raf);
     }
 
@@ -170,7 +188,7 @@ export default function PetalCanvas() {
     let last = 0;
     function scatter(x, y) {
       const now = Date.now();
-      if (now - last < 90) return; /* keep a drag from flooding */
+      if (now - last < 160) return; /* keep a drag from flooding */
       last = now;
       burst(x, y);
     }

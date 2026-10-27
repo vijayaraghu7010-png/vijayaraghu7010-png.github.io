@@ -15,6 +15,7 @@ import PetalCanvas from './components/PetalCanvas';
 import AuthModal from './components/AuthModal';
 import IntroVideo from './components/IntroVideo';
 import OfferBanner from './components/OfferBanner';
+import CustomGiftBanner from './components/CustomGiftBanner';
 
 import Home from './pages/Home';
 import Magazines from './pages/Magazines';
@@ -22,6 +23,7 @@ import Polaroids from './pages/Polaroids';
 import Bouquets from './pages/Bouquets';
 import Hampers from './pages/Hampers';
 import PhotoFrames from './pages/PhotoFrames';
+import WallPosters from './pages/WallPosters';
 import CustomGifts from './pages/CustomGifts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
@@ -32,6 +34,11 @@ import NotFound from './pages/NotFound';
 /* The admin panel is a separate bundle: a customer never downloads it. */
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
+/* The hamper studio carries three.js and the whole 3D scene with it.
+   Loaded on its own route so the rest of the shop stays the size it
+   was for anybody who never opens it. */
+const HamperStudio = lazy(() => import('./pages/HamperStudio'));
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -40,10 +47,53 @@ function ScrollToTop() {
   return null;
 }
 
+/* The custom-gifts invitation, at the foot of the pages somebody is
+   browsing rather than deciding on.
+
+   It belongs after a category of things to look through, and after an
+   empty bag. It is kept off home, which already ends on it; off
+   /custom-gifts, which would be asking somebody to go where they are;
+   and off the wishlist, about and a product page, where the customer
+   is reading one particular thing and being sold a different one is
+   an interruption.
+
+   Listing the pages that have it, rather than the ones that do not,
+   is the deliberate choice here: a page added later stays clean until
+   somebody decides it should carry this. */
+const GIFT_BANNER_ON = [
+  /* not '/magazines': that page ends on its own customiser */
+  '/polaroids',
+  /* not '/bouquets': that page shows this banner itself, with a
+     button that opens its customiser */
+  '/hampers',
+  '/photo-frames',
+  '/cart'
+];
+
+function GiftInvite() {
+  const { pathname } = useLocation();
+  if (!GIFT_BANNER_ON.includes(pathname.replace(/\/+$/, '') || '/')) return null;
+
+  return (
+    <section className="shell section" aria-label="Custom gifts">
+      <CustomGiftBanner />
+    </section>
+  );
+}
+
 function Shop() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [auth, setAuth] = useState({ open: false, mode: 'login' });
-  const { version } = useSiteConfig();
+  /* Read so that a save in the panel re-renders this component, and
+     with it every page below - pages read the catalogue straight from
+     the products module, which React cannot watch on its own.
+
+     It used to be `<Routes key={version}>`, which did the same job by
+     throwing the whole page away and building it again. That also
+     threw away everything the customer was in the middle of: photos
+     chosen, a magazine part-customised, a size picked. Re-rendering
+     is enough; remounting was never wanted. */
+  useSiteConfig();
 
   return (
     <AuthProvider>
@@ -64,13 +114,28 @@ function Shop() {
           />
 
           <main className="page" id="main">
-            <Routes key={version}>
+            <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/magazines" element={<Magazines />} />
               <Route path="/polaroids" element={<Polaroids />} />
               <Route path="/bouquets" element={<Bouquets />} />
               <Route path="/hampers" element={<Hampers />} />
+              <Route
+                path="/hamper-studio"
+                element={
+                  <Suspense
+                    fallback={
+                      <div className="shell" style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
+                        Opening the hamper studio…
+                      </div>
+                    }
+                  >
+                    <HamperStudio />
+                  </Suspense>
+                }
+              />
               <Route path="/photo-frames" element={<PhotoFrames />} />
+              <Route path="/wall-posters" element={<WallPosters />} />
               <Route path="/custom-gifts" element={<CustomGifts />} />
               <Route path="/product/:slug" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
@@ -78,6 +143,8 @@ function Shop() {
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+
+            <GiftInvite />
           </main>
 
           <Footer />

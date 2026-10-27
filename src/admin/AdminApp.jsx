@@ -1,28 +1,28 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, KeyRound, LogOut, Palette, Percent, Type } from 'lucide-react';
+import { Boxes, LogOut, Palette, Percent, Star, Type } from 'lucide-react';
 
 import { currentAdmin, signOut as endSession } from '../lib/adminAuth';
 import AdminLogin from './AdminLogin';
-import ChangePassword from './ChangePassword';
 import ProductsPanel from './panels/ProductsPanel';
 import ContentPanel from './panels/ContentPanel';
 import ThemePanel from './panels/ThemePanel';
 import OffersPanel from './panels/OffersPanel';
+import ReviewsPanel from './panels/ReviewsPanel';
 import '../styles/admin.css';
 
 const TABS = [
   { id: 'products', label: 'Products', icon: Boxes, panel: ProductsPanel },
   { id: 'content', label: 'Text', icon: Type, panel: ContentPanel },
   { id: 'theme', label: 'Theme', icon: Palette, panel: ThemePanel },
-  { id: 'offers', label: 'Offers', icon: Percent, panel: OffersPanel }
+  { id: 'offers', label: 'Offers', icon: Percent, panel: OffersPanel },
+  { id: 'reviews', label: 'Reviews', icon: Star, panel: ReviewsPanel }
 ];
 
 export default function AdminApp() {
   const [checking, setChecking] = useState(true);
   const [admin, setAdmin] = useState(null);
   const [tab, setTab] = useState('products');
-  const [passwordOpen, setPasswordOpen] = useState(false);
 
   /* The session is a record in this browser, so the check is local
      and instant - no round trip, and nothing to be denied by. */
@@ -67,13 +67,6 @@ export default function AdminApp() {
         </nav>
 
         <div className="admin__bar-actions">
-          <button
-            type="button"
-            className="admin__ghost"
-            onClick={() => setPasswordOpen(true)}
-          >
-            <KeyRound size={15} /> Password
-          </button>
           <Link className="admin__ghost" to="/">
             View shop
           </Link>
@@ -86,10 +79,6 @@ export default function AdminApp() {
       <main className="admin__main">
         <Panel />
       </main>
-
-      {passwordOpen ? (
-        <ChangePassword id={admin.id} onClose={() => setPasswordOpen(false)} />
-      ) : null}
     </div>
   );
 }

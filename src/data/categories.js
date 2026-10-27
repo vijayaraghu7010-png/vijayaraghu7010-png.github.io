@@ -1,43 +1,73 @@
 /* Home-page categories, benefits and site-wide contact details.
-   Edit here to change the three category cards or the footer. */
+   Edit here to change the three category cards or the footer.
+
+   Every card carries an `art` file: one piece of artwork that is the
+   whole card - the photograph, the name and the arrow are all painted
+   into it. The title, description and cta below it are still read,
+   but only by a screen reader and a search engine, since the picture
+   already says them on screen. `image` and `gallery` stay for the
+   other pages that show these categories without the poster art. */
 
 export const CATEGORIES = [
   {
     id: 'magazine',
     title: 'MAGAZINES',
-    description: 'Turn your moments into beautifully designed personalised magazines.',
+    description: 'Turn your favourite moments into timeless magazines.',
     cta: 'Explore Magazines',
     to: '/magazines',
     image: '/images/extracted/cat-magazines.jpg',
-    alt: 'An open personalised magazine spread, "A story of us", laid out with printed photographs'
+    art: '/images/categories/magazines.jpg',
+    alt: 'An open personalised magazine spread, "Moments", laid out with printed photographs among tulips'
   },
   {
     id: 'polaroid',
     title: 'POLAROIDS',
-    description: 'Your favourite moments as insta-style polaroid prints.',
+    description: 'Turn your favourite moments into timeless polaroids.',
     cta: 'Shop Polaroids',
     to: '/polaroids',
     image: '/images/extracted/cat-polaroids.jpg',
-    alt: 'Polaroid prints of a sunset beach, captioned by hand, scattered with dried flowers'
+    art: '/images/categories/polaroids.jpg',
+    alt: 'A blush gift box of polaroid prints beside a vase of tulips and a lit candle'
   },
   {
     id: 'bouquet',
     title: 'BOUQUETS',
-    description: 'Handcrafted bouquets inspired by the calm, warmth and beauty of sunsets.',
+    description: 'Thoughtfully arranged blooms for your special moments.',
     cta: 'Shop Bouquets',
     to: '/bouquets',
     image: '/images/extracted/cat-bouquets.jpg',
-    alt: 'A handmade bouquet of pink and cream roses wrapped in blush paper'
+    art: '/images/categories/bouquets.jpg',
+    alt: 'A wrapped bouquet of pink tulips and daisies, tagged with a ribbon bow'
+  },
+  {
+    id: 'frame',
+    title: 'PHOTO FRAMES',
+    description: 'Turn your favourite moments into timeless frames.',
+    cta: 'Explore Photo Frames',
+    to: '/photo-frames',
+    image: '/images/frames/couple-eye-frame.jpg',
+    art: '/images/categories/photo-frames.jpg',
+    alt: 'A wooden frame holding a six-photo collage, propped beside tulips and a candle'
+  },
+  {
+    id: 'poster',
+    title: 'WALL POSTERS',
+    description: 'Turn your favourite memories into beautiful wall posters.',
+    cta: 'Explore Wall Posters',
+    to: '/wall-posters',
+    image: '/images/categories/wall-posters.jpg',
+    art: '/images/categories/wall-posters.jpg',
+    alt: 'A framed collage poster of taped polaroids hanging above a sideboard of tulips'
   },
   {
     id: 'hamper',
     title: 'HAMPERS',
-    description: 'Keepsake boxes packed by hand — candles, jewellery, chocolates and a note from you.',
+    description: 'Thoughtfully curated gifts for your special moments.',
     cta: 'Shop Hampers',
     to: '/hampers',
     image: '/images/hampers/hamper-blush-luxe.jpg',
-    alt: 'A blush pink gift hamper packed with perfume, jewellery and chocolates',
-    wide: true,
+    art: '/images/categories/hampers.jpg',
+    alt: 'An open blush hamper box packed with a print, a bouquet, a candle and chocolates',
     gallery: [
       '/images/hampers/hamper-blush-luxe.jpg',
       '/images/hampers/hamper-keepsake.jpg',

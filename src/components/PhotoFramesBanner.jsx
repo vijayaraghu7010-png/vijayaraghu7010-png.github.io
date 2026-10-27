@@ -23,7 +23,7 @@ export default function PhotoFramesBanner() {
         <img
           src={ART}
           alt="Two framed prints of a couple’s eyes, held up beside a houseplant"
-          loading="lazy"
+          loading="lazy" decoding="async"
           onError={() => setHasArt(false)}
         />
       ) : null}

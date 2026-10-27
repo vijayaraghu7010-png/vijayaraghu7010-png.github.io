@@ -19,6 +19,8 @@ const BLANK = {
   occasions: [],
   keywords: [],
   gallery: [],
+  rating: null,
+  reviews: null,
   featured: false,
   published: true
 };
@@ -130,7 +132,7 @@ export default function ProductsPanel() {
       <div className="admin__table">
         {products.map((p) => (
           <article key={p.id} className="admin__row">
-            <img src={p.image || '/images/logo.png'} alt="" loading="lazy" />
+            <img src={p.image || '/images/logo.png'} alt="" loading="lazy" decoding="async" />
             <div className="admin__row-main">
               <strong>{p.name}</strong>
               <span>
@@ -216,6 +218,35 @@ export default function ProductsPanel() {
               </div>
             </div>
 
+            <div className="admin__pair">
+              <div>
+                <label>Rating (0&ndash;5)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="5"
+                  step="0.1"
+                  placeholder="leave empty to hide the stars"
+                  value={editing.rating ?? ''}
+                  onChange={(e) =>
+                    setEditing({ ...editing, rating: e.target.value === '' ? null : Number(e.target.value) })
+                  }
+                />
+              </div>
+              <div>
+                <label>Number of reviews</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={editing.reviews ?? ''}
+                  onChange={(e) =>
+                    setEditing({ ...editing, reviews: e.target.value === '' ? null : Number(e.target.value) })
+                  }
+                />
+              </div>
+            </div>
+
             <label>Picture</label>
             <div className="admin__upload">
               {editing.image ? (
@@ -225,7 +256,7 @@ export default function ProductsPanel() {
               )}
               <div>
                 <label className="admin__ghost admin__file">
-                  <ImagePlus size={15} /> {uploading ? 'Uploading…' : 'Choose a picture'}
+                  <ImagePlus size={15} /> {uploading ? 'Compressing…' : 'Choose a picture'}
                   <input type="file" accept="image/*" onChange={pickImage} disabled={uploading} hidden />
                 </label>
                 <input
@@ -235,7 +266,8 @@ export default function ProductsPanel() {
                 />
                 <p className="admin__hint">
                   Pick a file from this computer, or paste a web address. A path from your own
-                  disk will not show, because the shop cannot read it.
+                  disk will not show, because the shop cannot read it. A picked file is resized
+                  and compressed automatically, so a photo straight off a phone is fine.
                 </p>
               </div>
             </div>

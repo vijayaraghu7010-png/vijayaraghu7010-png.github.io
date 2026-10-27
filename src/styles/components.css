@@ -92,6 +92,57 @@
   object-fit: cover;
 }
 
+/* ------------------------------------------------- artwork category card
+
+   One picture is the whole card: the photograph, the name and the
+   arrow are painted into it, and it draws its own outline. So every
+   piece of card chrome has to come off - the split grid, the cream
+   gradient, the border, the shadow, the rounded corners - or it would
+   be drawn twice, once by the stylesheet and once by the artist. */
+
+.cat-card--art {
+  display: block;
+  min-height: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.cat-card__art {
+  display: block;
+  border-radius: var(--radius-lg);
+  /* the lift belongs to the link, so a keyboard focus ring follows the
+     tile rather than sitting where it used to be */
+  transition: transform 0.25s ease;
+}
+
+.cat-card__art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* the artwork is painted on near-white and the page is warm peach,
+     so dropped in flat it would read as a white rectangle with a
+     picture inside it. Multiply takes the artwork's white down to
+     exactly the colour behind it, and the tile loses its edges. */
+  mix-blend-mode: multiply;
+}
+
+.cat-card--art:hover .cat-card__art,
+.cat-card__art:focus-visible {
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-card__art {
+    transition: none;
+  }
+  .cat-card--art:hover .cat-card__art {
+    transform: none;
+  }
+}
+
 /* ---------------------------------------------------------- benefits */
 
 .benefits {
@@ -1123,8 +1174,14 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 70;
+  /* below the header (60 is the header, and the petals used to be 70):
+     drawing over a sticky bar made the browser repaint the bar 60 times
+     a second. They drift behind it now. */
+  z-index: 59;
   pointer-events: none;
+  /* keep every repaint inside this element's own layer */
+  contain: paint;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1787,8 +1844,9 @@
   letter-spacing: 0.16em;
   font-size: 9.5px;
   padding: 4px 12px;
-  background: rgba(250, 246, 242, 0.88);
-  backdrop-filter: blur(3px);
+  /* was backdrop-filter: blur(3px) - one blurred compositor layer per
+     card, which a grid of them could not afford */
+  background: rgba(250, 246, 242, 0.95);
 }
 
 .product-card--bouquet .wish-btn {
@@ -1987,6 +2045,13 @@
   .categories {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-auto-rows: minmax(clamp(230px, 17vw, 290px), auto);
+  }
+
+  /* the artwork tiles are portrait, so the row is whatever they
+     measure rather than the landscape minimum above */
+  .categories:has(.cat-card--art) {
+    grid-auto-rows: auto;
+    align-items: start;
   }
 }
 
@@ -2423,7 +2488,7 @@
    ============================================================ */
 
 @supports (clip-path: url(#cat-card-blob)) {
-  .categories > .cat-card {
+  .categories > .cat-card:not(.cat-card--art) {
     clip-path: url(#cat-card-blob);
     /* A clip takes the border and the box-shadow with it: both are
        painted on a rectangle that is no longer there. The shadow
@@ -2449,5 +2514,453 @@
      covers the cream the words sit on */
   .categories > .cat-card .cat-card__media {
     overflow: hidden;
+  }
+}
+
+/* Star rating — the gold sparkle, used on product cards and on the
+   product page. */
+.stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.stars__star {
+  display: block;
+  flex: none;
+  filter: drop-shadow(0 1px 1px rgba(120, 85, 10, 0.22));
+}
+
+/* an unearned star is the same shape, faint, so the row keeps its
+   width and the eye reads five out of five */
+.stars__empty {
+  fill: rgba(96, 61, 66, 0.14);
+}
+
+.stars__score {
+  margin-left: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.stars__count {
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+.product-card__rating {
+  margin: 2px 0 0;
+}
+
+/* ------------------------------------------------- ratings & reviews */
+
+.pdp__rating {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.reviews {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.reviews h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 1.8vw, 26px);
+  margin: 0 0 18px;
+}
+
+.reviews__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(20px, 4vw, 54px);
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.reviews__average {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.reviews__average strong {
+  font-family: var(--font-serif);
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.reviews__average span {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* how the scores are spread, one bar a star */
+.reviews__spread {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  flex: 1;
+  min-width: 190px;
+  max-width: 340px;
+}
+
+.reviews__spread li {
+  display: grid;
+  grid-template-columns: 12px 1fr 24px;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.reviews__bar {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--coral-soft, #efe2e2);
+  overflow: hidden;
+}
+
+.reviews__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #E9B527, #B87C07);
+}
+
+.reviews__spread-c {
+  text-align: right;
+}
+
+/* the form */
+.rate {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.rate__ask {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+.rate__picker {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+
+.rate__pick {
+  background: none;
+  border: 0;
+  padding: 2px;
+  cursor: pointer;
+  color: rgba(96, 61, 66, 0.2);
+  transition: color 0.12s ease, transform 0.12s ease;
+}
+
+.rate__pick.is-on {
+  color: #E9B527;
+}
+
+.rate__pick:hover {
+  transform: scale(1.12);
+}
+
+.rate__fields {
+  display: grid;
+  gap: 10px;
+  max-width: 520px;
+  margin-bottom: 14px;
+}
+
+.rate__fields input,
+.rate__fields textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--cream, #fdfaf7);
+  resize: vertical;
+}
+
+.rate button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rate__error {
+  color: #b23b3b;
+  font-size: 0.85rem;
+  margin: 10px 0 0;
+}
+
+.rate__ok {
+  color: #3f7d4e;
+  font-size: 0.85rem;
+  margin: 10px 0 0;
+}
+
+/* what people said */
+.reviews__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+  padding-top: 22px;
+}
+
+.reviews__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+
+.reviews__head strong {
+  font-size: 0.9rem;
+}
+
+.reviews__head time {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.reviews__list p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* the same row with only the hampers card left in it */
+.home-duo--solo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---- magazines: the theme lookbook
+
+   Finished pages from the studio, three to a theme. The shots are
+   photographs of real magazines rather than flat artwork, so they are
+   given room and a soft card rather than being cropped into tiles. */
+.theme-look {
+  display: grid;
+  gap: 14px;
+}
+
+.theme-look__intro {
+  max-width: 62ch;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+.theme-look__grid {
+  display: grid;
+  gap: clamp(14px, 1.6vw, 22px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme-look__card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: clamp(14px, 1.4vw, 20px);
+  border-radius: var(--radius-lg);
+  background: var(--cream);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-look__head h3 {
+  font-size: 18px;
+}
+
+.theme-look__head p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+.theme-look__shots {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.theme-look__shot {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--cream-2);
+}
+
+.theme-look__shot img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+/* ---- bouquets: picking flowers from the catalogue
+
+   The picture is the point: a customer recognises a gerbera from the
+   photograph long before they read the word, so the tile is a square
+   crop of the catalogue sheet with the name underneath. */
+.flower-group {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.flower-group__title {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.flower-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.flower {
+  display: grid;
+  gap: 2px;
+  padding: 6px 6px 8px;
+  text-align: center;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.flower:hover {
+  transform: translateY(-2px);
+  border-color: var(--coral);
+}
+
+.flower.is-on {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 1px var(--coral) inset;
+}
+
+.flower img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--cream-2);
+}
+
+.flower__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+.flower__also {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.step__count {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ============================================================
+   Artwork category tiles, last word.
+
+   The three lead cards used to be built here - a cream panel, a swept
+   corner, a torn-edge clip, a bordered split between words and
+   photograph - and all of it is spread across this file and the
+   responsive one by breakpoint. A tile that is one picture needs none
+   of it, and there are too many rules in too many places to amend one
+   by one, so they are taken off together, after everything that sets
+   them.
+   ============================================================ */
+
+.categories > .cat-card--art,
+.categories > .cat-card--art:nth-child(1),
+.categories > .cat-card--art:nth-child(2),
+.categories > .cat-card--art:nth-child(3),
+.categories > .cat-card--art:nth-child(odd),
+.categories > .cat-card--art:nth-child(even) {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  clip-path: none;
+  filter: none;
+  direction: ltr;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* the lift lives on the link, so the card itself must not move too */
+.categories > .cat-card--art:hover {
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+
+/* Three across wherever there is room for three. The two-column
+   tablet rule below 1100px would leave the third tile alone on a row
+   and - through `:last-child { grid-column: 1 / -1 }` - stretched
+   across both columns, which on a portrait picture is enormous.
+
+   The track is six columns rather than three so that a row holding
+   two tiles can be centred under the three above it: each tile spans
+   two columns, and with five of them the fourth starts one column in,
+   which leaves the pair sitting between the gaps of the first row. */
+@media (min-width: 701px) {
+  .categories:has(.cat-card--art) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-auto-rows: auto;
+    align-items: start;
+  }
+  .categories:has(.cat-card--art) > .cat-card--art {
+    grid-column: span 2;
+  }
+  .categories:has(.cat-card--art) > .cat-card--art:last-child {
+    grid-column: span 2;
+  }
+  .categories:has(> .cat-card--art:nth-child(5)):not(:has(> .cat-card--art:nth-child(6)))
+    > .cat-card--art:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .categories:has(.cat-card--art) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* a single column of full-width portrait artwork is a very long
+     scroll, so on a phone the tiles are held to a readable width */
+  .cat-card--art {
+    max-width: 420px;
+    margin-inline: auto;
+    width: 100%;
   }
 }

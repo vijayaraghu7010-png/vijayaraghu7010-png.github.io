@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { setLiveProducts } from '../data/products';
-import { getAll, onStoreChange } from '../lib/store';
+import { getAll, getReviews, setReviews, newId, onStoreChange, connectShared } from '../lib/store';
 import { pickActiveTheme } from '../lib/shape';
 
 /* Everything the admin controls, read from the local store: the
@@ -16,6 +16,7 @@ const SiteConfigContext = createContext({
   content: {},
   theme: null,
   offers: [],
+  reviews: [],
   version: 0,
   refresh: () => {}
 });
@@ -42,12 +43,33 @@ export function SiteConfigProvider({ children }) {
     content: {},
     theme: null,
     offers: [],
+    reviews: [],
     version: 0
   });
+
+  /* What the shop was last built from. `load` runs on a focus, on a
+     tab becoming visible and on a timer, and almost every one of those
+     finds the shop exactly as it left it. Bumping `version` anyway
+     re-rendered every page and every product card on the screen -
+     every sixty seconds, and every time the window was clicked back
+     into. This is the cheap way to tell a real change from a no-op. */
+  const seen = useRef('');
 
   function load() {
     const data = getAll();
     const theme = pickActiveTheme(data.themes);
+
+    const stamp = JSON.stringify([
+      data.products,
+      data.content,
+      data.offers,
+      data.reviews || [],
+      theme?.id ?? null,
+      theme?.tokens ?? null
+    ]);
+
+    if (stamp === seen.current) return; /* nothing moved: leave the page alone */
+    seen.current = stamp;
 
     setLiveProducts(data.products.filter((p) => p.published !== false));
     if (theme?.tokens) applyTheme(theme.tokens);
@@ -58,12 +80,20 @@ export function SiteConfigProvider({ children }) {
       content: Object.fromEntries(data.content.map((r) => [r.key, r.value])),
       theme,
       offers: data.offers,
+      reviews: data.reviews || [],
       version: s.version + 1
     }));
   }
 
   useEffect(() => {
+    /* Paint from what this browser already has, then ask whether the
+       page is being served by the demo server. If it is, the shared
+       shop arrives a moment later and the page redraws; if it is not,
+       nothing happens and this stays a one-browser shop. */
     load();
+    connectShared().then((isShared) => {
+      if (isShared) load();
+    });
     return () => clearTheme(state.theme?.tokens);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -89,7 +119,28 @@ export function SiteConfigProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const value = useMemo(() => ({ ...state, refresh: load }), [state]);
+  /* Anyone can leave one: the shop has no accounts to check against,
+     and a demo that asks you to sign in first never gets reviewed.
+     The panel can delete whatever should not be there. */
+  function addReview({ productId, rating, name, text }) {
+    const score = Math.round(Number(rating));
+    if (!productId || !(score >= 1 && score <= 5)) throw new Error('Pick between one and five stars');
+
+    setReviews([
+      ...getReviews(),
+      {
+        id: newId('review'),
+        productId,
+        rating: score,
+        name: String(name || '').trim().slice(0, 40) || 'A customer',
+        text: String(text || '').trim().slice(0, 600),
+        at: new Date().toISOString()
+      }
+    ]);
+    load();
+  }
+
+  const value = useMemo(() => ({ ...state, refresh: load, addReview }), [state]);
 
   return <SiteConfigContext.Provider value={value}>{children}</SiteConfigContext.Provider>;
 }

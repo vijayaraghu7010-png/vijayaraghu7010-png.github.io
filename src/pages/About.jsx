@@ -40,7 +40,7 @@ export default function About() {
         <section className="info-card">
           <h3>What we make</h3>
           <p>
-            Three things, done properly: personalised magazines from ₹300, medium polaroid prints at ₹6 each, and
+            Three things, done properly: personalised magazines from ₹200, medium polaroid prints at ₹6 each, and
             handmade bouquets from ₹1,299. Every order is made after you place it — nothing sits on a shelf.
           </p>
           <p>

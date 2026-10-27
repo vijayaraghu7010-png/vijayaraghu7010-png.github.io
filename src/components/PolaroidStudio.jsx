@@ -3,21 +3,16 @@ import { ArrowRight, ImagePlus, X } from 'lucide-react';
 
 import QuantitySelector from './QuantitySelector';
 import { useCart } from '../context/CartContext';
-import {
-  BORDER_SWATCHES,
-  POLAROID_BORDERS,
-  PRICE_MODES,
-  getProductById
-} from '../data/products';
+import { BORDER_SWATCHES, POLAROID_BORDERS, getProductById } from '../data/products';
 import { formatRupees } from '../utils/currency';
 
-const FORMAT_IDS = ['polaroid-medium', 'polaroid-set-25'];
+const FORMAT_IDS = ['polaroid-medium', 'polaroid-large'];
 const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const MAX_MB = 12;
 
-/* The whole polaroid order in one place: pick the format, the count,
+/* The whole polaroid order in one place: pick the size, the count,
    the border and the photos, with a live summary that always shows
-   the real maths (₹6 × prints, or ₹150 × sets). */
+   the real maths (the size's rate × the number of prints). */
 export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
   const { addItem, openCart } = useCart();
 
@@ -36,10 +31,8 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
   const [over, setOver] = useState(false);
 
   const product = getProductById(formatId);
-  const perPrint = product.priceMode === PRICE_MODES.PER_UNIT;
   const min = product.minQty || 1;
   const subtotal = product.price * quantity;
-  const printCount = perPrint ? quantity : quantity * (product.setSize || 1);
 
   /* switching format resets the count to that format's minimum */
   useEffect(() => {
@@ -118,7 +111,7 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
 
         <div className="studio__step">
           <p className="studio__label">Step 1</p>
-          <h3 className="studio__heading">Select Polaroid Format</h3>
+          <h3 className="studio__heading">Select Polaroid Size</h3>
           <div className="format-grid">
             {FORMAT_IDS.map((id) => {
               const f = getProductById(id);
@@ -145,21 +138,17 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
 
         <div className="studio__step">
           <p className="studio__label">Step 2</p>
-          <h3 className="studio__heading">
-            {perPrint ? `Number of Prints (Minimum ${min})` : 'Number of Keepsake Sets'}
-          </h3>
+          <h3 className="studio__heading">Number of Prints (Minimum {min})</h3>
           <div className="studio__qty">
             <QuantitySelector
               value={quantity}
               min={min}
               size="lg"
               onChange={setQuantity}
-              label={perPrint ? 'Number of prints' : 'Number of sets'}
+              label="Number of prints"
             />
             <span className="studio__qtyNote">
-              {perPrint
-                ? `Calculated at ${formatRupees(product.price)} per print`
-                : `${formatRupees(product.price)} per set of ${product.setSize} prints · ${printCount} prints in total`}
+              Calculated at {formatRupees(product.price)} per print
             </span>
           </div>
         </div>
@@ -289,14 +278,12 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
               <div>
                 <dt>Selected Quantity</dt>
                 <dd>
-                  {quantity} {perPrint ? (quantity === 1 ? 'print' : 'prints') : quantity === 1 ? 'set' : 'sets'}
+                  {quantity} {quantity === 1 ? 'print' : 'prints'}
                 </dd>
               </div>
               <div>
                 <dt>Unit Rate</dt>
-                <dd>
-                  {formatRupees(product.price)} / {perPrint ? 'print' : 'set'}
-                </dd>
+                <dd>{formatRupees(product.price)} / print</dd>
               </div>
               <div>
                 <dt>Border Finish</dt>
@@ -308,12 +295,6 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
                   {photos.length} file{photos.length === 1 ? '' : 's'}
                 </dd>
               </div>
-              {!perPrint && (
-                <div>
-                  <dt>Prints in total</dt>
-                  <dd>{printCount}</dd>
-                </div>
-              )}
             </dl>
 
             <div className="summary-card__total">

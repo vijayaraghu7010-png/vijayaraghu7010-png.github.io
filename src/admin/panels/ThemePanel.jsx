@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, Plus, Save, Trash2 } from 'lucide-react';
+import { Check, Plus, RotateCcw, Save, Trash2 } from 'lucide-react';
 
 import { adminFetch } from '../../lib/adminClient';
 
@@ -34,12 +34,16 @@ export default function ThemePanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  /* the colours each built-in theme shipped with, by theme id */
+  const [shipped, setShipped] = useState({});
 
   async function load() {
     setLoading(true);
     try {
-      const { themes: rows } = await adminFetch('/api/admin/themes');
+      const { themes: rows, shipped: original } = await adminFetch('/api/admin/themes');
       setThemes(rows);
+      setShipped(original || {});
       setError('');
     } catch (e) {
       setError(e.message);
@@ -88,6 +92,52 @@ export default function ThemePanel() {
     }
   }
 
+  /* Everything in this section back to the shipped palettes. It is
+     the way out of a theme that has been edited into a mess, and the
+     only way to get a deleted festival theme back. */
+  async function resetAll() {
+    if (
+      !window.confirm(
+        'Put the theme section back to how the shop shipped? Every theme added here will be ' +
+          'deleted, colour edits to the built-in themes will be undone, and the default theme ' +
+          'goes live. This cannot be undone.'
+      )
+    )
+      return;
+
+    setResetting(true);
+    setError('');
+    try {
+      await adminFetch('/api/admin/themes?reset=1', { method: 'POST' });
+      setEditing(null);
+      await load();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setResetting(false);
+    }
+  }
+
+  /* The colours of the theme in the drawer back to what it shipped
+     with - Diwali to Diwali's own colours - or, for a theme made here,
+     to the default palette. The form only: nothing is written until
+     Save, so this can be backed out of by closing the drawer. */
+  function resetColours() {
+    const base = themes.find((t) => t.isDefault) || themes[0];
+    setEditing((t) => ({
+      ...t,
+      tokens: { ...(shipped[t.id] || shipped.base || base?.tokens || {}) }
+    }));
+  }
+
+  /* Nothing to undo on a theme whose colours are already the ones it
+     shipped with, or on one that never shipped at all. */
+  function coloursEdited(theme) {
+    const original = shipped[theme.id];
+    if (!original) return true; /* made here: the default palette is still a useful reset */
+    return Object.keys(original).some((k) => original[k] !== theme.tokens?.[k]);
+  }
+
   function startNew() {
     const base = themes.find((t) => t.isDefault) || themes[0];
     setEditing({
@@ -113,9 +163,19 @@ export default function ThemePanel() {
             The live theme paints the whole shop. A festival theme with a date range switches itself on and off.
           </p>
         </div>
-        <button className="admin__btn" type="button" onClick={startNew}>
-          <Plus size={16} /> New theme
-        </button>
+        <div className="admin__panel-actions">
+          <button
+            type="button"
+            className="admin__ghost admin__ghost--danger"
+            onClick={resetAll}
+            disabled={resetting}
+          >
+            <RotateCcw size={15} /> {resetting ? 'Resetting…' : 'Reset to default'}
+          </button>
+          <button className="admin__btn" type="button" onClick={startNew}>
+            <Plus size={16} /> New theme
+          </button>
+        </div>
       </div>
 
       {error && <p className="admin__error">{error}</p>}
@@ -218,7 +278,22 @@ export default function ThemePanel() {
               Active
             </label>
 
-            <h4>Colours</h4>
+            <div className="admin__panel-head">
+              <h4>Colours</h4>
+              <button
+                type="button"
+                className="admin__ghost"
+                onClick={resetColours}
+                disabled={!coloursEdited(editing)}
+                title={
+                  shipped[editing.id]
+                    ? 'Back to the colours this theme shipped with'
+                    : 'Back to the default palette'
+                }
+              >
+                <RotateCcw size={14} /> Reset colours
+              </button>
+            </div>
             <div className="admin__tokens">
               {Object.keys(TOKEN_LABELS).map((token) => (
                 <div className="admin__token" key={token}>

@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 
+import StarRating from './StarRating';
 import WishlistButton from './WishlistButton';
 import { useCart } from '../context/CartContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { bestOfferFor } from '../utils/offers';
+import { ratingFor } from '../utils/ratings';
 import { formatRupees } from '../utils/currency';
 
 /* Products that need choices made (a magazine theme, how many prints)
@@ -13,13 +15,17 @@ const NEEDS_CHOICES = ['magazine', 'polaroid'];
 
 export default function ProductCard({ product, compact = false, variant = '' }) {
   const { addItem } = useCart();
-  const { offers } = useSiteConfig();
+  const { offers, reviews } = useSiteConfig();
   const navigate = useNavigate();
   const needsChoices = NEEDS_CHOICES.includes(product.customiser);
 
   /* an offer with no code applies by itself, so the card shows what
      the customer will actually pay, with the old price struck out */
   const deal = bestOfferFor(product, offers);
+
+  /* the average of the reviews this product has, or the number set in
+     the panel while it has none */
+  const rating = ratingFor(product, reviews);
 
   const onAdd = (e) => {
     e.preventDefault();
@@ -35,7 +41,7 @@ export default function ProductCard({ product, compact = false, variant = '' }) 
     <article className={variant ? `product-card product-card--${variant}` : 'product-card'}>
       <div className="product-card__media">
         <Link to={`/product/${product.slug}`} tabIndex={-1} aria-hidden="true">
-          <img src={product.image} alt={product.alt} loading="lazy" />
+          <img src={product.image} alt={product.alt} loading="lazy" decoding="async" />
         </Link>
         <span className="product-card__tag">{product.categoryLabel}</span>
         {deal && (
@@ -52,6 +58,12 @@ export default function ProductCard({ product, compact = false, variant = '' }) 
         </h3>
 
         {!compact && <p className="product-card__desc">{product.shortDescription}</p>}
+
+        {rating.value ? (
+          <div className="product-card__rating">
+            <StarRating value={rating.value} count={rating.count} size={13} />
+          </div>
+        ) : null}
 
         <div className="product-card__foot">
           <span className="product-card__price">

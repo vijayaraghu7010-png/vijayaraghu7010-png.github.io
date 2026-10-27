@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Save } from 'lucide-react';
+import { Image as ImageIcon, Plus, RotateCcw, Save } from 'lucide-react';
 
-import { adminFetch } from '../../lib/adminClient';
+import { adminFetch, adminUpload } from '../../lib/adminClient';
 
 /* Every sentence on the site that has been given a key can be edited
-   here. Adding a key is possible too, for copy wired up later. */
+   here. Adding a key is possible too, for copy wired up later.
+
+   A key ending in `.image` holds a picture rather than a sentence, so
+   it gets a preview and a file picker instead of a bare text box. The
+   path is still editable by hand, which is the better answer for a
+   big photo: drop it in public/images and type the path. */
+const isPicture = (key) => key.endsWith('.image');
 export default function ContentPanel() {
   const [rows, setRows] = useState([]);
   const [draft, setDraft] = useState({});
@@ -14,6 +20,8 @@ export default function ContentPanel() {
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(0);
   const [adding, setAdding] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [picking, setPicking] = useState('');
   const [newKey, setNewKey] = useState({ key: '', value: '', group: 'general', label: '' });
 
   async function load() {
@@ -70,6 +78,48 @@ export default function ContentPanel() {
     }
   }
 
+  /* Everything in this section back to the words the shop ships with.
+     It is the way out of copy that has been edited into a mess, and
+     the only way to get an original sentence back once it has been
+     typed over. Unsaved edits go with it, which is the point. */
+  async function resetAll() {
+    if (
+      !window.confirm(
+        'Put the site text back to how the shop shipped? Every sentence edited here goes back ' +
+          'to its original wording, and any key added here is deleted. This cannot be undone.'
+      )
+    )
+      return;
+
+    setResetting(true);
+    setError('');
+    try {
+      await adminFetch('/api/admin/content?reset=1', { method: 'POST' });
+      setAdding(false);
+      await load();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setResetting(false);
+    }
+  }
+
+  async function pickPicture(key, e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setError('');
+    setPicking(key);
+    try {
+      const dataUrl = await adminUpload(file);
+      setDraft((d) => ({ ...d, [key]: dataUrl }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setPicking('');
+    }
+  }
+
   async function addKey(e) {
     e.preventDefault();
     try {
@@ -102,6 +152,14 @@ export default function ContentPanel() {
           />
           <button className="admin__ghost" type="button" onClick={() => setAdding((a) => !a)}>
             <Plus size={15} /> New key
+          </button>
+          <button
+            className="admin__ghost"
+            type="button"
+            onClick={resetAll}
+            disabled={resetting || saving}
+          >
+            <RotateCcw size={15} /> {resetting ? 'Resetting…' : 'Reset text'}
           </button>
           <button className="admin__btn" type="button" onClick={saveAll} disabled={!dirty || saving}>
             <Save size={16} /> {saving ? 'Saving…' : dirty ? `Save ${dirty} change${dirty > 1 ? 's' : ''}` : 'Saved'}
@@ -144,7 +202,33 @@ export default function ContentPanel() {
             return (
               <div className="admin__field" key={r.key}>
                 <label title={r.key}>{r.label || r.key}</label>
-                {r.multiline ? (
+                {isPicture(r.key) ? (
+                  <div className="admin__picture">
+                    {value ? <img src={value} alt="" /> : null}
+                    <div className="admin__picture-controls">
+                      <input
+                        value={value}
+                        placeholder="/images/hero-sunset.jpg"
+                        onChange={(e) => setDraft({ ...draft, [r.key]: e.target.value })}
+                      />
+                      <label className="admin__ghost">
+                        <ImageIcon size={15} />{' '}
+                        {picking === r.key ? 'Compressing…' : 'Choose a picture'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          disabled={picking === r.key}
+                          onChange={(e) => pickPicture(r.key, e)}
+                        />
+                      </label>
+                    </div>
+                    <p className="admin__hint">
+                      Any picture chosen here is resized and compressed automatically — a photo
+                      straight off a phone is fine.
+                    </p>
+                  </div>
+                ) : r.multiline ? (
                   <textarea
                     rows={2}
                     value={value}

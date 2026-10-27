@@ -102,7 +102,22 @@ export default function Cart() {
             className="btn btn--primary btn--block"
             href={`mailto:hello@wrappedstudio.in?subject=${encodeURIComponent('WrappedStudio order enquiry')}&body=${encodeURIComponent(
               items
-                .map((i) => `${i.quantity} × ${i.name} — ${formatRupees(i.unitPrice * i.quantity)}`)
+                .map((i) => {
+                  const line = `${i.quantity} × ${i.name} — ${formatRupees(i.unitPrice * i.quantity)}`;
+                  /* A hamper built in the studio is only reproducible from
+                     its design, so the reference and the contents travel
+                     with the order rather than just a product name. */
+                  if (!i.config?.designRef) return line;
+                  return [
+                    line,
+                    `    design reference: ${i.config.designRef}`,
+                    `    ${i.config.summary || ''}`,
+                    ...(i.config.contents || []).map((entry) => `    - ${entry}`),
+                    i.config.message ? `    ${i.config.message}` : null
+                  ]
+                    .filter(Boolean)
+                    .join('\n');
+                })
                 .join('\n') +
                 `\n\nProduct subtotal: ${formatRupees(subtotal)}` +
                 (savings > 0 ? `\nOffer applied: -${formatRupees(savings)}` : '') +

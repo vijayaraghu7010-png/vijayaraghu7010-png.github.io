@@ -107,7 +107,10 @@ export default function IntroVideo() {
 
     const timer = window.setInterval(tryAgain, 250);
 
-    const events = ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown', 'scroll', 'wheel'];
+    /* No 'scroll' or 'wheel' here: they fire dozens of times a second
+       and each one called play() on the clip. A real tap, click or key
+       is what grants audio anyway, and the 250ms retry covers the rest. */
+    const events = ['pointerdown', 'pointerup', 'touchstart', 'touchend', 'click', 'keydown'];
     events.forEach((type) =>
       document.addEventListener(type, tryAgain, { capture: true, passive: true })
     );

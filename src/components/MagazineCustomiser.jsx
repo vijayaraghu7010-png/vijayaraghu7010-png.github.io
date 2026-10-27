@@ -24,9 +24,16 @@ export default function MagazineCustomiser({ product }) {
 
   const size = MAGAZINE_SIZES.find((s) => s.id === sizeId) || MAGAZINE_SIZES[0];
   const theme = MAGAZINE_THEMES.find((t) => t.id === themeId);
-  /* The chosen size decides which catalogue product (and price) applies. */
-  const priced = getProductById(sizeId === 'mag-8' ? 'magazine-8' : 'magazine-4') || product;
+  /* The chosen size decides which catalogue product (and price)
+     applies — each size row names its own. */
+  const priced = getProductById(size.productId) || product;
   const lineTotal = priced.price * quantity;
+
+  /* How many photographs this length takes. A shorter size chosen
+     after the photos were picked can leave more than it holds, so the
+     count is checked here rather than only in the picker. */
+  const limit = size.photos || { max: 15 };
+  const tooMany = photos.length > limit.max;
 
   const validate = () => {
     const next = {};
@@ -34,6 +41,9 @@ export default function MagazineCustomiser({ product }) {
     if (themeId === 'custom' && !customTheme.trim()) next.customTheme = 'Tell us the theme you have in mind.';
     if (!details.trim()) next.details = 'Add the names, dates or wording you want on the pages.';
     if (photos.length === 0) next.photos = 'Add at least one photograph.';
+    else if (photos.length > limit.max) {
+      next.photos = `${size.label} holds ${limit.max} photographs. Remove ${photos.length - limit.max} to carry on.`;
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -159,15 +169,25 @@ export default function MagazineCustomiser({ product }) {
           <h4 className="step__title">Upload your photographs</h4>
         </div>
         <p className="field-hint">
-          Send enough pictures to fill {size.sides} sides. You can add or swap photos with us later.
+          {limit.from
+            ? `${size.label} takes ${limit.from} to ${limit.max} photographs.`
+            : `${size.label} takes up to ${limit.max} photographs.`}{' '}
+          You can add or swap photos with us later.
         </p>
         <PhotoUpload
           files={photos}
+          max={limit.max}
           onChange={(files) => {
             setPhotos(files);
             setErrors((p) => ({ ...p, photos: undefined }));
           }}
         />
+        {tooMany && !errors.photos && (
+          <p className="field-error" role="alert">
+            That is {photos.length} photographs — {size.label} holds {limit.max}. Remove{' '}
+            {photos.length - limit.max} or choose a longer magazine.
+          </p>
+        )}
         {errors.photos && (
           <p className="field-error" role="alert">
             {errors.photos}
@@ -210,7 +230,9 @@ export default function MagazineCustomiser({ product }) {
             </tr>
             <tr>
               <th scope="row">Photos</th>
-              <td>{photos.length ? `${photos.length} selected` : 'None yet'}</td>
+              <td>
+                {photos.length ? `${photos.length} selected` : 'None yet'} · {limit.max} max
+              </td>
             </tr>
             <tr>
               <th scope="row">Quantity</th>

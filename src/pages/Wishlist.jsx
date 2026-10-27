@@ -50,7 +50,7 @@ export default function Wishlist() {
           const needsChoices = NEEDS_CHOICES.includes(product.customiser);
           return (
             <article className="cart-line info-card" key={product.id} style={{ gridTemplateColumns: '84px 1fr' }}>
-              <img src={product.image} alt={product.alt} style={{ width: 84, height: 84 }} loading="lazy" />
+              <img src={product.image} alt={product.alt} style={{ width: 84, height: 84 }} loading="lazy" decoding="async" />
               <div>
                 <p className="cart-line__name">
                   <Link to={`/product/${product.slug}`}>{product.name}</Link>

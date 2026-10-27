@@ -598,3 +598,53 @@
   font-size: 11.5px;
   color: var(--muted);
 }
+
+/* A content key that holds a picture: what is there now, the path it
+   came from, and a way to replace it. */
+.admin__picture {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.admin__picture img {
+  width: 132px;
+  height: 74px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--coral-soft, #efe2e2);
+  flex: none;
+}
+
+.admin__picture-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* the picker is a label wrapping a hidden file input, so it needs the
+   pointer a button would have had */
+.admin__picture-controls .admin__ghost {
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+/* a review as it reads in the panel */
+.admin__review-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.admin__review-text {
+  margin: 6px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  max-width: 62ch;
+}

@@ -15,8 +15,22 @@ export default function HeroSection() {
   const title = useText('home.hero.title', 'Make Every Memory Bloom');
   const text = useText('home.hero.text', 'Personalised magazines, polaroids and handcrafted bouquets for your special moments.');
   const ctaPrimary = useText('home.hero.ctaPrimary', 'Explore Collections');
+  const ctaPrimaryLink = useText('home.hero.ctaPrimaryLink', '/magazines');
   const ctaSecondary = useText('home.hero.ctaSecondary', 'Custom Gifts');
+  const ctaSecondaryLink = useText('home.hero.ctaSecondaryLink', '/custom-gifts');
   const proof = useText('home.hero.proof', '4.9/5 from 10K+ happy customers');
+  /* the hero art was a 2 MB PNG; it is a JPEG now. A hero picture
+     saved in the admin panel before that still names the PNG, so the
+     old name is read as the new one rather than 404ing. */
+  const image = useText('home.hero.image', '/images/hero-sunset.jpg').replace(
+    '/images/hero-sunset.png',
+    '/images/hero-sunset.jpg'
+  );
+  const imageAlt = useText(
+    'home.hero.imageAlt',
+    'A handmade bouquet lying on the sand, a ribbon curled into a heart beside it, as the sun sets over the sea'
+  );
+  const script = useText('home.hero.script', 'Same\nSunset Vibes,\nBrighter Memories ♥');
 
   /* the last word of the title is the one picked out in colour */
   const words = title.trim().split(' ');
@@ -26,21 +40,27 @@ export default function HeroSection() {
   return (
     <section className="hero" aria-labelledby="hero-title">
       <div className="hero__media">
-        <img
-          src="/images/hero-sunset.png"
-          alt="A handmade bouquet, printed magazines and polaroids arranged on the sand as the sun sets over the sea"
-          fetchpriority="high"
-        />
+        <img src={image} alt={imageAlt} fetchpriority="high" />
       </div>
       <div className="hero__scrim" />
 
-      <p className="hero__script" aria-hidden="true">
-        Same
-        <br />
-        Sunset Vibes,
-        <br />
-        Brighter Memories <span className="heart">♥</span>
-      </p>
+      {/* each line of the handwriting is its own line in the panel, and
+          a heart typed into it is picked out in colour like the original */}
+      {script.trim() ? (
+        <p className="hero__script" aria-hidden="true">
+          {script.split('\n').map((line, i) => (
+            <span key={i}>
+              {i > 0 ? <br /> : null}
+              {line.split('♥').map((part, j) => (
+                <span key={j}>
+                  {j > 0 ? <span className="heart">♥</span> : null}
+                  {part}
+                </span>
+              ))}
+            </span>
+          ))}
+        </p>
+      ) : null}
 
       <div className="shell hero__inner">
         <div className="hero__copy">
@@ -53,10 +73,10 @@ export default function HeroSection() {
           <p className="hero__text">{text}</p>
 
           <div className="hero__cta">
-            <Link className="btn btn--primary" to="/magazines">
+            <Link className="btn btn--primary" to={ctaPrimaryLink}>
               {ctaPrimary} <ArrowRight className="arrow" size={17} />
             </Link>
-            <Link className="btn btn--ghost" to="/custom-gifts">
+            <Link className="btn btn--ghost" to={ctaSecondaryLink}>
               {ctaSecondary}
             </Link>
           </div>
@@ -64,7 +84,7 @@ export default function HeroSection() {
           <div className="hero__proof">
             <div className="avatars" aria-hidden="true">
               {AVATARS.map((a) => (
-                <img key={a.src} src={a.src} alt="" loading="lazy" />
+                <img key={a.src} src={a.src} alt="" loading="lazy" decoding="async" />
               ))}
             </div>
             <div>

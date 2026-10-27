@@ -11,18 +11,18 @@ import { useText } from '../context/SiteConfigContext';
 export default function Polaroids() {
   usePageMeta(
     'Polaroids',
-    'Medium polaroid prints at ₹6 each (minimum 9), or a set of 25 prints for ₹150. Small prints, big memories.'
+    'Medium polaroid prints at ₹6 each (minimum 9) and large prints at ₹10 each (minimum 10). Small prints, big memories.'
   );
 
   const products = getByCategory('polaroid');
   const medium = products.find((p) => p.id === 'polaroid-medium');
-  const set = products.find((p) => p.id === 'polaroid-set-25');
+  const large = products.find((p) => p.id === 'polaroid-large');
 
   return (
     <div className="shell">
       <header className="page-head">
         <h1 className="page-head__art">
-          <img src="/images/headings/polaroids.png" alt="Polaroids" width="1200" height="385" />
+          <img src="/images/headings/polaroids.webp" alt="Polaroids" width="1200" height="385" />
         </h1>
         <p>{useText('polaroids.subtitle', 'Small prints. Big memories.')}</p>
       </header>
@@ -37,7 +37,7 @@ export default function Polaroids() {
         <div className="info-card">
           <h3>How polaroid orders work</h3>
           <ol className="numbered">
-            <li>Pick the product — single prints or the set of 25.</li>
+            <li>Pick the size — medium or large prints.</li>
             <li>Choose how many you want.</li>
             <li>Upload the photographs you want printed.</li>
             <li>Add captions if you would like them on the prints.</li>
@@ -59,8 +59,11 @@ export default function Polaroids() {
                 </td>
               </tr>
               <tr>
-                <th scope="row">Set of 25</th>
-                <td>{formatRupees(set.price)} per set of {set.setSize} prints</td>
+                <th scope="row">Large print</th>
+                <td>
+                  {formatRupees(large.price)} each · minimum {large.minQty} prints (
+                  {formatRupees(large.price * large.minQty)})
+                </td>
               </tr>
               <tr>
                 <th scope="row">Dispatch</th>

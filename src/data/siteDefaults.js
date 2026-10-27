@@ -26,8 +26,25 @@ const base = [
     true
   ],
   ['home.hero.ctaPrimary', 'Explore Collections', 'home', 'Hero primary button'],
+  ['home.hero.ctaPrimaryLink', '/magazines', 'home', 'Hero primary button goes to'],
   ['home.hero.ctaSecondary', 'Custom Gifts', 'home', 'Hero secondary button'],
+  ['home.hero.ctaSecondaryLink', '/custom-gifts', 'home', 'Hero secondary button goes to'],
   ['home.hero.proof', '4.9/5 from 10K+ happy customers', 'home', 'Hero rating line'],
+  ['home.hero.image', '/images/hero-sunset.jpg', 'home', 'Hero banner picture'],
+  [
+    'home.hero.imageAlt',
+    'A handmade bouquet lying on the sand, a ribbon curled into a heart beside it, as the sun sets over the sea',
+    'home',
+    'Hero picture description',
+    true
+  ],
+  [
+    'home.hero.script',
+    'Same\nSunset Vibes,\nBrighter Memories ♥',
+    'home',
+    'Hero handwriting (one line each)',
+    true
+  ],
   ['magazines.title', 'Personalised Magazines', 'magazines', 'Page title'],
   [
     'magazines.subtitle',

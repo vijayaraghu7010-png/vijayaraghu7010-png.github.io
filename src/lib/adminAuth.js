@@ -1,42 +1,21 @@
-/* One administrator, one password, checked in the browser.
+/* Who gets into the panel: anyone who types the administrator ID.
 
-   Be clear-eyed about what this is: the site is static, so there is
-   nobody to ask. Anything the check needs is in the bundle, which
-   means a determined visitor can read past it with the developer
-   tools. It keeps the panel out of the way of ordinary visitors and
-   that is all it does - there is nothing behind it worth stealing,
-   because an admin edit only changes that one browser.
+   There is no password. That is a deliberate choice, not an oversight,
+   and it costs less than it sounds like: the site is static, so any
+   check here runs in the browser with everything it needs sitting in
+   the bundle, and a determined visitor could step past a password with
+   the developer tools anyway. What is behind the door is a panel whose
+   edits are kept in localStorage - they change that one browser and
+   reach nobody else - so there is nothing here to take.
 
-   The password is never stored, only its SHA-256 hash, so a glance at
-   localStorage or at this file does not hand it over. */
+   The ID still has to be typed, which keeps the panel out of the way
+   of anyone who wanders onto /admin. Treat it as a door marked
+   "staff", not as a lock. If the panel ever writes somewhere that
+   other people can read, this has to become a real check first. */
 
 const SESSION_KEY = 'ws-admin-session';
-const PASSWORD_KEY = 'ws-admin-password';
 
 export const ADMIN_ID = 'admin';
-
-/* The hash of the password the site ships with. The password itself is
-   written nowhere in the repository on purpose - a hash cannot be
-   turned back into it, so this line gives a reader nothing to sign in
-   with. Replace it to set a different one:
-     node -e "console.log(require('crypto').createHash('sha256').update('your-password').digest('hex'))" */
-const DEFAULT_HASH = '0d3ed9aadb3c4faff390e84e54c7ec620c59872ac51229d2f2eaf83614767d15';
-
-async function sha256(text) {
-  const bytes = new TextEncoder().encode(text);
-  const digest = await window.crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
-function storedHash() {
-  try {
-    return window.localStorage.getItem(PASSWORD_KEY) || DEFAULT_HASH;
-  } catch {
-    return DEFAULT_HASH;
-  }
-}
 
 /* Who is signed in to the panel, or null. */
 export function currentAdmin() {
@@ -48,12 +27,9 @@ export function currentAdmin() {
   }
 }
 
-export async function signIn(id, password) {
+export async function signIn(id) {
   if (String(id).trim().toLowerCase() !== ADMIN_ID) {
     throw new Error('That is not the administrator ID');
-  }
-  if ((await sha256(password)) !== storedHash()) {
-    throw new Error('That password is not right');
   }
 
   const admin = { id: ADMIN_ID, at: new Date().toISOString() };
@@ -71,20 +47,4 @@ export function signOut() {
   } catch {
     /* nothing to clear */
   }
-}
-
-export async function changePassword(currentPassword, newPassword) {
-  if ((await sha256(currentPassword)) !== storedHash()) {
-    throw new Error('Current password is not right');
-  }
-  if (!newPassword || newPassword.length < 8) {
-    throw new Error('Pick a password of at least 8 characters');
-  }
-  window.localStorage.setItem(PASSWORD_KEY, await sha256(newPassword));
-}
-
-/* True once the password has been changed from the one in the source,
-   which is the only state worth warning about. */
-export function usingDefaultPassword() {
-  return storedHash() === DEFAULT_HASH;
 }

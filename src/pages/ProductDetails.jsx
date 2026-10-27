@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Check, ChevronRight } from 'lucide-react';
+import { Check, ChevronRight, Sparkles } from 'lucide-react';
 
 import WishlistButton from '../components/WishlistButton';
+import StarRating from '../components/StarRating';
+import ProductReviews from '../components/ProductReviews';
 import ProductCard from '../components/ProductCard';
 import MagazineCustomiser from '../components/MagazineCustomiser';
 import PolaroidStudio from '../components/PolaroidStudio';
-import BouquetOptions from '../components/BouquetOptions';
 import FrameOptions from '../components/FrameOptions';
 import NotFound from './NotFound';
 import usePageMeta from '../hooks/usePageMeta';
@@ -14,6 +15,7 @@ import { PRODUCTS, getProductBySlug } from '../data/products';
 import { formatRupees } from '../utils/currency';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { bestOfferFor } from '../utils/offers';
+import { ratingFor } from '../utils/ratings';
 
 /* hamper was missing from both of these, so the breadcrumb on a hamper
    linked to undefined and read "All undefined"; frame would have done
@@ -36,11 +38,12 @@ const CATEGORY_NAMES = {
 export default function ProductDetails() {
   const { slug } = useParams();
   const product = getProductBySlug(slug);
-  const { offers } = useSiteConfig();
+  const { offers, reviews } = useSiteConfig();
   const [shot, setShot] = useState(0);
 
   /* an automatic offer shows here exactly as it shows on the card */
   const deal = bestOfferFor(product, offers);
+  const rating = ratingFor(product, reviews);
 
   usePageMeta(product?.name, product?.shortDescription);
 
@@ -88,6 +91,11 @@ export default function ProductDetails() {
             <h1 className="pdp__title" style={{ marginTop: 6 }}>
               {product.name}
             </h1>
+            {rating.value ? (
+              <a className="pdp__rating" href="#reviews-title">
+                <StarRating value={rating.value} count={rating.count} size={16} />
+              </a>
+            ) : null}
             <p className="pdp__price" style={{ marginTop: 10 }}>
               {deal ? (
                 <>
@@ -120,9 +128,22 @@ export default function ProductDetails() {
             <span className="field-hint">Save this for later</span>
           </div>
 
-          {product.customiser === 'magazine' && <MagazineCustomiser product={product} />}
+          {product.customiser === 'hamper-3d' && (
+            <div className="info-card stack">
+              <h3>
+                <Sparkles size={16} aria-hidden="true" /> Build it in 3D
+              </h3>
+              <p style={{ color: 'var(--ink-2)' }}>
+                This one is customised in the studio: choose the box, fill it, arrange everything and write the
+                card, with a 3D preview as you go. Your design is saved on this device as you build it.
+              </p>
+              <Link className="btn btn--primary btn--block" to="/hamper-studio">
+                Open the hamper studio
+              </Link>
+            </div>
+          )}
 
-          {product.customiser === 'bouquet' && <BouquetOptions product={product} />}
+          {product.customiser === 'magazine' && <MagazineCustomiser product={product} />}
 
           {product.customiser === 'frame' && <FrameOptions product={product} />}
         </div>
@@ -133,6 +154,10 @@ export default function ProductDetails() {
           <PolaroidStudio initialFormat={product.id} />
         </div>
       )}
+
+      <div className="section">
+        <ProductReviews product={product} />
+      </div>
 
       {related.length > 0 && (
         <section className="section" aria-labelledby="related-title">

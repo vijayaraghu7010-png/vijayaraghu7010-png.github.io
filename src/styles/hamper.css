@@ -1,0 +1,1052 @@
+/* ===========================================================
+   The hamper studio.
+
+   Imported by the studio page and by the hampers page, which
+   carries the invitation at the foot of this file — not by
+   main.jsx, so it travels with the pages that use it.
+   =========================================================== */
+
+/* Not `.studio`: that class already belongs to the polaroid studio,
+   where it is a two-column grid. Sharing it turned this page's own
+   grid into a column of that one. */
+.hamper-studio {
+  padding-bottom: 40px;
+}
+
+/* ------------------------------------------------------- the head */
+
+.studio-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 10px 0 18px;
+}
+
+.studio-head .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.studio-head__name input {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  padding: 2px 0;
+  width: min(100%, 460px);
+  border-radius: 0;
+}
+
+.studio-head__name input:hover {
+  border-bottom-color: var(--line-2);
+}
+
+.studio-head__name input:focus {
+  outline: 0;
+  border-bottom-color: var(--accent);
+}
+
+.studio-head__summary {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.studio-head__side {
+  flex: 0 1 340px;
+}
+
+/* ------------------------------------------- the autosave indicator */
+
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  background: var(--cream-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 9px 16px;
+}
+
+.save-status--ok {
+  color: #3f6146;
+  border-color: #cfe0d2;
+  background: #f4faf5;
+}
+
+.save-status--busy {
+  color: var(--coral);
+  border-color: var(--line-2);
+}
+
+.save-status--error {
+  color: #8c3a3a;
+  border-color: #e9c9c9;
+  background: #fdf5f4;
+  border-radius: var(--radius-md);
+}
+
+.save-status strong {
+  font-weight: 600;
+}
+
+.spin {
+  animation: studio-spin 1s linear infinite;
+}
+
+@keyframes studio-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------- notices */
+
+.studio-notices {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.studio-notice {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--cream-2);
+}
+
+.studio-notice--warn {
+  border-color: #e6d4b4;
+  background: #fdf8ef;
+  color: #6b5323;
+}
+
+.studio-notice--error {
+  border-color: #e9c9c9;
+  background: #fdf5f4;
+  color: #8c3a3a;
+}
+
+.studio-notice--info {
+  border-color: var(--line-2);
+  color: var(--ink-2);
+}
+
+.studio-notice__title {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.studio-notice__body {
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.studio-notice button {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 2px;
+}
+
+.studio-notice button:hover {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------- the 3D stage */
+
+.studio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(16px, 2vw, 28px);
+  align-items: start;
+}
+
+.studio-stage {
+  position: sticky;
+  top: calc(var(--header-h) + 12px);
+  display: grid;
+  gap: 12px;
+  /* The stage carries the box, the lid button and the movement pad,
+     and all three have to be on screen together: a pad you have to
+     scroll away from the box to reach is a pad you cannot aim
+     with. The canvas gives up the height for it below. */
+  max-height: calc(100vh - var(--header-h) - 24px);
+}
+
+.studio-canvas {
+  position: relative;
+  aspect-ratio: 4 / 3.2;
+  min-height: 300px;
+  /* On a short laptop window the box gives up height so that the
+     movement pad under it is reachable without scrolling the box
+     off the screen. Aiming a direction button at a hamper you
+     cannot see is not a control. */
+  /* Shrinks so that the box and the controls under it both fit a
+     short window. The subtraction is the height of the bar and the
+     movement pad beneath. */
+  max-height: calc(100vh - var(--header-h) - 290px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: radial-gradient(circle at 50% 28%, var(--cream-2) 0%, var(--peach) 78%);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  /* The canvas handles its own gestures; without this the page
+     scrolls while somebody is turning the box on a phone. */
+  touch-action: none;
+}
+
+.studio-canvas canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.studio-stage__bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.studio-stage__hint {
+  font-size: 13px;
+  color: var(--muted);
+  flex: 1 1 200px;
+}
+
+.studio-loading {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  min-height: 52vh;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------- the panels */
+
+.studio-panels {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.studio-tabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.studio-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.studio-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  padding: 9px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.studio-tab:hover {
+  border-color: var(--line-2);
+}
+
+.studio-tab.is-on {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: var(--btn-text);
+}
+
+.studio-tab__count {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--btn-text);
+  border-radius: var(--radius-pill);
+  padding: 1px 7px;
+}
+
+.studio-tab.is-on .studio-tab__count {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.studio-tabpanel,
+.studio-order {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: clamp(14px, 1.6vw, 20px);
+}
+
+.studio-order {
+  display: grid;
+  gap: 14px;
+}
+
+.studio-order__problems {
+  display: grid;
+  gap: 6px;
+  list-style: none;
+}
+
+/* ------------------------------------------------- swatch controls */
+
+.swatches {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.swatches legend {
+  font-size: 12px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 0;
+}
+
+.swatches__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.swatch {
+  cursor: pointer;
+  line-height: 0;
+}
+
+.swatch__chip {
+  display: block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  box-shadow: inset 0 1px 3px rgba(46, 36, 37, 0.12);
+}
+
+.swatch.is-on .swatch__chip {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
+
+.swatch input:focus-visible + .swatch__chip {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.swatches__name {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.switch {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 14.5px;
+  cursor: pointer;
+}
+
+.switch input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--coral);
+}
+
+.option-grid--tight {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+/* ----------------------------------------------- the gift catalogue */
+
+.kit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 10px;
+}
+
+.kit-card {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 12px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--cream-2);
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+}
+
+.kit-card:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.kit-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.kit-card.is-in {
+  border-color: var(--coral);
+  background: var(--coral-soft);
+}
+
+.kit-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.kit-card__name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.kit-card__price {
+  font-size: 13px;
+  color: var(--coral);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.kit-card__blurb {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.kit-card__foot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.kit-card__foot em {
+  font-style: normal;
+  color: var(--coral);
+}
+
+.kit-card__tag {
+  position: absolute;
+  top: -7px;
+  right: 10px;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--peach-deep);
+  color: var(--ink-2);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+/* --------------------------------------------- what is in the box */
+
+.gift-row {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--cream-2);
+}
+
+.gift-row.is-on {
+  border-color: var(--coral);
+  background: var(--white);
+}
+
+.gift-row__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 13px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  text-align: left;
+}
+
+.gift-row__swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  flex: 0 0 auto;
+}
+
+.gift-row__name {
+  flex: 1 1 auto;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.gift-row__price {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.gift-row__body {
+  display: grid;
+  gap: 14px;
+  padding: 4px 13px 15px;
+  border-top: 1px dashed var(--line);
+}
+
+.gift-row__turn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gift-row__turn input[type='range'] {
+  flex: 1 1 auto;
+  min-width: 60px;
+}
+
+.gift-row__body input[type='range'] {
+  width: 100%;
+  accent-color: var(--coral);
+}
+
+.gift-photo {
+  display: block;
+  width: 100%;
+  max-width: 190px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-2);
+  margin-bottom: 8px;
+}
+
+.gift-photo--gone {
+  display: grid;
+  place-items: center;
+  max-width: 190px;
+  aspect-ratio: 4 / 3;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 8px;
+  margin-bottom: 8px;
+}
+
+.gift-photo__row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------- saved hampers */
+
+.saved-head {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.saved-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.saved-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream-2);
+}
+
+.saved-row.is-open {
+  border-color: var(--coral);
+  background: var(--white);
+}
+
+.saved-row__main {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+
+.saved-row__name {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.saved-row__badge {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--coral);
+  color: var(--btn-text);
+  border-radius: var(--radius-pill);
+  padding: 2px 8px;
+}
+
+.saved-row__badge--ordered {
+  background: var(--brown);
+}
+
+.saved-row__meta {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.saved-row__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.saved-row__rename {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.saved-row__rename input {
+  flex: 1 1 140px;
+}
+
+.icon-link--danger {
+  color: #a33;
+}
+
+/* ------------------------------------------------ storage honesty */
+
+.storage-note {
+  display: grid;
+  gap: 9px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line-2);
+  background: var(--cream);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+.storage-note h4 {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.storage-note__row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.storage-note__wipe {
+  font-size: 13px;
+  border-top: 1px dashed var(--line-2);
+  padding-top: 9px;
+}
+
+/* ------------------------------------------------------- the entry */
+
+.studio-invite {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: clamp(16px, 2vw, 26px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-2);
+  background: linear-gradient(120deg, var(--coral-soft), var(--cream-2) 70%);
+  margin-bottom: 18px;
+}
+
+.studio-invite h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(20px, 2vw, 28px);
+  color: var(--ink);
+}
+
+.studio-invite p {
+  color: var(--ink-2);
+  font-size: 14.5px;
+  margin-top: 5px;
+  max-width: 62ch;
+}
+
+/* ------------------------------------------------------- phones */
+
+@media (max-width: 1040px) {
+  .studio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-stage {
+    position: static;
+    /* Not sticky any more, so nothing has to be squeezed into a
+       fixed height and the pad needs no scrollbar of its own. */
+    max-height: none;
+  }
+
+  .studio-canvas {
+    max-height: none;
+  }
+
+  .studio-stage .studio-stage__move {
+    overflow-y: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .studio-canvas {
+    /* Taller than it is wide on a phone, so the box is the page and
+       not a letterbox above a wall of controls. */
+    aspect-ratio: 1 / 1;
+    min-height: 300px;
+    border-radius: var(--radius-md);
+  }
+
+  .studio-head {
+    align-items: flex-start;
+  }
+
+  .studio-head__side {
+    flex: 1 1 100%;
+  }
+
+  .kit-grid {
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  }
+
+  /* Touch targets, and nothing that can push the page sideways. */
+  .studio-tab {
+    padding: 11px 15px;
+  }
+
+  .swatch__chip {
+    width: 34px;
+    height: 34px;
+  }
+
+  .saved-row__actions {
+    gap: 14px;
+  }
+}
+
+/* ===========================================================
+   How the packing went, under the preview.
+
+   There are no direction controls here any more: the studio
+   arranges the box. What is left is a line saying whether
+   everything went in and a button to try a different arrangement.
+   =========================================================== */
+
+.studio-stage__move,
+.arrange {
+  margin-top: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream-2);
+}
+
+.arrange__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.arrange__status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.arrange__status.is-ok {
+  color: var(--ink-2);
+}
+
+.arrange__status.is-warn {
+  color: #9A4B36;
+  font-weight: 500;
+}
+
+.arrange__problem {
+  display: flex;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  border: 1px solid #E6CFC6;
+  color: #7A3B2C;
+}
+
+.arrange__problem-title {
+  margin: 0 0 5px;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.arrange__problem ul {
+  margin: 0 0 6px;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.arrange__problem .field-hint {
+  margin: 0;
+}
+
+/* -------------------------------- catalogue and gift list */
+
+.kit-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.chip.is-on {
+  border-color: var(--accent);
+  background: var(--accent-soft, var(--cream-2));
+  color: var(--ink);
+}
+
+.kit-group__title {
+  margin: 14px 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.kit-card__shot {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: calc(var(--radius-sm) - 4px);
+  background: var(--cream-2);
+}
+
+.gift-row__thumb {
+  width: 34px;
+  height: 34px;
+  border-radius: calc(var(--radius-sm) - 4px);
+  object-fit: cover;
+  flex: 0 0 auto;
+  background: var(--cream-2);
+}
+
+.field-hint--warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--ink-2);
+}
+
+/* The note about how far a model can be trusted. Collapsed by
+   default: it matters, but it is not what somebody arranging a
+   hamper is reading. */
+.model-note {
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+.model-note summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.model-note summary::-webkit-details-marker {
+  display: none;
+}
+
+.model-note p,
+.model-note ul {
+  margin: 7px 0 0;
+  line-height: 1.5;
+}
+
+.model-note ul {
+  padding-left: 16px;
+}
+
+
+/* -------------------------------- box dimensions readout
+
+   The chosen hamper in figures: the catalogue's outer size, the
+   interior worked out from the construction, and whether everything
+   in it actually fits. Two columns on a desktop panel, stacked on a
+   phone, with the numbers right-aligned so they can be compared down
+   the column rather than read as prose. */
+
+.dims {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-size: 13px;
+}
+
+.dims__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.dims__row + .dims__row {
+  border-top: 1px dotted var(--line);
+}
+
+.dims dt {
+  color: var(--ink-3);
+}
+
+.dims dd {
+  margin: 0;
+  text-align: right;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The inch figures, under the metric ones they were converted from. */
+.dims__alt {
+  display: block;
+  color: var(--ink-3);
+  font-size: 11.5px;
+}
+
+.dims__ok {
+  color: #3F6B46;
+}
+
+.dims__warn {
+  color: #9A4B36;
+  font-weight: 500;
+}
+
+/* The category of the box the design is actually in, when the panel
+   is showing a different category's sizes. */
+.chip.is-current {
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.arrange__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* On a phone the label and the figures cannot share a line without
+   one of them breaking mid-number, so they stack and the figures
+   stay left-aligned under their own label. */
+@media (max-width: 520px) {
+  .dims__row {
+    display: block;
+    padding: 5px 0;
+  }
+
+  .dims dd {
+    text-align: left;
+    margin-top: 1px;
+  }
+}

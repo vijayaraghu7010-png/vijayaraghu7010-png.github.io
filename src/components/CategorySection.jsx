@@ -9,6 +9,29 @@ export function CategoryCard({ category }) {
   const description = useText(`category.${category.id}.description`, category.description);
   const cta = useText(`category.${category.id}.cta`, category.cta);
 
+  /* A card whose artwork already carries its name and its arrow. The
+     whole tile is the link; the heading and the sentence stay in the
+     markup, read out but not drawn, so the page keeps its headings and
+     a search engine still has something to read. */
+  if (category.art) {
+    return (
+      <article className="cat-card cat-card--art">
+        <h2 className="sr-only">{title}</h2>
+        <p className="sr-only">{description}</p>
+        <Link className="cat-card__art" to={category.to} aria-label={cta}>
+          <img
+            src={category.art}
+            alt=""
+            width="1024"
+            height="1536"
+            loading="lazy"
+            decoding="async"
+          />
+        </Link>
+      </article>
+    );
+  }
+
   return (
     <article className={`cat-card${category.wide ? ' cat-card--wide' : ''}`}>
       <div className="cat-card__body">
@@ -22,22 +45,22 @@ export function CategoryCard({ category }) {
         {category.gallery ? (
           <div className="cat-card__gallery">
             {category.gallery.map((src) => (
-              <img key={src} src={src} alt={category.alt} loading="lazy" />
+              <img key={src} src={src} alt={category.alt} loading="lazy" decoding="async" />
             ))}
           </div>
         ) : (
-          <img src={category.image} alt={category.alt} loading="lazy" />
+          <img src={category.image} alt={category.alt} loading="lazy" decoding="async" />
         )}
       </div>
     </article>
   );
 }
 
-/* The three the shop leads with, and the one that is given a panel of
-   its own further down the page. `wide` marks the difference in the
-   data, so adding a fourth lead category is a one-line change. */
+/* Every category the home page leads with, in data order. Photo
+   frames and hampers used to have panels of their own further down
+   the page; they now carry poster artwork like the rest and join the
+   same grid, so adding or removing a card is a data change alone. */
 export const LEAD_CATEGORIES = CATEGORIES.filter((c) => !c.wide);
-export const FEATURE_CATEGORY = CATEGORIES.find((c) => c.wide);
 
 /* The cards are cut to a hand-torn outline rather than a rounded
    rectangle, which is what the design draws them as. A border-radius

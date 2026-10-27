@@ -1,6 +1,8 @@
 import {
   getProducts,
   setProducts,
+  getReviews,
+  setReviews,
   getContent,
   setContent,
   getThemes,
@@ -9,7 +11,9 @@ import {
   setOffers,
   newId
 } from './store';
+import { DEFAULT_CONTENT, DEFAULT_THEMES } from '../data/siteDefaults';
 import { currentAdmin } from './adminAuth';
+import { DATA_URL_OVERHEAD, compressFile, toDataUrl } from './imageCompress';
 
 /* The panels ask for `/api/admin/products` and so on, because that is
    what they asked a server for when there was one. The paths are kept
@@ -86,6 +90,7 @@ function products(method, id, body) {
 
 function content(method, query, body) {
   const all = getContent();
+  const reset = query.get('reset');
 
   if (method === 'GET') {
     const sorted = [...all].sort(
@@ -104,6 +109,18 @@ function content(method, query, body) {
     );
     setContent(next);
     return { ok: true, updated: Object.keys(entries).length };
+  }
+
+  /* Every sentence back to the words the shop ships with, and any key
+     added here since gone. It is the way out of a page that has been
+     edited into something unreadable, and the only way to get the
+     original wording of a string back once it has been typed over.
+     The rows are copied rather than handed over, so a later edit in
+     the panel cannot write into the shipped table. */
+  if (method === 'POST' && reset) {
+    const next = DEFAULT_CONTENT.map((r) => ({ ...r }));
+    setContent(next);
+    return { content: next };
   }
 
   if (method === 'POST') {
@@ -140,12 +157,30 @@ function themes(method, query, body) {
   const all = getThemes();
   const id = query.get('id');
   const activate = query.get('activate');
+  const reset = query.get('reset');
 
   if (method === 'GET') {
     const sorted = [...all].sort(
       (a, b) => Number(b.isDefault) - Number(a.isDefault) || a.name.localeCompare(b.name)
     );
-    return { themes: sorted };
+    /* The shipped palettes travel with the list so the panel can offer
+       to undo colour edits per theme - Diwali back to Diwali's own
+       colours, not to the base palette - without reaching past this
+       module into the store. */
+    return {
+      themes: sorted,
+      shipped: Object.fromEntries(DEFAULT_THEMES.map((t) => [t.id, { ...t.tokens }]))
+    };
+  }
+
+  /* Back to the palettes the shop ships with: the built-in ones as
+     they were written, the default one live, and anything added here
+     since gone. The tokens are copied rather than handed over, so a
+     later edit in the panel cannot write into the shipped table. */
+  if (method === 'POST' && reset) {
+    const next = DEFAULT_THEMES.map((t) => ({ ...t, tokens: { ...t.tokens } }));
+    setThemes(next);
+    return { themes: next };
   }
 
   if (method === 'POST' && activate) {
@@ -247,28 +282,77 @@ function offers(method, id, body) {
   throw new Error(`Method not allowed (${method})`);
 }
 
+// ---------------------------------------------------------- reviews
+
+/* Reviews are written by customers, not by the panel, so there is
+   nothing here to create or edit - only the power to take one down.
+   A shop with no accounts cannot tell a real review from a bored
+   one, and this is the answer to that. */
+
+function reviews(method, id) {
+  const all = getReviews();
+
+  if (method === 'GET') {
+    const products = new Map(getProducts().map((p) => [p.id, p.name]));
+    return {
+      reviews: [...all]
+        .sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')))
+        .map((r) => ({ ...r, productName: products.get(r.productId) || r.productId }))
+    };
+  }
+
+  if (method === 'DELETE') {
+    if (!id) throw new Error('id is required');
+    setReviews(all.filter((r) => r.id !== id));
+    return { ok: true };
+  }
+
+  throw new Error(`Method not allowed (${method})`);
+}
+
 // ----------------------------------------------------------- upload
 
 /* No server and no bucket, so a picture becomes a data URL held in the
-   store with everything else. localStorage is small, so this is capped
-   well below it: anything bigger belongs in public/images, where it
-   costs the shop nothing and ships with the build. */
-export function adminUpload(file) {
+   store with everything else.
+
+   Every picture is compressed on the way in. It used to refuse
+   anything over 512 KB and tell whoever was uploading to go and put
+   the file in public/images by hand - which meant that in practice a
+   phone photograph could not be used at all, and the pictures that did
+   get in were whatever had been shrunk somewhere else first. Now a
+   4 MB photo straight off a camera is resized and re-encoded until it
+   fits, and only a picture that will not come down even at the bottom
+   of the ladder is refused.
+
+   The budget counts base64: a data URL is about a third larger than
+   the blob behind it, and it is the data URL that goes in
+   localStorage. */
+export async function adminUpload(file) {
   requireAdmin();
 
   if (!file.type.startsWith('image/')) throw new Error('Only image files can be uploaded');
-  if (file.size > MAX_IMAGE_BYTES) {
+
+  const { blob, from, to } = await compressFile(file, {
+    /* wide enough for a hero banner across a desktop */
+    maxEdge: 1600,
+    quality: 0.82,
+    budgetBytes: Math.floor(MAX_IMAGE_BYTES / DATA_URL_OVERHEAD)
+  });
+
+  const dataUrl = await toDataUrl(blob);
+
+  if (dataUrl.length > MAX_IMAGE_BYTES) {
     throw new Error(
-      'That picture is over 512 KB. Put it in public/images and use the path instead, e.g. /images/rose.jpg'
+      `That picture is still ${Math.round(dataUrl.length / 1024)} KB after compressing, which is too big to ` +
+        'keep in the browser. Put it in public/images and use the path instead, e.g. /images/rose.jpg'
     );
   }
 
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('That file could not be read'));
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
+  if (typeof console !== 'undefined' && from > to) {
+    console.info(`[upload] ${file.name || 'image'} compressed ${Math.round(from / 1024)}KB -> ${Math.round(to / 1024)}KB`);
+  }
+
+  return dataUrl;
 }
 
 /* The one door the panels come through. */
@@ -289,6 +373,8 @@ export async function adminFetch(path, options = {}) {
       return themes(method, query, body);
     case '/api/admin/offers':
       return offers(method, query.get('id'), body);
+    case '/api/admin/reviews':
+      return reviews(method, query.get('id'));
     default:
       throw new Error(`Unknown admin path ${url.pathname}`);
   }

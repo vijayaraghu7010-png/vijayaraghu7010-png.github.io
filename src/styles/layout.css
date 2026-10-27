@@ -47,8 +47,10 @@
   position: sticky;
   top: 0;
   z-index: 60;
-  background: rgba(250, 246, 242, 0.94);
-  backdrop-filter: blur(10px);
+  /* No backdrop-filter here. The bar is near-opaque anyway, and a blur
+     on a sticky element is re-composited on every scrolled pixel - and
+     again on every frame the petal canvas draws. Solid is free. */
+  background: var(--cream);
   border-bottom: 1px solid var(--line);
 }
 

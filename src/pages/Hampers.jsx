@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
 
 import ProductGrid from '../components/ProductGrid';
 import usePageMeta from '../hooks/usePageMeta';
 import { getByCategory, HAMPER_OCCASIONS } from '../data/products';
 import { useText } from '../context/SiteConfigContext';
+import '../styles/hamper.css';
 
 const FILTERS = ['All Hampers', ...HAMPER_OCCASIONS];
 
@@ -46,6 +49,23 @@ export default function Hampers() {
         <h1>{useText('hampers.title', 'Gift Hampers')}</h1>
         <p>{useText('hampers.subtitle', 'Keepsake boxes packed by hand, for the people you love most.')}</p>
       </header>
+
+      <section className="studio-invite" aria-labelledby="studio-invite-title">
+        <div>
+          <p className="eyebrow">
+            <Sparkles size={13} aria-hidden="true" /> New
+          </p>
+          <h2 id="studio-invite-title">Build your own hamper in 3D</h2>
+          <p>
+            Pick the box, fill it, move everything where you want it and write the card — all in a 3D preview of
+            how it will arrive. Your design saves itself on this device, so you can close the page and carry on
+            later.
+          </p>
+        </div>
+        <Link className="btn btn--primary" to="/hamper-studio">
+          Start building
+        </Link>
+      </section>
 
       <div className="filters">
         {FILTERS.map((f) => (
