@@ -4,7 +4,10 @@ import { ArrowRight, ShoppingBag } from 'lucide-react';
 import PhotoUpload from './PhotoUpload';
 import QuantitySelector from './QuantitySelector';
 import { MAGAZINE_SIZES, MAGAZINE_THEMES, getProductById } from '../data/products';
+import { maxPhotosFor } from '../data/uploadLimits';
+import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
+import { makeLineKey } from '../utils/cartCalculations';
 import { useCart } from '../context/CartContext';
 
 /* Seven steps, as described on the magazines page. Each step validates
@@ -32,7 +35,11 @@ export default function MagazineCustomiser({ product }) {
   /* How many photographs this length takes. A shorter size chosen
      after the photos were picked can leave more than it holds, so the
      count is checked here rather than only in the picker. */
-  const limit = size.photos || { max: 15 };
+  /* Whichever is smaller: what this length holds, or what the studio
+     accepts for a magazine at all. The page count is normally the
+     stricter of the two, and it is the one the customer is told. */
+  const sizeLimit = size.photos || { max: 15 };
+  const limit = { ...sizeLimit, max: Math.min(sizeLimit.max, maxPhotosFor('magazine')) };
   const tooMany = photos.length > limit.max;
 
   const validate = () => {
@@ -52,17 +59,19 @@ export default function MagazineCustomiser({ product }) {
     e.preventDefault();
     if (!validate()) return;
 
-    addItem(priced, {
-      quantity,
-      config: {
-        sizeLabel: size.label,
-        themeName: themeId === 'custom' ? `Custom: ${customTheme.trim()}` : theme.name,
-        personalisation: details.trim(),
-        photoCount: photos.length,
-        photoNames: photos.slice(0, 12).map((f) => f.name),
-        notes: notes.trim() || undefined
-      }
-    });
+    const config = {
+      sizeLabel: size.label,
+      themeName: themeId === 'custom' ? `Custom: ${customTheme.trim()}` : theme.name,
+      personalisation: details.trim(),
+      photoCount: photos.length,
+      photoNames: photos.slice(0, 12).map((f) => f.name),
+      notes: notes.trim() || undefined
+    };
+
+    /* Kept under the basket's own key for the checkout to collect. */
+    putLinePhotos(makeLineKey(priced.id, config), photos);
+
+    addItem(priced, { quantity, config });
     setAdded(true);
     openCart();
   };

@@ -4,11 +4,15 @@ import { ArrowRight, ImagePlus, X } from 'lucide-react';
 import QuantitySelector from './QuantitySelector';
 import { useCart } from '../context/CartContext';
 import { BORDER_SWATCHES, POLAROID_BORDERS, getProductById } from '../data/products';
+import { ACCEPTED_TYPES, MAX_BYTES_PER_PHOTO, maxPhotosFor } from '../data/uploadLimits';
+import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
+import { makeLineKey } from '../utils/cartCalculations';
 
 const FORMAT_IDS = ['polaroid-medium', 'polaroid-large'];
-const ACCEPTED = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-const MAX_MB = 12;
+const ACCEPTED = ACCEPTED_TYPES;
+const MAX_MB = Math.round(MAX_BYTES_PER_PHOTO / 1048576);
+const MAX_PHOTOS = maxPhotosFor('polaroid');
 
 /* The whole polaroid order in one place: pick the size, the count,
    the border and the photos, with a live summary that always shows
@@ -81,7 +85,10 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
     });
 
     setErrors(problems);
-    if (next.length) setPhotos([...photos, ...next].slice(0, 150));
+    if (photos.length + next.length > MAX_PHOTOS) {
+      problems.push(`A polaroid order takes ${MAX_PHOTOS} photographs at most`);
+    }
+    if (next.length) setPhotos([...photos, ...next].slice(0, MAX_PHOTOS));
   };
 
   const canAdd = quantity >= min && photos.length > 0;
@@ -90,15 +97,19 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
     setTouched(true);
     if (!canAdd) return;
 
-    addItem(product, {
-      quantity,
-      config: {
-        border,
-        photoCount: photos.length,
-        photoNames: photos.slice(0, 12).map((f) => f.name),
-        captions: captions.trim() || undefined
-      }
-    });
+    const config = {
+      border,
+      photoCount: photos.length,
+      photoNames: photos.slice(0, 12).map((f) => f.name),
+      captions: captions.trim() || undefined
+    };
+
+    /* The files themselves are kept aside under the same key the
+       basket uses, so the checkout can still find them after a
+       reload. The basket line only ever carries their names. */
+    putLinePhotos(makeLineKey(product.id, config), photos);
+
+    addItem(product, { quantity, config });
     openCart();
   };
 

@@ -93,13 +93,16 @@ export default function Cart() {
 
           <p className="form-note">
             <Info size={14} style={{ verticalAlign: '-2px', marginRight: 6, color: 'var(--coral)' }} />
-            Online payment and order placement are not available yet — no payment gateway is connected to this
-            site, so nothing here is charged or confirmed. Send your bag to us and we reply with the shipping cost
-            and payment details.
+            Online payment is not connected yet, so nothing here is charged. Place the order and send
+            us your photographs, and we reply with the shipping cost and how to pay.
           </p>
 
+          <Link className="btn btn--primary btn--block" to="/checkout">
+            Place this order
+          </Link>
+
           <a
-            className="btn btn--primary btn--block"
+            className="btn btn--quiet btn--block btn--sm"
             href={`mailto:hello@wrappedstudio.in?subject=${encodeURIComponent('WrappedStudio order enquiry')}&body=${encodeURIComponent(
               items
                 .map((i) => {

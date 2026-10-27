@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
 
-import { ADMIN_ID, signIn } from '../lib/adminAuth';
+import { signIn } from '../lib/adminAuth';
+import { BACKEND_READY } from '../lib/supabaseClient';
 
 /* The studio's own door. A customer signing in to the shop uses a
    different form entirely and never arrives here: a shop account buys
-   things, this one changes what is for sale. */
+   things, this one reads orders and changes what is for sale. */
 export default function AdminLogin({ onSignedIn }) {
-  const [id, setId] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -17,7 +19,7 @@ export default function AdminLogin({ onSignedIn }) {
     setError('');
     setBusy(true);
     try {
-      const admin = await signIn(id);
+      const admin = await signIn(email, password);
       onSignedIn?.(admin);
     } catch (err) {
       setError(err.message || 'Could not sign in');
@@ -33,19 +35,35 @@ export default function AdminLogin({ onSignedIn }) {
         <h1>Studio admin</h1>
         <p className="admin__hint">This is the staff entrance, not the shop login.</p>
 
+        {!BACKEND_READY && (
+          <p className="admin__error">
+            No backend is configured for this build, so there is nobody to sign in. Set
+            VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY and reload.
+          </p>
+        )}
+
         <form onSubmit={submit}>
-          <label htmlFor="admin-id">Administrator ID</label>
+          <label htmlFor="admin-email">Email address</label>
           <input
-            id="admin-id"
-            type="text"
+            id="admin-email"
+            type="email"
             autoComplete="username"
             required
-            placeholder={ADMIN_ID}
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
 
-          <button className="admin__btn" type="submit" disabled={busy}>
+          <label htmlFor="admin-password">Password</label>
+          <input
+            id="admin-password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="admin__btn" type="submit" disabled={busy || !BACKEND_READY}>
             <LogIn size={16} />
             {busy ? 'Signing in…' : 'Sign in'}
           </button>

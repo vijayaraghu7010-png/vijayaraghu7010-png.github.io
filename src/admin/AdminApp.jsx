@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, LogOut, Palette, Percent, Star, Type } from 'lucide-react';
+import { Boxes, LogOut, Package, Palette, Percent, Star, Type } from 'lucide-react';
 
-import { currentAdmin, signOut as endSession } from '../lib/adminAuth';
+import { currentAdmin, restoreSession, signOut as endSession } from '../lib/adminAuth';
 import AdminLogin from './AdminLogin';
+import OrdersPanel from './panels/OrdersPanel';
 import ProductsPanel from './panels/ProductsPanel';
 import ContentPanel from './panels/ContentPanel';
 import ThemePanel from './panels/ThemePanel';
@@ -12,6 +13,7 @@ import ReviewsPanel from './panels/ReviewsPanel';
 import '../styles/admin.css';
 
 const TABS = [
+  { id: 'orders', label: 'Orders', icon: Package, panel: OrdersPanel },
   { id: 'products', label: 'Products', icon: Boxes, panel: ProductsPanel },
   { id: 'content', label: 'Text', icon: Type, panel: ContentPanel },
   { id: 'theme', label: 'Theme', icon: Palette, panel: ThemePanel },
@@ -22,17 +24,26 @@ const TABS = [
 export default function AdminApp() {
   const [checking, setChecking] = useState(true);
   const [admin, setAdmin] = useState(null);
-  const [tab, setTab] = useState('products');
+  const [tab, setTab] = useState('orders');
 
-  /* The session is a record in this browser, so the check is local
-     and instant - no round trip, and nothing to be denied by. */
+  /* A session kept from last time is checked with the server before
+     the panel is drawn: the token has to still be good, and the
+     address has to still be on the studio's list. The cached answer
+     is only what decides which screen to paint while that happens. */
   useEffect(() => {
+    let live = true;
     setAdmin(currentAdmin());
-    setChecking(false);
+    restoreSession()
+      .then((who) => live && setAdmin(who))
+      .catch(() => live && setAdmin(null))
+      .finally(() => live && setChecking(false));
+    return () => {
+      live = false;
+    };
   }, []);
 
-  function signOut() {
-    endSession();
+  async function signOut() {
+    await endSession();
     setAdmin(null);
   }
 

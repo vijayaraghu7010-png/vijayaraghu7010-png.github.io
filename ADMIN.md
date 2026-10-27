@@ -1,6 +1,8 @@
 # WrappedStudio — admin panel
 
-The shop is a Vite/React site with no backend at all. The admin panel
+The shop is a Vite/React site. The catalogue and copy ship in the
+bundle; orders, customer photographs and signing in go through
+Supabase and a private Cloudflare R2 bucket. The admin panel
 lives at `/admin` in the same app but ships as its own bundle, so a
 customer never downloads it.
 
@@ -8,7 +10,10 @@ customer never downloads it.
 | --- | --- |
 | `src/data/` | the catalogue and copy the site ships with |
 | `src/lib/store.js` | the editable copy of that, kept in the browser |
-| `src/lib/adminAuth.js` | the administrator ID that opens the panel |
+| `src/lib/adminAuth.js` | signing in, and who counts as an administrator |
+| `src/lib/supabaseClient.js` | the one connection to the backend |
+| `src/lib/orderClient.js` | placing orders, sending photographs, the panel's calls |
+| `src/admin/panels/OrdersPanel.jsx` | the orders, and deleting their photographs |
 
 ## Two separate doors
 
@@ -17,28 +22,28 @@ They are not the same login and never lead to each other.
 - **Shop** — the Log in button in the header. It makes a customer
   profile (name, wishlist, cart) and lives in `AuthContext`. Whatever
   address is typed, it stays in the shop.
-- **Studio** — `/admin`, which asks for the administrator ID. There is
-  no link to it from the shop.
+- **Studio** — `/admin`, which asks for an email address and a
+  password. There is no link to it from the shop.
 
-Sign in at `/admin` by typing the administrator ID, `admin`. There is
-no password.
+Sign in at `/admin` with an address that is in the `admins` table of
+the Supabase project, using the password set for that account in
+Supabase Auth. Both have to be true: the password proves who you are,
+and the `admins` row says that person runs this studio. Being taken off
+that list takes effect at once, without waiting for a session to end.
 
-**What this is and is not.** It is a door marked *staff*, not a lock.
-Anyone who types `admin` is in, and the word is not hard to guess.
+**This used to be a typed ID with no password at all**, and said why:
+the shop was static, the panel's edits never left the browser that made
+them, and there was nothing behind the door worth locking. It also said
+what would have to change first — "this stops being true the moment the
+panel writes somewhere shared".
 
-That costs less than it sounds like, for two reasons. The site is
-static, so any check would run in the browser with everything it needs
-sitting in the bundle — a password here could be stepped past with the
-developer tools in about a minute, so it was buying the look of
-security rather than security. And what is behind the door changes
-nothing for anybody else: an edit made in the panel is written to that
-browser's own storage, so the worst a stranger can do is rearrange
-their own copy of the shop and then clear it by emptying site data.
-
-**This stops being true the moment the panel writes somewhere shared.**
-If a backend is ever added — a database, an API, a hosted admin — this
-has to become a real check, done on the server, before that lands.
-That is the condition to watch for, not the passing of time.
+Orders are that moment. A customer's name, telephone number, address
+and photographs are now on the other side of this door, so the door is
+real, and the check is made by the server rather than by the page
+asking it. Every privileged thing the panel does — reading orders,
+moving one along, deleting photographs — is checked again by the Edge
+Function that does it, against the caller's own token. Nothing is
+trusted because the browser said so.
 
 ## Where an edit goes
 

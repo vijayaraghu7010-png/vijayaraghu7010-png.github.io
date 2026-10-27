@@ -27,6 +27,7 @@ import WallPosters from './pages/WallPosters';
 import CustomGifts from './pages/CustomGifts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
 import Wishlist from './pages/Wishlist';
 import About from './pages/About';
 import NotFound from './pages/NotFound';
@@ -139,6 +140,7 @@ function Shop() {
               <Route path="/custom-gifts" element={<CustomGifts />} />
               <Route path="/product/:slug" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
