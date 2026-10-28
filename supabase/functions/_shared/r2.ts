@@ -123,6 +123,106 @@ export async function presignPut(
   return `https://${h}${canonicalUri}?${params.toString()}&X-Amz-Signature=${sig}`;
 }
 
+/* A URL that lets whoever holds it read exactly this object, under the
+   name the customer gave it, for five minutes.
+
+   The filename travels in response-content-disposition, which is part
+   of what is signed: it cannot be edited in the address bar without
+   voiding the signature. It is also what makes the browser save the
+   file rather than display it, and why the studio gets back
+   "wedding-03.jpg" instead of a UUID.
+
+   Five minutes rather than fifteen. A download is a deliberate click
+   and happens at once, so there is no reason to leave the door open
+   for the quarter of an hour an upload might need.                 */
+export async function presignGet(
+  key: string,
+  filename: string,
+  expiresSeconds = 300
+): Promise<string> {
+  const region = 'auto';
+  const accessKey = env('R2_ACCESS_KEY_ID');
+  const secret = env('R2_SECRET_ACCESS_KEY');
+  const bucket = env('R2_BUCKET');
+  const h = host();
+  const { amzDate, dateStamp } = stamps();
+  const scope = `${dateStamp}/${region}/s3/aws4_request`;
+  const canonicalUri = `/${bucket}/${encodeKey(key)}`;
+
+  /* A GET carries no body and no content type, so the host is the
+     only header there is to bind the signature to. */
+  const signedHeaders = 'host';
+  const query = canonicalQuery({
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${accessKey}/${scope}`,
+    'X-Amz-Date': amzDate,
+    'X-Amz-Expires': String(expiresSeconds),
+    'X-Amz-SignedHeaders': signedHeaders,
+    'response-content-disposition': `attachment; filename="${safeFilename(filename)}"`
+  });
+
+  const canonicalRequest = [
+    'GET',
+    canonicalUri,
+    query,
+    `host:${h}\n`,
+    signedHeaders,
+    'UNSIGNED-PAYLOAD'
+  ].join('\n');
+
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    scope,
+    await sha256Hex(canonicalRequest)
+  ].join('\n');
+
+  const sig = hex(await hmac(await signingKey(secret, dateStamp, region), stringToSign));
+  return `https://${h}${canonicalUri}?${query}&X-Amz-Signature=${sig}`;
+}
+
+/* The query string a signature is computed over, built by hand.
+
+   URLSearchParams would be the obvious thing to use and is the wrong
+   thing: it encodes a space as "+", because that is what an HTML form
+   does. SigV4 wants RFC 3986, where a space is %20. Nothing noticed
+   while the only signed parameters were dates and numbers; a filename
+   has spaces in it, and R2 then computes a signature over the string
+   it thinks it sees rather than the one we signed. The error it
+   returns says the secret key is wrong, which it is not.
+
+   Keys are sorted, each key and value escaped the same way, and the
+   result is used both for signing and for the URL itself: if those
+   two ever disagree the signature is void.                        */
+function canonicalQuery(params: Record<string, string>): string {
+  return Object.keys(params)
+    .sort()
+    .map((k) => `${rfc3986(k)}=${rfc3986(params[k])}`)
+    .join('&');
+}
+
+/* encodeURIComponent is RFC 3986 apart from five characters it leaves
+   alone that the standard says to escape. */
+function rfc3986(value: string): string {
+  return encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+  );
+}
+
+/* The customer chose this name, so it is not to be trusted inside a
+   header. Quotes would end the filename early, and a line break would
+   end the header; a path separator would suggest a directory to
+   whatever unpacks it. What is left is still recognisably their
+   name. */
+function safeFilename(name: string): string {
+  const cleaned = String(name || 'photograph')
+    .replace(/[\r\n"\\]/g, '')
+    .replace(/[/\\]/g, '-')
+    .trim();
+  return (cleaned || 'photograph').slice(0, 200);
+}
+
 /* A signed request the function itself makes. */
 async function signedFetch(method: 'HEAD' | 'DELETE' | 'GET', key: string): Promise<Response> {
   const region = 'auto';

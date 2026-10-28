@@ -113,6 +113,20 @@
   border-color: #e7c9c9;
 }
 
+.admin__ghost--sm {
+  padding: 3px 9px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* The photographs on an order now carry a control each, so they read
+   as a list down the page rather than a row across it. */
+.admin__photo-list {
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
 .admin__error {
   margin-top: 10px;
   color: #b23a3a;

@@ -156,6 +156,20 @@ export async function setOrderStatus(orderId, status) {
   return await callFunction('order-status', { order_id: orderId, status }, { asAdmin: true });
 }
 
+/* A URL for each photograph asked for, good for five minutes. The
+   server decides which ones exist: ids belonging to another order are
+   not refused so much as absent. Nothing is cached here - a URL that
+   has expired is replaced by asking again, which also means the
+   studio's own history records every look. */
+export async function getPhotoDownloadUrls(orderId, photoIds) {
+  const { downloads } = await callFunction(
+    'photos-download',
+    { order_id: orderId, photo_ids: photoIds },
+    { asAdmin: true }
+  );
+  return downloads;
+}
+
 /* Irreversible. The panel asks for the order's code to be typed before
    this is called, and the server asks for it again. */
 export async function deleteOrderPhotos(orderId, confirmCode) {

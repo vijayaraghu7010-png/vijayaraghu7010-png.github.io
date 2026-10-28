@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, ChevronLeft, Image, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, Download, Image, RefreshCw, Trash2 } from 'lucide-react';
 
-import { deleteOrderPhotos, getOrder, listOrders, setOrderStatus } from '../../lib/orderClient';
+import {
+  deleteOrderPhotos,
+  getOrder,
+  getPhotoDownloadUrls,
+  listOrders,
+  setOrderStatus
+} from '../../lib/orderClient';
 import { formatRupees } from '../../utils/currency';
 
 /* The orders.
@@ -179,6 +185,7 @@ function OrderDetail({ orderId, onBack }) {
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState('');
   const [note, setNote] = useState('');
+  const [fetching, setFetching] = useState(null);
 
   const load = useCallback(async () => {
     setError('');
@@ -222,6 +229,48 @@ function OrderDetail({ orderId, onBack }) {
       setError(err.message || 'That could not be changed');
     } finally {
       setBusy(false);
+    }
+  }
+
+  /* One photograph, one click, one URL. The URL is asked for at the
+     moment it is used and is never held in state: it is good for five
+     minutes, and a page left open all afternoon should not be sitting
+     on a key to somebody's photographs.
+
+     The browser is sent to the URL rather than fetching it, which is
+     deliberate. A navigation is not subject to CORS, so the bucket
+     goes on allowing PUT and nothing else, and the file arrives named
+     as the customer named it because the signed URL says so.
+
+     It goes to a new tab rather than this one. The response is an
+     attachment, so that tab downloads and closes itself and the
+     studio keeps the order it was looking at. Sending this tab there
+     worked, but anything that went wrong - an expired URL, a refusal -
+     replaced the panel with Cloudflare's error page, and the way back
+     was the browser's back button.
+
+     A browser that blocks the new tab is told about, not worked
+     around: nothing here claims the photograph arrived, because from
+     this side there is no way to know that it did.                */
+  async function download(photo) {
+    setFetching(photo.id);
+    setError('');
+    setNote('');
+    try {
+      const [ready] = await getPhotoDownloadUrls(order.id, [photo.id]);
+      if (!ready?.url) throw new Error('That photograph could not be fetched');
+
+      const opened = window.open(ready.url, '_blank', 'noopener,noreferrer');
+      if (!opened) {
+        setError(
+          `This browser blocked the download window for ${photo.original_filename}. ` +
+            'Allow pop-ups for this site and try again.'
+        );
+      }
+    } catch (err) {
+      setError(err.message || 'That photograph could not be fetched');
+    } finally {
+      setFetching(null);
     }
   }
 
@@ -350,13 +399,25 @@ function OrderDetail({ orderId, onBack }) {
         )}
 
         {live.length > 0 && !order.photos_deleted_at ? (
-          <ul className="admin__checks">
+          <ul className="admin__checks admin__photo-list">
             {live.slice(0, 200).map((photo) => (
               <li key={photo.id}>
                 {photo.original_filename}{' '}
                 <span className="admin__hint">
                   {mb(photo.byte_size)} · {photo.upload_status}
                 </span>
+                {photo.upload_status === 'uploaded' ? (
+                  <button
+                    type="button"
+                    className="admin__ghost admin__ghost--sm"
+                    onClick={() => download(photo)}
+                    disabled={fetching === photo.id}
+                    aria-label={`Download ${photo.original_filename}`}
+                  >
+                    <Download size={14} />{' '}
+                    {fetching === photo.id ? 'Fetching…' : 'Download'}
+                  </button>
+                ) : null}
               </li>
             ))}
           </ul>
