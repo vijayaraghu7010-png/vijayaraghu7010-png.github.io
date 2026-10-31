@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, LogOut, ShoppingBag, User } from 'lucide-react';
+import { Heart, LogOut, PackageOpen, ShoppingBag, User } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -64,6 +64,16 @@ export default function AccountButton({ onOpenAuth }) {
             role="menuitem"
             onClick={() => {
               setOpen(false);
+              navigate('/account');
+            }}
+          >
+            <PackageOpen size={15} /> Your orders
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
               navigate('/cart');
             }}
           >
@@ -91,7 +101,7 @@ export default function AccountButton({ onOpenAuth }) {
             <LogOut size={15} /> Sign out
           </button>
 
-          <p className="account__note">Saved on this device only — no accounts server yet.</p>
+          <p className="account__note">Your orders are kept with your account.</p>
         </div>
       )}
     </div>

@@ -2964,3 +2964,160 @@
     width: 100%;
   }
 }
+
+/* ------------------------------------------- order tracking (Phase 3)
+
+   Scoped to the tracking and account pages. Nothing here changes a
+   selector that already existed; every rule is new and prefixed. */
+
+.track-layout {
+  display: grid;
+  gap: 18px;
+  max-width: 640px;
+}
+
+/* The fields stack the way the checkout's do. .info-card supplies
+   that grid, and these forms sit inside one rather than being one. */
+.track-form {
+  display: grid;
+  gap: 10px;
+}
+
+.track-card__code {
+  font-family: var(--font-display, inherit);
+  letter-spacing: 0.04em;
+  margin: 0 0 2px;
+}
+
+.track-items {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.track-timeline {
+  margin-top: 18px;
+}
+
+.track-timeline__cancelled {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b23a3a;
+  font-size: 13.5px;
+  margin-bottom: 12px;
+}
+
+.track-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.track-step {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  padding-bottom: 16px;
+  position: relative;
+}
+
+/* The line between the marks, drawn behind them and stopped before
+   the last step so it does not trail off the end. */
+.track-step:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 22px;
+  bottom: 0;
+  width: 2px;
+  background: var(--line-2, #e7ddd6);
+}
+
+.track-step__mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2, #e7ddd6);
+  background: var(--white, #fff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white, #fff);
+  position: relative;
+  z-index: 1;
+}
+
+.track-step--done .track-step__mark {
+  background: var(--coral, #b5705f);
+  border-color: var(--coral, #b5705f);
+}
+
+.track-step--current .track-step__mark {
+  border-color: var(--coral, #b5705f);
+  color: var(--coral, #b5705f);
+  background: var(--white, #fff);
+}
+
+.track-step--future .track-step__label,
+.track-step--cancelled .track-step__label {
+  color: var(--muted, #9a8d85);
+}
+
+.track-step__label {
+  margin: 2px 0 0;
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.track-step__hint,
+.track-step__at {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--muted, #9a8d85);
+}
+
+.account-orders {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.account-order {
+  border: 1px solid var(--line-2, #e7ddd6);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.account-order__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.account-order__code {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.auth-sent {
+  text-align: center;
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .track-layout { max-width: none; }
+  .account-order__head { flex-direction: column; }
+}

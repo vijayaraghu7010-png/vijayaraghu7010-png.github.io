@@ -1,4 +1,4 @@
-import { callFunction } from './supabaseClient';
+import { callCustomerFunction } from './customerClient';
 
 /* Placing an order, and getting the photographs there.
 
@@ -17,8 +17,14 @@ import { callFunction } from './supabaseClient';
 const AT_ONCE = 3;
 const TRIES = 3;
 
+/* Placing the order goes through the shop's own client rather than
+   the studio's, so that a customer who happens to be signed in sends
+   their session with it and the order can be linked to their account.
+   A guest sends the publishable key exactly as before, and the order
+   is made exactly as before - the server decides which happened, and
+   an unlinked order is a perfectly good order. */
 export async function createOrder({ customer, items, notes }) {
-  return await callFunction('orders-create', {
+  return await callCustomerFunction('orders-create', {
     customer,
     notes,
     /* Only what the customer chose. No prices: the server works those
@@ -33,7 +39,7 @@ export async function createOrder({ customer, items, notes }) {
 }
 
 export async function requestUploadUrls({ orderId, token, photos }) {
-  const { uploads } = await callFunction('uploads-presign', {
+  const { uploads } = await callCustomerFunction('uploads-presign', {
     order_id: orderId,
     token,
     photos
@@ -42,7 +48,7 @@ export async function requestUploadUrls({ orderId, token, photos }) {
 }
 
 export async function confirmUploads({ orderId, token }) {
-  return await callFunction('uploads-complete', { order_id: orderId, token });
+  return await callCustomerFunction('uploads-complete', { order_id: orderId, token });
 }
 
 /* One file to one URL, with a few goes at it.
@@ -142,40 +148,6 @@ export async function uploadPhotos({ orderId, token, files, onProgress }) {
   return { uploaded: confirmed.uploaded, failed, confirmed };
 }
 
-// ----------------------------------------------------------- the panel
-
-export async function listOrders(params = {}) {
-  return await callFunction('admin-orders', params, { asAdmin: true });
-}
-
-export async function getOrder(orderId) {
-  return await callFunction('admin-orders', { order_id: orderId }, { asAdmin: true });
-}
-
-export async function setOrderStatus(orderId, status) {
-  return await callFunction('order-status', { order_id: orderId, status }, { asAdmin: true });
-}
-
-/* A URL for each photograph asked for, good for five minutes. The
-   server decides which ones exist: ids belonging to another order are
-   not refused so much as absent. Nothing is cached here - a URL that
-   has expired is replaced by asking again, which also means the
-   studio's own history records every look. */
-export async function getPhotoDownloadUrls(orderId, photoIds) {
-  const { downloads } = await callFunction(
-    'photos-download',
-    { order_id: orderId, photo_ids: photoIds },
-    { asAdmin: true }
-  );
-  return downloads;
-}
-
-/* Irreversible. The panel asks for the order's code to be typed before
-   this is called, and the server asks for it again. */
-export async function deleteOrderPhotos(orderId, confirmCode) {
-  return await callFunction(
-    'photos-delete',
-    { order_id: orderId, confirm_code: confirmCode },
-    { asAdmin: true }
-  );
-}
+/* The studio's own calls about orders used to live here. They are in
+   adminOrders.js now, so that importing the checkout does not also
+   create the administrator's auth client on the storefront. */

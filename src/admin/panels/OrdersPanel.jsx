@@ -7,7 +7,7 @@ import {
   getPhotoDownloadUrls,
   listOrders,
   setOrderStatus
-} from '../../lib/orderClient';
+} from '../../lib/adminOrders';
 import { formatRupees } from '../../utils/currency';
 
 /* The orders.

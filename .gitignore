@@ -3,6 +3,16 @@ dist
 .env
 .env.*.local
 .env.local
+
+# A staging environment's own settings. Separate from .env on purpose:
+# .env feeds the real shop's build, and a staging URL finding its way
+# in there would point the live site at the wrong database.
+.env.staging
+
+# What a staging build produces. Kept apart from dist/ so that the
+# thing deployed to the real site can never be a staging build that
+# happened to be the last one made.
+dist-staging
 .vercel
 .netlify
 server/data

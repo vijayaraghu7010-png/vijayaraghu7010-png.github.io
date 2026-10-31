@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "dev:staging": "vite --mode staging",
+    "build:staging": "vite build --mode staging --outDir dist-staging",
     "preview": "vite preview",
     "demo": "node server/demo-server.mjs",
     "test": "node --import ./tests/resolve-extensions.mjs --test tests/*.test.mjs",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.2",
+    "esbuild": "^0.21.5",
     "vite": "5.4.9"
   }
 }

@@ -40,6 +40,20 @@ const AdminApp = lazy(() => import('./admin/AdminApp'));
    was for anybody who never opens it. */
 const HamperStudio = lazy(() => import('./pages/HamperStudio'));
 
+/* Tracking and the account page are their own bundle too. Most
+   visitors are shopping, not checking on something they have already
+   bought, and they should not pay for this code to find that out. */
+const Track = lazy(() => import('./pages/Track'));
+const Account = lazy(() => import('./pages/Account'));
+
+function TrackFallback() {
+  return (
+    <div className="shell" style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
+      One moment…
+    </div>
+  );
+}
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -142,6 +156,30 @@ function Shop() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/wishlist" element={<Wishlist />} />
+              <Route
+                path="/track"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <Track />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/track/:token"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <Track />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/account"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <Account />
+                  </Suspense>
+                }
+              />
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

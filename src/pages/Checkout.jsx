@@ -6,7 +6,7 @@ import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
 import { createOrder, uploadPhotos } from '../lib/orderClient';
 import { clearAllPhotos, getLinePhotos } from '../lib/photoStore';
-import { BACKEND_READY } from '../lib/supabaseClient';
+import { CUSTOMER_BACKEND_READY as BACKEND_READY } from '../lib/customerClient';
 import { formatRupees } from '../utils/currency';
 
 /* Placing the order.
@@ -147,8 +147,21 @@ export default function Checkout() {
               those rather than printing an incomplete order.
             </p>
           ) : null}
-          <Link className="btn btn--primary" to="/">
-            Back to the shop <ArrowRight className="arrow" size={15} />
+          {done.order.tracking_token && (
+            <p>
+              <Link className="btn btn--primary" to={`/track/${done.order.tracking_token}`}>
+                Follow this order <ArrowRight className="arrow" size={15} />
+              </Link>
+            </p>
+          )}
+
+          <p className="admin__hint">
+            Keep this page's link private — anybody who has it can see this order's progress.
+            You can also look the order up later with its code and your email address.
+          </p>
+
+          <Link className="btn btn--quiet btn--sm" to="/">
+            Back to the shop
           </Link>
         </section>
       </div>

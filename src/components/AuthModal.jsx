@@ -12,18 +12,24 @@ import { useCart } from '../context/CartContext';
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export default function AuthModal({ open, mode = 'login', onClose }) {
-  const { signUp, logIn } = useAuth();
+  const { signUp, logIn, requestPasswordReset, accountsAvailable } = useAuth();
   const { notify } = useCart();
 
   const [tab, setTab] = useState(mode);
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [errors, setErrors] = useState({});
+  const [busy, setBusy] = useState(false);
+  /* null, or the address we have just asked somebody to go and
+     confirm. Signing up no longer ends in being signed in. */
+  const [sent, setSent] = useState(null);
   const firstField = useRef(null);
 
   useEffect(() => {
     if (open) {
       setTab(mode);
       setErrors({});
+      setBusy(false);
+      setSent(null);
       setForm({ name: '', email: '', password: '', confirm: '' });
     }
   }, [open, mode]);
@@ -52,7 +58,7 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
     setErrors((prev) => ({ ...prev, [key]: undefined, form: undefined }));
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
 
     const next = {};
@@ -67,14 +73,48 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    const result = isSignUp ? signUp(form) : logIn(form);
-    if (!result.ok) {
-      setErrors({ form: result.error });
+    setBusy(true);
+    setErrors({});
+    try {
+      const result = isSignUp ? await signUp(form) : await logIn(form);
+
+      if (!result.ok) {
+        setErrors({ form: result.error });
+        return;
+      }
+
+      /* An address nobody has confirmed is not an account yet. Say so
+         and stop - there is nothing to welcome anybody into. */
+      if (result.needsVerification || !result.user) {
+        setSent(form.email.trim().toLowerCase());
+        return;
+      }
+
+      notify(
+        isSignUp
+          ? `Welcome, ${result.user.name.split(' ')[0]}`
+          : `Welcome back, ${result.user.name.split(' ')[0]}`
+      );
+      onClose();
+    } catch (err) {
+      setErrors({ form: err?.message || 'That could not be completed. Please try again.' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const forgotten = async () => {
+    if (!EMAIL.test(form.email.trim())) {
+      setErrors({ email: 'Enter your email address first, and we will send a reset link.' });
       return;
     }
-
-    notify(isSignUp ? `Welcome, ${result.user.name.split(' ')[0]}` : `Welcome back, ${result.user.name.split(' ')[0]}`);
-    onClose();
+    setBusy(true);
+    try {
+      await requestPasswordReset(form.email);
+      setSent(form.email.trim().toLowerCase());
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -86,6 +126,19 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
           <X size={20} />
         </button>
 
+        {sent ? (
+          <div className="auth-sent">
+            <h2 className="auth-modal__title" id="auth-title">Check your email</h2>
+            <p className="auth-modal__sub">
+              If that address can be used here, a message is on its way to <strong>{sent}</strong>.
+              Follow the link in it to finish.
+            </p>
+            <button className="btn btn--primary btn--block" type="button" onClick={onClose}>
+              Close
+            </button>
+          </div>
+        ) : (
+        <>
         <h2 className="auth-modal__title" id="auth-title">
           {isSignUp ? 'Create your account' : 'Welcome back'}
         </h2>
@@ -197,18 +250,25 @@ export default function AuthModal({ open, mode = 'login', onClose }) {
             </p>
           )}
 
-          <button className="btn btn--primary btn--block" type="submit">
-            {isSignUp ? 'Create account' : 'Log in'}
+          <button className="btn btn--primary btn--block" type="submit" disabled={busy || !accountsAvailable}>
+            {busy ? 'One moment…' : isSignUp ? 'Create account' : 'Log in'}
           </button>
 
-          <p className="auth-note">
-            <Info size={13} aria-hidden="true" />
-            <span>
-              No accounts server is connected yet, so this profile is kept on this device only and your password is
-              never stored or checked anywhere. Real sign-in arrives with the backend.
-            </span>
-          </p>
+          {!isSignUp && (
+            <button className="btn btn--quiet btn--block btn--sm" type="button" onClick={forgotten} disabled={busy}>
+              I have forgotten my password
+            </button>
+          )}
+
+          {!accountsAvailable && (
+            <p className="auth-note">
+              <Info size={13} aria-hidden="true" />
+              <span>Accounts are not available in this build.</span>
+            </p>
+          )}
         </form>
+        </>
+        )}
       </div>
     </div>
   );

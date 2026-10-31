@@ -17,7 +17,7 @@ const HELP_LINKS = [
   { to: '/about#faqs', label: 'FAQs' },
   { to: '/about#shipping', label: 'Shipping & Delivery' },
   { to: '/about#returns', label: 'Returns' },
-  { to: '/about#orders', label: 'Track Order' },
+  { to: '/track', label: 'Track Order' },
   { to: '/about#privacy', label: 'Privacy Policy' },
   { to: '/about#terms', label: 'Terms & Conditions' }
 ];
