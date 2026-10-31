@@ -122,11 +122,15 @@ export const BOUQUET_OCCASIONS = [
 ];
 
 /* Frames are sold by paper size, each at its own price. Listed in the
-   order the shop quotes them. */
+   order the shop quotes them. The id becomes part of the cart line's
+   product id (frame-couple-eye + '-' + this id), which is what the
+   server prices the frame from - so every id here must have a matching
+   row in the price_variants table, or an order for that size is
+   refused. A2 is priced below A4 and A3 at the studio's instruction. */
 export const FRAME_SIZES = [
-  { id: 'frame-a5', label: 'A5', blurb: '14.8 x 21 cm', price: 400 },
-  { id: 'frame-a4', label: 'A4', blurb: '21 x 29.7 cm', price: 500 },
-  { id: 'frame-a3', label: 'A3', blurb: '29.7 x 42 cm', price: 750 }
+  { id: 'frame-a4', label: 'A4', blurb: '21 x 29.7 cm', price: 450 },
+  { id: 'frame-a3', label: 'A3', blurb: '29.7 x 42 cm', price: 750 },
+  { id: 'frame-a2', label: 'A2', blurb: '42 x 59.4 cm', price: 300 }
 ];
 
 export const FRAME_OCCASIONS = [
@@ -430,7 +434,7 @@ export const PRODUCTS = [
     description:
       'A little piece of your forever. Your two pairs of eyes printed side by side under the line "Of all the eyes I’ve met, yours felt like home", finished with the year it started and the year it is still blooming. A quiet reminder of your love, your journey and everything in between.',
     details: [
-      'A5 ₹400, A4 ₹500, A3 ₹750',
+      'A4 ₹450, A3 ₹750, A2 ₹300',
       'Printed and framed to order',
       'Send two close-up photographs and your two years',
       'Shipping charged separately'
@@ -438,7 +442,7 @@ export const PRODUCTS = [
     occasions: ['Love', 'Anniversary', 'Birthday', 'Valentine', 'Long Distance', 'Just Because'],
     keywords: ['frame', 'photo frame', 'couple', 'eyes', 'anniversary', 'valentine', 'gift', 'personalised'],
     customiser: 'frame',
-    sizeId: 'frame-a5',
+    sizeId: 'frame-a4',
     featured: true,
     published: true,
     sortOrder: 60,
