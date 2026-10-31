@@ -27,13 +27,6 @@ const MAX_PHOTOS = maxPhotosFor('frame');
 export default function FrameOptions({ product }) {
   const { addItem, openCart } = useCart();
   const [sizeId, setSizeId] = useState(product.sizeId || FRAME_SIZES[0].id);
-  /* The frame's starting theme. A product may name one directly
-     (product.themeId, from the bundled catalogue), but a product loaded
-     from the database does not carry that field, so it is also derived
-     from the id - 'frame-friendship' starts on the Friendship theme.
-     Falls back to the first theme for a frame that names none. */
-  const themeFromId = FRAME_THEMES.find((t) => String(product.id || '').endsWith(t.id));
-  const [themeId, setThemeId] = useState(product.themeId || themeFromId?.id || FRAME_THEMES[0].id);
   const [names, setNames] = useState('');
   const [years, setYears] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -44,7 +37,10 @@ export default function FrameOptions({ product }) {
   const urls = useRef(new Map());
 
   const size = FRAME_SIZES.find((s) => s.id === sizeId) || FRAME_SIZES[0];
-  const theme = FRAME_THEMES.find((t) => t.id === themeId) || FRAME_THEMES[0];
+  /* Which design this frame is, taken from the product itself - the
+     themed frames are products now, so there is no picker. Recorded on
+     the order so the studio sees the design on the line. */
+  const theme = FRAME_THEMES.find((t) => String(product.id || '').endsWith(t.id));
   const subtotal = size.price * quantity;
 
   /* Object URLs are revoked when this leaves the screen, so a long
@@ -113,7 +109,7 @@ export default function FrameOptions({ product }) {
        the basket line carries. */
     const config = {
       size: size.label,
-      theme: theme.name,
+      theme: theme?.name,
       names: names.trim() || undefined,
       years: years.trim() || undefined,
       photoCount: photos.length || undefined
@@ -158,27 +154,6 @@ export default function FrameOptions({ product }) {
       <div className="step">
         <div className="step__head">
           <span className="step__num">2</span>
-          <h4 className="step__title">Choose a theme</h4>
-        </div>
-        <div className="frame-themes">
-          {FRAME_THEMES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`frame-theme${t.id === themeId ? ' is-on' : ''}`}
-              aria-pressed={t.id === themeId}
-              onClick={() => setThemeId(t.id)}
-            >
-              <img src={t.image} alt={t.alt} loading="lazy" />
-              <span>{t.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="step">
-        <div className="step__head">
-          <span className="step__num">3</span>
           <h4 className="step__title">Your photographs</h4>
         </div>
 
@@ -230,7 +205,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">4</span>
+          <span className="step__num">3</span>
           <h4 className="step__title">Your two names</h4>
         </div>
         <input
@@ -242,7 +217,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">5</span>
+          <span className="step__num">4</span>
           <h4 className="step__title">The years</h4>
         </div>
         <input
