@@ -91,11 +91,16 @@ const GIFT_BANNER_ON = [
 
 function GiftInvite() {
   const { pathname } = useLocation();
-  if (!GIFT_BANNER_ON.includes(pathname.replace(/\/+$/, '') || '/')) return null;
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (!GIFT_BANNER_ON.includes(path)) return null;
+
+  /* On the frames page the banner opens the frame itself; everywhere
+     else it goes to the general custom-gift form. */
+  const to = path === '/photo-frames' ? '/product/couple-eye-frame' : '/custom-gifts';
 
   return (
     <section className="shell section" aria-label="Custom gifts">
-      <CustomGiftBanner />
+      <CustomGiftBanner to={to} />
     </section>
   );
 }

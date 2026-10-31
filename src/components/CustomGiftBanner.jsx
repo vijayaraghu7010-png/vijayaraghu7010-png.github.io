@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-/* The banner's button goes to the custom-gift form, unless the page
-   it is on has something of its own to open — the bouquets page
-   opens its customiser rather than sending anybody away. */
-export default function CustomGiftBanner({ onAction, actionLabel, expanded }) {
+/* The banner's button goes to the custom-gift form by default. A page
+   with something of its own to open overrides that: the bouquets page
+   passes onAction to open its customiser inline, and the frames page
+   passes `to` so the button opens the frame instead of sending anybody
+   to the general form. */
+export default function CustomGiftBanner({ onAction, actionLabel, expanded, to = '/custom-gifts' }) {
   return (
     <aside className="gift-banner" aria-labelledby="gift-title">
       <img
@@ -30,7 +32,7 @@ export default function CustomGiftBanner({ onAction, actionLabel, expanded }) {
             {actionLabel || 'Create Something Personal'} <ArrowRight className="arrow" size={15} />
           </button>
         ) : (
-          <Link className="btn btn--primary btn--sm" to="/custom-gifts">
+          <Link className="btn btn--primary btn--sm" to={to}>
             Create Something Personal <ArrowRight className="arrow" size={15} />
           </Link>
         )}
