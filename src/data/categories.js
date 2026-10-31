@@ -101,11 +101,15 @@ export const CONTACT = {
 export const SOCIALS = [
   /* The share link Instagram hands out carries a tracking parameter
      (?obrf=...) that identifies where it was copied from. The profile
-     works without it, so the plain address is what goes on the site. */
+     works without it, so the plain address is what goes on the site.
+
+     WhatsApp is where the studio actually takes orders and photographs,
+     so it stands beside Instagram; Pinterest, Facebook and YouTube are
+     dropped until there is something to point them at. The wa.me link
+     is built from the number in CONTACT, which is still a placeholder -
+     replace it there and this follows. */
   { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/wrapped.studio_' },
-  { id: 'pinterest', label: 'Pinterest', url: '' },
-  { id: 'facebook', label: 'Facebook', url: '' },
-  { id: 'youtube', label: 'YouTube', url: '' }
+  { id: 'whatsapp', label: 'WhatsApp', url: `https://wa.me/${CONTACT.whatsapp}` }
 ];
 
 export const BRAND = {
