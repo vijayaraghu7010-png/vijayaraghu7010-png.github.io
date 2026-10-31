@@ -3267,8 +3267,32 @@
   }
 }
 
+/* ---- About page: a still sunset sits behind the whole page, the
+   studio's own backdrop. It stays put while the content scrolls over
+   it on a desktop; on a phone, where fixed backgrounds misbehave, it
+   scrolls with the page. The image is light, so the cards and text
+   over it stay readable; a faint cream wash keeps it that way where
+   the page is busy. ---- */
+.about-page {
+  background-image: linear-gradient(rgba(247, 241, 238, 0.35), rgba(247, 241, 238, 0.55)),
+    url('/images/about-bg.webp');
+  background-repeat: no-repeat, no-repeat;
+  background-position: center top, center top;
+  background-size: cover, cover;
+  background-attachment: fixed, fixed;
+}
+
+@media (max-width: 760px) {
+  .about-page {
+    background-attachment: scroll, scroll;
+  }
+}
+
 /* ---- About page: the designed intro banner replaces the text header.
-   Full width of the content column, rounded to match the cards. ---- */
+   On a wide screen it sits as a rounded card the width of the content
+   column. On a phone the banner is a landscape image whose own text
+   would be tiny at card width, so it breaks out of the page gutters to
+   run edge to edge - as large and legible as the screen allows. ---- */
 .about-hero {
   margin-bottom: clamp(18px, 2.5vw, 34px);
 }
@@ -3279,4 +3303,20 @@
   height: auto;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 640px) {
+  .about-hero {
+    /* Safe full-bleed: span the viewport regardless of the shell's
+       padding, without causing horizontal scroll. */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-top: calc(-1 * clamp(16px, 4vw, 28px));
+    margin-bottom: clamp(20px, 5vw, 30px);
+  }
+
+  .about-hero img {
+    border-radius: 0;
+    box-shadow: none;
+  }
 }

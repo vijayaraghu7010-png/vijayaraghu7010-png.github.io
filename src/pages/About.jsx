@@ -53,6 +53,7 @@ export default function About() {
   );
 
   return (
+    <div className="about-page">
     <div className="shell">
       <header className="page-head about-hero">
         {/* The whole introduction is the studio's own designed banner;
@@ -220,6 +221,7 @@ export default function About() {
           </div>
         </div>
       </section>
+    </div>
     </div>
   );
 }
