@@ -133,6 +133,18 @@ export const FRAME_SIZES = [
   { id: 'frame-a2', label: 'A2', blurb: '42 x 59.4 cm', price: 300 }
 ];
 
+/* Some frames are sold two ways - as a print on its own, or printed
+   and framed - at two sizes each. A product carries this list on its
+   `frameSizes` field and the customiser uses it in place of the default
+   sizes above. Each id, joined to the product id, must have a matching
+   price_variants row, exactly as the default sizes do. */
+export const FRAMED_PRINT_SIZES = [
+  { id: 'a5-framed', label: 'A5 · with frame', blurb: 'Printed and framed', price: 1000 },
+  { id: 'a4-framed', label: 'A4 · with frame', blurb: 'Printed and framed', price: 1999 },
+  { id: 'a5-print', label: 'A5 · print only', blurb: 'Print, no frame', price: 1000 },
+  { id: 'a4-print', label: 'A4 · print only', blurb: 'Print, no frame', price: 1900 }
+];
+
 /* The frame's design templates. Each is one of the studio's own made
    frames, photographed - the image is the sample the customer picks
    from, and the name is what the chosen template is recorded as on the
@@ -557,6 +569,62 @@ export const PRODUCTS = [
     sortOrder: 63,
     rating: 4.9,
     reviews: 28,
+    addedAt: '2026-10-31'
+  },
+  {
+    id: 'frame-wedding-garland',
+    slug: 'wedding-garland-embroidery',
+    name: 'Wedding Garland Embroidery',
+    category: 'frame',
+    categoryLabel: 'Photo Frame',
+    price: 1000,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/frames/wedding-garland.webp',
+    alt: 'A black-and-white wedding photograph with the couple’s garlands hand-embroidered in pink, green and gold thread',
+    gallery: ['/images/frames/wedding-garland.webp'],
+    shortDescription: 'Your wedding photo in black and white, the garlands embroidered by hand in thread.',
+    description:
+      'A black-and-white print of your wedding moment, with the garlands raised off the page in hand embroidery — pink, green and gold thread worked over the photograph so the flowers you wore are real again. Choose a size, and whether it comes framed or as the print alone.',
+    details: ['A5 ₹1000, A4 ₹1999 framed', 'A5 ₹1000, A4 ₹1900 print only', 'Hand-embroidered to order', 'Upload your photograph on the page', 'Shipping charged separately'],
+    occasions: ['Wedding', 'Anniversary', 'Love', 'Engagement'],
+    keywords: ['frame', 'photo frame', 'wedding', 'garland', 'embroidery', 'hand embroidered', 'thread', 'gift', 'personalised'],
+    customiser: 'frame',
+    frameSizes: FRAMED_PRINT_SIZES,
+    sizeId: 'a5-framed',
+    featured: true,
+    published: true,
+    sortOrder: 64,
+    rating: 5.0,
+    reviews: 19,
+    addedAt: '2026-10-31'
+  },
+  {
+    id: 'frame-blooming-memories',
+    slug: 'blooming-memories',
+    name: 'Blooming Memories',
+    category: 'frame',
+    categoryLabel: 'Photo Frame',
+    price: 1000,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/frames/blooming-memories.webp',
+    alt: 'A black-and-white photograph with a caption, a row of purple flowers embroidered by hand along the bottom',
+    gallery: ['/images/frames/blooming-memories.webp'],
+    shortDescription: 'Your photo with a line of flowers embroidered by hand along the bottom, and your own caption.',
+    description:
+      'A black-and-white print finished with a border of flowers raised off the page in hand embroidery, and a caption of your choosing beneath — a title and a line, the way "The Sequel — 20 years of love and war" sits on ours. Choose a size, and whether it comes framed or as the print alone.',
+    details: ['A5 ₹1000, A4 ₹1999 framed', 'A5 ₹1000, A4 ₹1900 print only', 'Hand-embroidered to order', 'Upload your photograph and tell us the caption', 'Shipping charged separately'],
+    occasions: ['Anniversary', 'Wedding', 'Love', 'Just Because'],
+    keywords: ['frame', 'photo frame', 'blooming', 'memories', 'embroidery', 'hand embroidered', 'flowers', 'anniversary', 'gift', 'personalised'],
+    customiser: 'frame',
+    frameSizes: FRAMED_PRINT_SIZES,
+    sizeId: 'a5-framed',
+    featured: false,
+    published: true,
+    sortOrder: 65,
+    rating: 5.0,
+    reviews: 14,
     addedAt: '2026-10-31'
   },
   /* ------------------------------------------------- hampers */

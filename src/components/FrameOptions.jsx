@@ -26,7 +26,10 @@ const MAX_PHOTOS = maxPhotosFor('frame');
    touched or compressed - they are what gets printed. */
 export default function FrameOptions({ product }) {
   const { addItem, openCart } = useCart();
-  const [sizeId, setSizeId] = useState(product.sizeId || FRAME_SIZES[0].id);
+  /* Most frames are sold at the default sizes; some carry their own
+     list (a print-or-framed choice, say) on product.frameSizes. */
+  const sizes = product.frameSizes || FRAME_SIZES;
+  const [sizeId, setSizeId] = useState(product.sizeId || sizes[0].id);
   const [names, setNames] = useState('');
   const [years, setYears] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -36,7 +39,7 @@ export default function FrameOptions({ product }) {
   const inputRef = useRef(null);
   const urls = useRef(new Map());
 
-  const size = FRAME_SIZES.find((s) => s.id === sizeId) || FRAME_SIZES[0];
+  const size = sizes.find((s) => s.id === sizeId) || sizes[0];
   /* Which design this frame is, taken from the product itself - the
      themed frames are products now, so there is no picker. Recorded on
      the order so the studio sees the design on the line. */
@@ -135,7 +138,7 @@ export default function FrameOptions({ product }) {
           <h4 className="step__title">Frame size</h4>
         </div>
         <div className="option-grid">
-          {FRAME_SIZES.map((s) => (
+          {sizes.map((s) => (
             <button
               key={s.id}
               type="button"
