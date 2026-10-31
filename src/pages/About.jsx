@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
 
 import usePageMeta from '../hooks/usePageMeta';
-import { BRAND, CONTACT } from '../data/categories';
+import { CONTACT } from '../data/categories';
 
 const FAQS = [
   {
@@ -54,18 +54,16 @@ export default function About() {
 
   return (
     <div className="shell">
-      <header className="page-head">
-        <p className="eyebrow">About us</p>
-        <h1 style={{ marginTop: 8 }}>{BRAND.tagline}</h1>
-        <p>
-          At WrappedStudio, we believe every gift tells a story. From thoughtfully curated hampers to personalised
-          keepsakes and adorable crochet creations, we make gifting more meaningful and memorable.
-        </p>
-        <p>
-          Choose your favourite gifts, add your personal touch, and let us help you turn little moments into
-          beautiful memories.
-        </p>
-        <p className="about__signoff">Wrapped with love. Made for memories. 💌</p>
+      <header className="page-head about-hero">
+        {/* The whole introduction is the studio's own designed banner;
+            the alt carries its words so the page still reads the same to
+            a screen reader and a search engine. */}
+        <img
+          src="/images/about-banner.webp"
+          alt="About WrappedStudio — more than gifts, a little piece of your story. We believe every gift tells a story, from thoughtfully curated hampers to personalised keepsakes and adorable crochet creations. Choose your favourite gifts, add your personal touch, and let us turn little moments into beautiful memories. Wrapped with love, made for memories."
+          width="1600"
+          height="902"
+        />
       </header>
 
       <div className="two-col">

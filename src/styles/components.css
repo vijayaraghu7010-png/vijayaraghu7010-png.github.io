@@ -3266,3 +3266,17 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---- About page: the designed intro banner replaces the text header.
+   Full width of the content column, rounded to match the cards. ---- */
+.about-hero {
+  margin-bottom: clamp(18px, 2.5vw, 34px);
+}
+
+.about-hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
