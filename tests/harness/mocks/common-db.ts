@@ -36,6 +36,7 @@ export function resetDb(tables: Record<string, any[]> = {}) {
   };
   g.__authUser = g.__authUser ?? null;
   g.__dbCalls = [];
+  g.__orCalls = [];
   return g.__db;
 }
 export const db = () => (g.__db ||= resetDb());
@@ -138,6 +139,10 @@ function builder(table: string) {
     is(col: string, val: any) { filters.push({ op: 'is', col, val }); return b; },
     in(col: string, val: any[]) { filters.push({ op: 'in', col, val }); return b; },
     neq(col: string, val: any) { filters.push({ op: 'neq', col, val }); return b; },
+    /* Records the raw PostgREST filter expression so a test can prove
+       what was handed to it, and otherwise narrows nothing - the real
+       narrowing is PostgREST's and is not what these tests check. */
+    or(expr: string) { (g.__orCalls ||= []).push({ table, expr }); return b; },
     order(col: string, opts: any = {}) { sort = { col, asc: opts.ascending !== false }; return b; },
     limit(n: number) { cap = n; return b; },
     range(from: number, to: number) { slice = { from, to }; return b; },
