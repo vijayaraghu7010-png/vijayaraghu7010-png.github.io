@@ -15,6 +15,7 @@ export const NAV_LINKS = [
   { to: '/bouquets', label: 'Bouquets' },
   { to: '/hampers', label: 'Hampers' },
   { to: '/photo-frames', label: 'Photo Frames' },
+  { to: '/wall-posters', label: 'Wall Posters' },
   { to: '/custom-gifts', label: 'Custom Gifts' },
   { to: '/about', label: 'About' }
 ];
