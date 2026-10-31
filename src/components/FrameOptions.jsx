@@ -16,6 +16,8 @@ import { useCart } from '../context/CartContext';
 export default function FrameOptions({ product }) {
   const { addItem, openCart } = useCart();
   const [sizeId, setSizeId] = useState(product.sizeId || FRAME_SIZES[0].id);
+  const [names, setNames] = useState('');
+  const [years, setYears] = useState('');
   const [quantity, setQuantity] = useState(1);
 
   const size = FRAME_SIZES.find((s) => s.id === sizeId) || FRAME_SIZES[0];
@@ -25,7 +27,14 @@ export default function FrameOptions({ product }) {
     e.preventDefault();
     addItem(
       { ...product, id: `${product.id}-${size.id}`, price: size.price },
-      { quantity, config: { size: size.label } }
+      {
+        quantity,
+        config: {
+          size: size.label,
+          names: names.trim() || undefined,
+          years: years.trim() || undefined
+        }
+      }
     );
     openCart();
   };
@@ -54,6 +63,34 @@ export default function FrameOptions({ product }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="step">
+        <div className="step__head">
+          <span className="step__num">2</span>
+          <h4 className="step__title">Your two names</h4>
+        </div>
+        <input
+          type="text"
+          value={names}
+          onChange={(e) => setNames(e.target.value)}
+        />
+        <p className="field-hint">
+          Send your two close-up photographs over WhatsApp after ordering.
+        </p>
+      </div>
+
+      <div className="step">
+        <div className="step__head">
+          <span className="step__num">3</span>
+          <h4 className="step__title">The years</h4>
+        </div>
+        <input
+          type="text"
+          value={years}
+          onChange={(e) => setYears(e.target.value)}
+        />
+        <p className="field-hint">The year it started, and the year it is still blooming.</p>
       </div>
 
       <div className="customiser__foot">
