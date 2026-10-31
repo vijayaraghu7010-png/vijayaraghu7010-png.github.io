@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ImagePlus, ShoppingBag, X } from 'lucide-react';
 
 import QuantitySelector from './QuantitySelector';
-import { FRAME_SIZES } from '../data/products';
+import { FRAME_SIZES, FRAME_THEMES } from '../data/products';
 import { ACCEPTED_TYPES, MAX_BYTES_PER_PHOTO, maxPhotosFor } from '../data/uploadLimits';
 import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
@@ -27,6 +27,7 @@ const MAX_PHOTOS = maxPhotosFor('frame');
 export default function FrameOptions({ product }) {
   const { addItem, openCart } = useCart();
   const [sizeId, setSizeId] = useState(product.sizeId || FRAME_SIZES[0].id);
+  const [themeId, setThemeId] = useState(FRAME_THEMES[0].id);
   const [names, setNames] = useState('');
   const [years, setYears] = useState('');
   const [photos, setPhotos] = useState([]);
@@ -37,6 +38,7 @@ export default function FrameOptions({ product }) {
   const urls = useRef(new Map());
 
   const size = FRAME_SIZES.find((s) => s.id === sizeId) || FRAME_SIZES[0];
+  const theme = FRAME_THEMES.find((t) => t.id === themeId) || FRAME_THEMES[0];
   const subtotal = size.price * quantity;
 
   /* Object URLs are revoked when this leaves the screen, so a long
@@ -105,6 +107,7 @@ export default function FrameOptions({ product }) {
        the basket line carries. */
     const config = {
       size: size.label,
+      theme: theme.name,
       names: names.trim() || undefined,
       years: years.trim() || undefined,
       photoCount: photos.length || undefined
@@ -149,6 +152,27 @@ export default function FrameOptions({ product }) {
       <div className="step">
         <div className="step__head">
           <span className="step__num">2</span>
+          <h4 className="step__title">Choose a theme</h4>
+        </div>
+        <div className="frame-themes">
+          {FRAME_THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`frame-theme${t.id === themeId ? ' is-on' : ''}`}
+              aria-pressed={t.id === themeId}
+              onClick={() => setThemeId(t.id)}
+            >
+              <img src={t.image} alt={t.alt} loading="lazy" />
+              <span>{t.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="step">
+        <div className="step__head">
+          <span className="step__num">3</span>
           <h4 className="step__title">Your photographs</h4>
         </div>
 
@@ -200,7 +224,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">3</span>
+          <span className="step__num">4</span>
           <h4 className="step__title">Your two names</h4>
         </div>
         <input
@@ -212,7 +236,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">4</span>
+          <span className="step__num">5</span>
           <h4 className="step__title">The years</h4>
         </div>
         <input

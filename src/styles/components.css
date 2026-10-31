@@ -3217,3 +3217,52 @@
 .track-pay {
   margin-top: 4px;
 }
+
+/* ---- Frame theme picker: the design templates a customer chooses
+   from. Portrait sample images in a responsive grid, the chosen one
+   ringed in coral like the other option buttons. ---- */
+.frame-themes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.frame-theme {
+  display: grid;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.frame-theme img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.frame-theme:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.frame-theme.is-on {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 2px var(--coral);
+  color: var(--ink);
+}
+
+@media (max-width: 480px) {
+  .frame-themes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

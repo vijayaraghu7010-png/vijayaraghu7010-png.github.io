@@ -133,6 +133,31 @@ export const FRAME_SIZES = [
   { id: 'frame-a2', label: 'A2', blurb: '42 x 59.4 cm', price: 300 }
 ];
 
+/* The frame's design templates. Each is one of the studio's own made
+   frames, photographed - the image is the sample the customer picks
+   from, and the name is what the chosen template is recorded as on the
+   order. The files live in public/images/frame-themes. */
+export const FRAME_THEMES = [
+  {
+    id: 'friendship',
+    name: 'Friendship',
+    image: '/images/frame-themes/friendship.webp',
+    alt: 'Friendship frame — a photo collage around a heartfelt handwritten message'
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    image: '/images/frame-themes/google.webp',
+    alt: 'Google-search frame — "Best Friends Forever" above a collage of photographs'
+  },
+  {
+    id: 'forever',
+    name: 'Forever',
+    image: '/images/frame-themes/forever.webp',
+    alt: 'Forever frame — a black-and-white collage with a cut-out of two friends'
+  }
+];
+
 export const FRAME_OCCASIONS = [
   'Love',
   'Anniversary',
