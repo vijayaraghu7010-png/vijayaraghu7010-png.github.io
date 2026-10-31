@@ -27,7 +27,13 @@ const MAX_PHOTOS = maxPhotosFor('frame');
 export default function FrameOptions({ product }) {
   const { addItem, openCart } = useCart();
   const [sizeId, setSizeId] = useState(product.sizeId || FRAME_SIZES[0].id);
-  const [themeId, setThemeId] = useState(FRAME_THEMES[0].id);
+  /* The frame's starting theme. A product may name one directly
+     (product.themeId, from the bundled catalogue), but a product loaded
+     from the database does not carry that field, so it is also derived
+     from the id - 'frame-friendship' starts on the Friendship theme.
+     Falls back to the first theme for a frame that names none. */
+  const themeFromId = FRAME_THEMES.find((t) => String(product.id || '').endsWith(t.id));
+  const [themeId, setThemeId] = useState(product.themeId || themeFromId?.id || FRAME_THEMES[0].id);
   const [names, setNames] = useState('');
   const [years, setYears] = useState('');
   const [photos, setPhotos] = useState([]);

@@ -22,7 +22,13 @@ import { DEFAULT_CONTENT, DEFAULT_THEMES, DEFAULT_OFFERS } from '../data/siteDef
    browser carries on with localStorage and nothing is lost. */
 
 const KEY = 'ws-site-store';
-const VERSION = 1;
+/* Bumped from 1 when the frame catalogue changed - the three themed
+   frames were added and the frame sizes were repriced. A browser
+   holding the old seed re-seeds from the current catalogue rather than
+   sitting on the stale copy. Site config (content, themes, offers) is
+   re-seeded from the shipped defaults too; nothing a customer owns
+   lives here - orders and accounts are in Supabase, not this store. */
+const VERSION = 2;
 
 function defaults() {
   return {
