@@ -32,9 +32,23 @@ export default function FrameOptions({ product }) {
   const [sizeId, setSizeId] = useState(product.sizeId || sizes[0].id);
   const [names, setNames] = useState('');
   const [years, setYears] = useState('');
+  const [embroidery, setEmbroidery] = useState('');
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState([]);
   const [quantity, setQuantity] = useState(1);
+
+  /* The embroidery frames ask the customer to describe the design they
+     want; ordinary frames do not. The step numbers are worked out here
+     so they stay in sequence whether that step is shown or not. */
+  const wantsEmbroidery = Boolean(product.embroidery);
+  let n = 0;
+  const stepNo = {
+    size: ++n,
+    photos: ++n,
+    embroidery: wantsEmbroidery ? ++n : null,
+    names: ++n,
+    years: ++n
+  };
 
   const inputRef = useRef(null);
   const urls = useRef(new Map());
@@ -113,6 +127,7 @@ export default function FrameOptions({ product }) {
     const config = {
       size: size.label,
       theme: theme?.name,
+      embroidery: embroidery.trim() || undefined,
       names: names.trim() || undefined,
       years: years.trim() || undefined,
       photoCount: photos.length || undefined
@@ -134,7 +149,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">1</span>
+          <span className="step__num">{stepNo.size}</span>
           <h4 className="step__title">Frame size</h4>
         </div>
         <div className="option-grid">
@@ -156,7 +171,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">2</span>
+          <span className="step__num">{stepNo.photos}</span>
           <h4 className="step__title">Your photographs</h4>
         </div>
 
@@ -206,9 +221,29 @@ export default function FrameOptions({ product }) {
         </p>
       </div>
 
+      {wantsEmbroidery ? (
+        <div className="step">
+          <div className="step__head">
+            <span className="step__num">{stepNo.embroidery}</span>
+            <h4 className="step__title">Your embroidery</h4>
+          </div>
+          <textarea
+            rows={4}
+            value={embroidery}
+            maxLength={1000}
+            onChange={(e) => setEmbroidery(e.target.value)}
+            placeholder="Tell us how you want the embroidery — where it should sit on the photo, which colours, and any caption or names to stitch in."
+          />
+          <p className="field-hint">
+            The more you describe, the closer the design comes to what you have in mind. We will
+            confirm it with you before stitching.
+          </p>
+        </div>
+      ) : null}
+
       <div className="step">
         <div className="step__head">
-          <span className="step__num">3</span>
+          <span className="step__num">{stepNo.names}</span>
           <h4 className="step__title">Your two names</h4>
         </div>
         <input
@@ -220,7 +255,7 @@ export default function FrameOptions({ product }) {
 
       <div className="step">
         <div className="step__head">
-          <span className="step__num">4</span>
+          <span className="step__num">{stepNo.years}</span>
           <h4 className="step__title">The years</h4>
         </div>
         <input
