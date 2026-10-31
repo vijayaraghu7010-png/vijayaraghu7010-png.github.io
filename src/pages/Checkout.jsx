@@ -21,6 +21,17 @@ import { formatRupees } from '../utils/currency';
    the way out is the server's, and if they differ it is the server's
    that stands and the customer is told so plainly.                 */
 
+/* What the server calls each field, in words a customer recognises. */
+const FIELD_LABEL = {
+  name: 'your name',
+  email: 'your email address',
+  phone: 'your phone number',
+  address: 'your address',
+  city: 'the city',
+  state: 'the state',
+  pincode: 'the PIN code'
+};
+
 const BLANK = {
   name: '',
   email: '',
@@ -117,8 +128,18 @@ export default function Checkout() {
       setDone({ order, uploaded });
       setStage('done');
     } catch (err) {
-      setError(err.message || 'That order could not be placed');
-      setBadFields(err.fields || []);
+      /* The server says which fields it did not like. Outlining them
+         is not enough on a long form: the button is at the bottom and
+         the bad field is usually above the fold, so the message names
+         them as well. */
+      const bad = err.fields || [];
+      setError(
+        bad.length
+          ? `Please check ${bad.map((f) => FIELD_LABEL[f] || f).join(', ')} — ` +
+            'something there is missing or does not look right.'
+          : err.message || 'That order could not be placed'
+      );
+      setBadFields(bad);
       setStage('form');
     }
   }

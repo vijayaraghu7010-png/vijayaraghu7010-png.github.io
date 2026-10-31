@@ -4,6 +4,7 @@ import { Check, Clock, Copy, Loader2, Smartphone, TriangleAlert, Upload } from '
 
 import usePageMeta from '../hooks/usePageMeta';
 import { formatRupees } from '../utils/currency';
+import { BRAND } from '../data/categories';
 import {
   fetchPaymentContext,
   submitPayment,
@@ -217,9 +218,17 @@ export default function Payment() {
                 </div>
 
                 {upi.display_name ? (
+                  /* The name here is whatever the bank has against the
+                     account, which is not always the shop's name - a
+                     small studio often starts on a personal UPI ID. A
+                     customer who expects one name and sees another
+                     assumes they are being defrauded, so the page says
+                     the real name first and explains it, rather than
+                     printing the brand and hoping nobody notices. */
                   <p className="admin__hint">
-                    Your app should show <strong>{upi.display_name}</strong>. If it shows another
-                    name, stop and write to us before sending anything.
+                    Your app will show <strong>{upi.display_name}</strong> — that is
+                    {' '}{BRAND.name}&rsquo;s own account. If it shows any other name, stop and
+                    write to us before sending anything.
                   </p>
                 ) : null}
 

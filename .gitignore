@@ -20,3 +20,11 @@ server/data
 .DS_Store
 Thumbs.db
 .remember
+
+# The Supabase CLI's own scratch directory. It caches which CLI
+# version it last saw; nothing in it describes this project.
+supabase/.temp/
+
+# Reports are generated, not source. They live on disk for whoever
+# asked for one and stay out of the repository's history.
+*-status-report.pdf
