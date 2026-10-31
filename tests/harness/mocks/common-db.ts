@@ -25,6 +25,13 @@ export function resetDb(tables: Record<string, any[]> = {}) {
     order_tracking_tokens: [],
     order_lookup_codes: [],
     lookup_attempts: [],
+    /* The manual UPI tables from 0005, and the settings row that says
+       where to pay. Empty by default: a test that cares about
+       payments puts rows in, and every other test gets a shop with no
+       payments in it, which is what one looks like. */
+    order_payments: [],
+    order_payment_events: [],
+    settings: [],
     ...tables
   };
   g.__authUser = g.__authUser ?? null;
@@ -44,6 +51,7 @@ function matches(row: any, filters: any[]) {
     if (f.op === 'eq') return String(v) === String(f.val);
     if (f.op === 'is') return f.val === null ? v === null || v === undefined : v === f.val;
     if (f.op === 'in') return f.val.map(String).includes(String(v));
+    if (f.op === 'neq') return String(v) !== String(f.val);
     return true;
   });
 }
@@ -55,8 +63,14 @@ function builder(table: string) {
   let cap: number | null = null;
   let pending: { kind: 'update' | 'insert' | 'upsert' | 'delete'; payload?: any; conflict?: string } | null = null;
 
+  /* A table nobody has put rows in is empty, not missing. Tests set
+     __db by hand and a function reading a table that fixture never
+     mentioned - order_payments, say, on an order nobody has paid for -
+     should see nothing there rather than crash. */
+  const tbl = (): any[] => (db()[table] ||= []);
+
   const rows = () => {
-    let out = db()[table].filter((r: any) => matches(r, filters));
+    let out = tbl().filter((r: any) => matches(r, filters));
     if (sort) {
       out = [...out].sort((a, b) => {
         const x = a[sort!.col], y = b[sort!.col];
@@ -96,16 +110,16 @@ function builder(table: string) {
         }
         return row;
       });
-      db()[table].push(...made);
+      tbl().push(...made);
       return { data: made, error: null };
     }
     if (pending.kind === 'upsert') {
       const r = pending.payload;
       const keys = (pending.conflict || 'id').split(',').map((k) => k.trim());
-      const existing = db()[table].find((e: any) => keys.every((k) => String(e[k]) === String(r[k])));
+      const existing = tbl().find((e: any) => keys.every((k) => String(e[k]) === String(r[k])));
       if (existing) { Object.assign(existing, r); return { data: [existing], error: null }; }
       const made = { id: crypto.randomUUID(), ...r };
-      db()[table].push(made);
+      tbl().push(made);
       return { data: [made], error: null };
     }
     if (pending.kind === 'update') {
@@ -114,7 +128,7 @@ function builder(table: string) {
       return { data: hit, error: null };
     }
     const doomed = rows();
-    g.__db[table] = db()[table].filter((r: any) => !doomed.includes(r));
+    g.__db[table] = tbl().filter((r: any) => !doomed.includes(r));
     return { data: doomed, error: null };
   };
 
@@ -123,6 +137,7 @@ function builder(table: string) {
     eq(col: string, val: any) { filters.push({ op: 'eq', col, val }); return b; },
     is(col: string, val: any) { filters.push({ op: 'is', col, val }); return b; },
     in(col: string, val: any[]) { filters.push({ op: 'in', col, val }); return b; },
+    neq(col: string, val: any) { filters.push({ op: 'neq', col, val }); return b; },
     order(col: string, opts: any = {}) { sort = { col, asc: opts.ascending !== false }; return b; },
     limit(n: number) { cap = n; return b; },
     range(from: number, to: number) { slice = { from, to }; return b; },
@@ -182,9 +197,14 @@ export function serviceClient() {
   } as any;
 }
 
-/* Present so a redirected import keeps the same shape; the customer
-   functions never call it. */
-export async function requireAdmin() { return null; }
+/* Nobody, unless a test says otherwise. The customer functions never
+   call this; payments-admin calls it on every request, so a test
+   signs in by putting an address in __admin and signs out by
+   clearing it. The real one asks Supabase and then the admins table;
+   this one only has to answer the same shape. */
+export async function requireAdmin() {
+  return g.__admin ? { email: String(g.__admin) } : null;
+}
 
 /* orders-create reads the studio's upload limits. They are Phase 1's
    and are tested there; here they only need to exist. */

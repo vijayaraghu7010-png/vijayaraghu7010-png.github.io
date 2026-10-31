@@ -104,18 +104,41 @@ export default function Footer() {
 
           <div className="footer__contact-col">
             <h3>Contact Us</h3>
+            {/* The address, number and city are not printed on the page.
+                Each icon carries the detail in its own href, so a tap
+                opens the mail app, the dialler or a map directly, while
+                a scraper trawling the page for plain text finds none.
+                The real detail is still in the aria-label, because a
+                screen reader has to be able to say what the link does. */}
             <ul className="footer__contact">
               <li>
-                <Mail size={16} />
-                <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+                <a
+                  href={`mailto:${CONTACT.email}`}
+                  aria-label={`Email us at ${CONTACT.email}`}
+                  title="Email us"
+                >
+                  <Mail size={18} />
+                </a>
               </li>
               <li>
-                <Phone size={16} />
-                <a href={CONTACT.phoneHref}>{CONTACT.phone}</a>
+                <a
+                  href={CONTACT.phoneHref}
+                  aria-label={`Call us on ${CONTACT.phone}`}
+                  title="Call us"
+                >
+                  <Phone size={18} />
+                </a>
               </li>
               <li>
-                <MapPin size={16} />
-                <span>{CONTACT.city}</span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.city)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Find us in ${CONTACT.city}`}
+                  title={CONTACT.city}
+                >
+                  <MapPin size={18} />
+                </a>
               </li>
             </ul>
           </div>

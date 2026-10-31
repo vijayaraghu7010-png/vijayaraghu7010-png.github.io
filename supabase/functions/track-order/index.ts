@@ -16,6 +16,7 @@ import { serviceClient, json, fail, corsHeaders, text } from '../_shared/common.
 import {
   attemptKey, customerView, hashToken, noteVerdict, rateLimit, NO_STORE
 } from '../_shared/customer.ts';
+import { paymentView } from '../_shared/payments.ts';
 
 const NO = 'That tracking link is not valid any more.';
 
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
 
   const { data: order } = await db
     .from('orders')
-    .select('id, order_code, status, created_at, updated_at, completed_at')
+    .select('id, order_code, status, payment_status, created_at, updated_at, completed_at')
     .eq('id', row.order_id)
     .maybeSingle();
 
@@ -85,6 +86,17 @@ Deno.serve(async (req) => {
     .eq('order_id', order.id)
     .order('created_at');
 
+  /* The most recent payment attempt, if there has been one. Named
+     fields only, through paymentView - the row it comes from holds a
+     bucket key and the name of whoever decided it, and neither is any
+     of a customer's business. */
+  const { data: payments } = await db
+    .from('order_payments')
+    .select('status, method, utr, amount_paise, created_at, decided_at, decision_note')
+    .eq('order_id', order.id)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
   /* Useful for spotting a shared link later. Best effort: a tracking
      page should not fail because a timestamp did not save. */
   await db
@@ -92,7 +104,18 @@ Deno.serve(async (req) => {
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', row.id);
 
-  return new Response(JSON.stringify({ order: customerView(order, items ?? [], events ?? []) }), {
+  /* payment_status, so the page knows whether to offer the payment
+     link, and the customer's own last submission so a refusal can say
+     why. The order's total is deliberately still not here: this reply
+     has never carried it, and the payment page asks for it separately
+     with the same token. */
+  const view = {
+    ...customerView(order, items ?? [], events ?? []),
+    payment_status: order.payment_status,
+    payment: paymentView(payments?.[0] ?? null)
+  };
+
+  return new Response(JSON.stringify({ order: view }), {
     status: 200,
     headers: { ...corsHeaders(origin), 'Content-Type': 'application/json', ...NO_STORE }
   });

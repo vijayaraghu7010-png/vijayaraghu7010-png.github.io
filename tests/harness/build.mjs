@@ -81,6 +81,7 @@ export function buildCustomerFunction(name) {
         '_shared[\\\\/]common\\.ts$': stub('mocks', 'common-db.ts'),
         '_shared[\\\\/]email\\.ts$': stub('mocks', 'email.ts'),
         '_shared[\\\\/]pricing\\.ts$': stub('mocks', 'pricing.ts'),
+        '_shared[\\\\/]r2\\.ts$': stub('mocks', 'r2.ts'),
         '^https://esm\\.sh/@supabase/supabase-js': stub('stubs', 'supabase-types.js')
       })
     ]

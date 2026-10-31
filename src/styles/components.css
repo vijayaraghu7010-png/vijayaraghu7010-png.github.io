@@ -3121,3 +3121,99 @@
   .track-layout { max-width: none; }
   .account-order__head { flex-direction: column; }
 }
+
+/* ---- About: policy bullets and the sign-off line ---- */
+
+/* The cancellation, returns and refund cards are lists of conditions,
+   so they read as bullets rather than as prose paragraphs. */
+.policy-list {
+  display: grid;
+  gap: 7px;
+  padding-left: 18px;
+  list-style: disc;
+}
+
+.policy-list li::marker {
+  color: var(--coral);
+}
+
+.about__signoff {
+  font-weight: 600;
+  color: var(--coral);
+}
+
+/* ============================================================
+   PAYING — the manual UPI page. Two columns on a desktop, one on
+   a phone, which is where most of this will actually happen.
+   ============================================================ */
+
+.pay-how {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.pay-upi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--cream);
+  border: 1px dashed var(--line);
+}
+
+.pay-upi__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.pay-upi__id {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+/* White behind it on purpose: a QR code with the page's blush
+   showing through the quiet zone is a QR code some scanners refuse. */
+.pay-qr {
+  width: 220px;
+  height: 220px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+}
+
+.pay-state h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pay-state--good {
+  border-left: 4px solid #3f9a62;
+}
+
+.pay-state--waiting {
+  border-left: 4px solid var(--coral);
+}
+
+.pay-state--bad {
+  border-left: 4px solid #b03a3a;
+}
+
+.checkout__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.track-pay {
+  margin-top: 4px;
+}

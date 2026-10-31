@@ -46,6 +46,10 @@ const HamperStudio = lazy(() => import('./pages/HamperStudio'));
 const Track = lazy(() => import('./pages/Track'));
 const Account = lazy(() => import('./pages/Account'));
 
+/* Paying is in the same bundle's company for the same reason: it is
+   reached from a link in an order confirmation, not from the shop. */
+const Payment = lazy(() => import('./pages/Payment'));
+
 function TrackFallback() {
   return (
     <div className="shell" style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
@@ -169,6 +173,22 @@ function Shop() {
                 element={
                   <Suspense fallback={<TrackFallback />}>
                     <Track />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/pay"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <Payment />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/pay/:token"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <Payment />
                   </Suspense>
                 }
               />

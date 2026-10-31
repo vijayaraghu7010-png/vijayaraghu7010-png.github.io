@@ -445,33 +445,43 @@
   gap: 8px;
 }
 
-.footer__links a,
-.footer__contact a,
-.footer__contact span {
+.footer__links a {
   font-size: 13.5px;
   color: var(--ink-2);
   transition: color 0.18s ease;
 }
 
-.footer__links a:hover,
-.footer__contact a:hover {
+.footer__links a:hover {
   color: var(--coral);
 }
 
+/* The contact details are icons only - see Footer.jsx. They are laid
+   out as the round social chips are, so the two rows match. */
 .footer__contact {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-.footer__contact li {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--ink-2);
+.footer__contact a {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-content: center;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--coral);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+
+.footer__contact a:hover {
+  background: var(--coral);
+  color: var(--white);
+  transform: translateY(-2px);
 }
 
 .footer__contact svg {
-  color: var(--coral);
   flex: none;
 }
 

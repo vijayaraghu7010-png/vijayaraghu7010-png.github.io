@@ -6,19 +6,46 @@ import { BRAND, CONTACT } from '../data/categories';
 
 const FAQS = [
   {
-    q: 'How long does an order take?',
-    a: 'Polaroids are dispatched within 3–4 working days. Magazines are printed once you approve the PDF preview. Bouquets are made to order — tell us your date and we will confirm it before you pay.'
+    q: 'How do I place an order?',
+    a: 'Browse our collections, choose your favourite gift or hamper, select any available customisation options, add the product to your cart, and proceed to checkout. Enter your delivery details and complete your purchase using the payment options available on our website.'
   },
   {
-    q: 'How do I send my photos?',
-    a: 'Pick them on the product page so we have the file names with your order, then send the photos themselves on WhatsApp or as a Drive link once we confirm. A direct upload will come with the backend.'
+    q: 'Can I customise a gift hamper?',
+    a: 'Yes! Selected hampers can be customised to suit your preferences. Depending on the product, you may be able to choose items, colours, names, photographs, or other personal touches. Available options will be displayed on the product page.'
   },
   {
-    q: 'Can I change the design after ordering?',
-    a: 'Yes. Nothing is printed until you have seen and approved the preview, so changes before that are no trouble.'
+    q: 'Do I have to customise my gift?',
+    a: 'Not at all! You can purchase our ready-made hampers and gifts as they are. Customisation is optional wherever it is offered.'
+  },
+  {
+    q: 'Can I add a name, photograph, or personal message?',
+    a: 'Selected products offer personalisation options. Please provide the correct spelling, upload a clear photograph if required, and enter your message in the designated fields before adding the item to your cart.'
+  },
+  {
+    q: 'How long will my order take to arrive?',
+    a: 'Preparation and delivery times depend on the product, personalisation requirements, and delivery location. Please check the estimated timeline displayed on the product page or at checkout before ordering.'
+  },
+  {
+    q: 'Can I track my order?',
+    a: 'If tracking is available for your shipment, the tracking details will be shared through the contact information provided with your order.'
+  },
+  {
+    q: 'Can I send a gift directly to someone else?',
+    a: "Yes! Enter the recipient's delivery address at checkout, provided delivery is available to that location. Please double-check the address and contact details before placing your order."
+  },
+  {
+    q: 'Can I change or cancel my order after placing it?',
+    a: 'Please contact us as soon as possible if you need to make a change. Orders that have entered preparation or personalisation may not be eligible for changes or cancellation. Please refer to our cancellation policy for the applicable terms.'
+  },
+  {
+    q: 'What if I receive a damaged or incorrect product?',
+    a: "Please contact us promptly with your order number and photographs of the issue. We'll review the concern and assist you according to our returns and resolution policy."
+  },
+  {
+    q: 'Can I return or exchange a customised gift?',
+    a: 'Eligibility depends on the reason for the return and our published return policy. Personalised products may have different eligibility rules, but issues such as damage or an incorrect item should still be reported to us.'
   }
 ];
-
 export default function About() {
   usePageMeta(
     'About',
@@ -31,9 +58,14 @@ export default function About() {
         <p className="eyebrow">About us</p>
         <h1 style={{ marginTop: 8 }}>{BRAND.tagline}</h1>
         <p>
-          WrappedStudio is a small studio in {CONTACT.city}. We print, fold, tie and pack everything by hand — a
-          magazine of your photos, a stack of polaroids, a bouquet that keeps its shape forever.
+          At WrappedStudio, we believe every gift tells a story. From thoughtfully curated hampers to personalised
+          keepsakes and adorable crochet creations, we make gifting more meaningful and memorable.
         </p>
+        <p>
+          Choose your favourite gifts, add your personal touch, and let us help you turn little moments into
+          beautiful memories.
+        </p>
+        <p className="about__signoff">Wrapped with love. Made for memories. 💌</p>
       </header>
 
       <div className="two-col">
@@ -59,35 +91,50 @@ export default function About() {
 
         <section className="info-card" id="orders">
           <h3>Contact &amp; orders</h3>
+          {/* Icons only, exactly as the footer does it: the address and
+              number live in the href and the aria-label, not in text on
+              the page. */}
           <ul className="footer__contact">
             <li>
-              <Mail size={16} />
-              <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+              <a href={`mailto:${CONTACT.email}`} aria-label={`Email us at ${CONTACT.email}`} title="Email us">
+                <Mail size={18} />
+              </a>
             </li>
             <li>
-              <Phone size={16} />
-              <a href={CONTACT.phoneHref}>{CONTACT.phone}</a>
+              <a href={CONTACT.phoneHref} aria-label={`Call us on ${CONTACT.phone}`} title="Call us">
+                <Phone size={18} />
+              </a>
             </li>
             <li>
-              <MapPin size={16} />
-              <span>{CONTACT.city}</span>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.city)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Find us in ${CONTACT.city}`}
+                title={CONTACT.city}
+              >
+                <MapPin size={18} />
+              </a>
             </li>
           </ul>
-          <p className="field-hint">
-            These contact details are placeholders in this build — replace them in <code>src/data/categories.js</code>.
-          </p>
+          <p>Mail us, call us, or find us in {CONTACT.city}.</p>
         </section>
       </div>
 
       <section className="section two-col">
         <div className="info-card" id="faqs">
-          <h3>FAQs</h3>
+          <h3>Frequently asked questions 💌</h3>
           {FAQS.map((faq) => (
             <div key={faq.q}>
               <p style={{ fontWeight: 600, color: 'var(--ink)' }}>{faq.q}</p>
               <p>{faq.a}</p>
             </div>
           ))}
+          <p style={{ fontWeight: 600, color: 'var(--ink)' }}>Still have questions?</p>
+          <p>
+            We&rsquo;re happy to help! Contact WrappedStudio through our official support channel and we&rsquo;ll
+            help you with your gifting questions.
+          </p>
         </div>
 
         <div className="stack">
@@ -99,11 +146,61 @@ export default function About() {
             </p>
           </div>
 
-          <div className="info-card" id="returns">
-            <h3>Returns</h3>
+          <div className="info-card" id="cancellation">
+            <h3>Order cancellation</h3>
             <p>
-              Personalised items are made for one person, so they cannot be resold and are not returnable. If
-              something arrives damaged or wrong, send us a photo within 48 hours and we will remake it.
+              Every gift is prepared with care to make your moments special. Please read this before placing an
+              order.
+            </p>
+            <ul className="policy-list">
+              <li>If you wish to cancel an order, please contact us as soon as possible after placing it.</li>
+              <li>
+                Cancellation requests will be reviewed based on the order&rsquo;s preparation and customisation
+                status.
+              </li>
+              <li>
+                Orders that have already been personalised, prepared, or dispatched may not be eligible for
+                cancellation, subject to applicable consumer rights and our policy.
+              </li>
+              <li>
+                Any cancellation charges, if applicable, will be disclosed and handled in accordance with
+                applicable law.
+              </li>
+            </ul>
+          </div>
+
+          <div className="info-card" id="returns">
+            <h3>Returns &amp; exchanges</h3>
+            <ul className="policy-list">
+              <li>Please check your order upon delivery.</li>
+              <li>
+                Returns or exchanges may be considered if an item arrives damaged, defective, incorrect, or
+                significantly different from what was ordered.
+              </li>
+              <li>
+                Personalised products may have limited return eligibility when there is no defect or error, subject
+                to applicable consumer rights.
+              </li>
+              <li>
+                Change-of-mind returns will be handled according to the product&rsquo;s stated return eligibility.
+              </li>
+            </ul>
+          </div>
+
+          <div className="info-card" id="refunds">
+            <h3>Refunds</h3>
+            <ul className="policy-list">
+              <li>Approved refunds will be processed through the original payment method wherever possible.</li>
+              <li>The time taken for the refund to appear may depend on the payment provider or bank.</li>
+              <li>
+                If your order has an issue, please contact us with your order number and clear photographs so we can
+                review it.
+              </li>
+            </ul>
+            <p>
+              For cancellation, return, or refund assistance, contact WrappedStudio through the official contact
+              details listed on our website. We aim to make every gifting experience smooth, thoughtful and
+              reliable.
             </p>
           </div>
 

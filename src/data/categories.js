@@ -84,11 +84,14 @@ export const BENEFITS = [
   { icon: 'truck', title: 'Delivery Across India', text: 'Bringing happiness to your doorstep' }
 ];
 
-/* Placeholder business details — replace with the real ones.
+/* The studio's own details. The email is the real one; the phone
+   number and WhatsApp below are still placeholders and want
+   replacing before launch.
+
    A social link with an empty url is rendered as a disabled icon
    rather than being pointed at an unrelated website. */
 export const CONTACT = {
-  email: 'hello@wrappedstudio.in',
+  email: 'wrapped.studio07@gmail.com',
   phone: '+91 98765 43210',
   phoneHref: 'tel:+919876543210',
   whatsapp: '919876543210',
@@ -96,7 +99,10 @@ export const CONTACT = {
 };
 
 export const SOCIALS = [
-  { id: 'instagram', label: 'Instagram', url: '' },
+  /* The share link Instagram hands out carries a tracking parameter
+     (?obrf=...) that identifies where it was copied from. The profile
+     works without it, so the plain address is what goes on the site. */
+  { id: 'instagram', label: 'Instagram', url: 'https://www.instagram.com/wrapped.studio_' },
   { id: 'pinterest', label: 'Pinterest', url: '' },
   { id: 'facebook', label: 'Facebook', url: '' },
   { id: 'youtube', label: 'YouTube', url: '' }

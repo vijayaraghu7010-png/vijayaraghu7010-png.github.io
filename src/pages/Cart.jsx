@@ -5,6 +5,7 @@ import CartLine from '../components/CartLine';
 import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
+import { CONTACT } from '../data/categories';
 import { getProductById } from '../data/products';
 import { lineDiscount } from '../utils/offers';
 import { formatRupees } from '../utils/currency';
@@ -103,7 +104,7 @@ export default function Cart() {
 
           <a
             className="btn btn--quiet btn--block btn--sm"
-            href={`mailto:hello@wrappedstudio.in?subject=${encodeURIComponent('WrappedStudio order enquiry')}&body=${encodeURIComponent(
+            href={`mailto:${CONTACT.email}?subject=${encodeURIComponent('WrappedStudio order enquiry')}&body=${encodeURIComponent(
               items
                 .map((i) => {
                   const line = `${i.quantity} × ${i.name} — ${formatRupees(i.unitPrice * i.quantity)}`;

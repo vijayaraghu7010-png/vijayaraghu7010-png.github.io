@@ -662,3 +662,102 @@
   line-height: 1.55;
   max-width: 62ch;
 }
+
+/* ============================================================
+   PAYMENTS — the queue of claims waiting to be checked against
+   the studio's own account. A card per submission, because each
+   one is a decision rather than a row to scan past.
+   ============================================================ */
+
+.admin__stack {
+  display: grid;
+  gap: 14px;
+}
+
+.admin__pay-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.admin__pay-card h3 {
+  font-size: 16px;
+}
+
+.admin__row--between {
+  justify-content: space-between;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.admin__amount {
+  font-size: 19px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin__kv {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin__kv th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 4px 12px 4px 0;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 1%;
+}
+
+.admin__kv td {
+  padding: 4px 0;
+  word-break: break-word;
+}
+
+/* The screenshot, as it was sent. Capped so a tall phone screen does
+   not push the decision buttons off the page - the point of it is to
+   be glanced at next to the account, not admired. */
+.admin__proof {
+  max-width: min(100%, 320px);
+  max-height: 420px;
+  width: auto;
+  height: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+.admin__danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(176, 58, 58, 0.4);
+  background: var(--white);
+  color: #b03a3a;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin__danger:hover {
+  background: #b03a3a;
+  color: var(--white);
+}
+
+.admin__error-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #b03a3a;
+  font-weight: 600;
+}

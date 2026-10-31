@@ -46,7 +46,9 @@ export default function Hampers() {
   return (
     <div className="shell">
       <header className="page-head">
-        <h1>{useText('hampers.title', 'Gift Hampers')}</h1>
+        <h1 className="page-head__art">
+          <img src="/images/headings/hampers.webp" alt="HamperBox — gift hampers" width="1600" height="534" />
+        </h1>
         <p>{useText('hampers.subtitle', 'Keepsake boxes packed by hand, for the people you love most.')}</p>
       </header>
 

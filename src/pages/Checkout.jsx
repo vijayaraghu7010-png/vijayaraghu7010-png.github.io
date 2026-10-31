@@ -135,8 +135,9 @@ export default function Checkout() {
             us.
           </p>
           <p>
-            Total <strong>{formatRupees(done.order.total_paise / 100)}</strong>. Payment is not taken
-            on the site yet — the studio will be in touch to arrange it and to confirm shipping.
+            Total <strong>{formatRupees(done.order.total_paise / 100)}</strong>. Pay by UPI on the
+            next page and tell us the reference number; the studio checks it against the account
+            before your order is confirmed.
           </p>
           <p>
             {done.uploaded.uploaded} photograph{done.uploaded.uploaded === 1 ? '' : 's'} received.
@@ -147,17 +148,28 @@ export default function Checkout() {
               those rather than printing an incomplete order.
             </p>
           ) : null}
-          {done.order.tracking_token && (
-            <p>
-              <Link className="btn btn--primary" to={`/track/${done.order.tracking_token}`}>
-                Follow this order <ArrowRight className="arrow" size={15} />
+          {done.order.tracking_token ? (
+            <p className="checkout__actions">
+              <Link className="btn btn--primary" to={`/pay/${done.order.tracking_token}`}>
+                Pay now <ArrowRight className="arrow" size={15} />
               </Link>
+              <Link className="btn btn--ghost" to={`/track/${done.order.tracking_token}`}>
+                Follow this order
+              </Link>
+            </p>
+          ) : (
+            /* No tracking token stored means no link we can honour, and
+               the payment page is reached by the same token. Saying so
+               is better than offering a button that cannot work. */
+            <p className="form-note">
+              We could not create your payment link. Please write to the studio quoting{' '}
+              <strong>{done.order.order_code}</strong> and we will send you one.
             </p>
           )}
 
           <p className="admin__hint">
-            Keep this page's link private — anybody who has it can see this order's progress.
-            You can also look the order up later with its code and your email address.
+            Keep these links private — anybody who has one can see this order's progress and pay
+            against it. You can also look the order up later with its code and your email address.
           </p>
 
           <Link className="btn btn--quiet btn--sm" to="/">

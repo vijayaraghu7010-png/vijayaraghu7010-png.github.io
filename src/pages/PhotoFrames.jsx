@@ -45,7 +45,9 @@ export default function PhotoFrames() {
   return (
     <div className="shell">
       <header className="page-head">
-        <h1>{useText('frames.title', 'Photo Frames')}</h1>
+        <h1 className="page-head__art">
+          <img src="/images/headings/photo-frames.webp" alt="Photo Frames" width="1600" height="534" />
+        </h1>
         <p>
           {useText(
             'frames.subtitle',

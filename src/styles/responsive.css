@@ -521,8 +521,7 @@
     display: block;
     padding: 5px 0;
   }
-  .footer__links a,
-  .footer__contact a {
+  .footer__links a {
     padding: 5px 0;
   }
   .brand {

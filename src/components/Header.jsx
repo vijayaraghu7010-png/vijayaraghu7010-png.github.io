@@ -14,6 +14,7 @@ export const NAV_LINKS = [
   { to: '/polaroids', label: 'Polaroids' },
   { to: '/bouquets', label: 'Bouquets' },
   { to: '/hampers', label: 'Hampers' },
+  { to: '/photo-frames', label: 'Photo Frames' },
   { to: '/custom-gifts', label: 'Custom Gifts' },
   { to: '/about', label: 'About' }
 ];

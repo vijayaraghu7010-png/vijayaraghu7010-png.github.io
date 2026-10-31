@@ -30,6 +30,13 @@ export const STATUS_LABEL: Record<string, string> = {
   created: 'Order placed',
   pending: 'Order placed',
   paid: 'Payment received',
+  /* Keyed by the event name with its prefix stripped, the same way
+     customerView looks the others up. A payment being submitted is
+     not an order status and never becomes one: the order is still
+     'pending' while this line sits in the timeline. */
+  submitted: 'Payment submitted',
+  rejected: 'Payment could not be confirmed',
+  correction_requested: 'Payment needs correcting',
   in_progress: 'Being made',
   completed: 'Completed',
   cancelled: 'Cancelled'
@@ -47,7 +54,15 @@ const CUSTOMER_EVENTS = new Set([
   'order.paid',
   'order.in_progress',
   'order.completed',
-  'order.cancelled'
+  'order.cancelled',
+  /* The manual UPI flow. A submission and a refusal are both things
+     the customer did or must act on, so both are shown. What is not
+     shown is the reference number, the screenshot, or who at the
+     studio decided - those live in order_payment_events, which no
+     customer-facing function reads. */
+  'payment.submitted',
+  'payment.rejected',
+  'payment.correction_requested'
 ]);
 
 export type Customer = { id: string; email: string };
@@ -93,7 +108,11 @@ export function customerView(
       .filter((e) => CUSTOMER_EVENTS.has(String(e.event)))
       .map((e) => ({
         event: e.event,
-        label: STATUS_LABEL[String(e.event).replace('order.', '')] ?? String(e.event),
+        /* Both families of event name are stripped the same way:
+           order.paid and payment.submitted both become a key in
+           STATUS_LABEL. An event with no label falls back to its own
+           name rather than to nothing. */
+        label: STATUS_LABEL[String(e.event).replace(/^(order|payment)\./, '')] ?? String(e.event),
         at: e.created_at
       }))
   };

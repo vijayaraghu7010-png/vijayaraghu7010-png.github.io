@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { ArrowRight, Loader2, Search } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowRight, IndianRupee, Loader2, Search } from 'lucide-react';
 
 import OrderTimeline from '../components/OrderTimeline';
 import usePageMeta from '../hooks/usePageMeta';
@@ -29,6 +29,11 @@ export default function Track() {
   const [step, setStep] = useState(STEP.ASK);
   const [form, setForm] = useState({ orderCode: '', email: '', code: '' });
   const [order, setOrder] = useState(null);
+
+  /* The token this page is working with, kept here rather than in the
+     address bar. The payment page is reached with the same token, so
+     it has to survive the URL being rewritten. */
+  const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
@@ -41,6 +46,7 @@ export default function Track() {
     try {
       const found = await fetchTrackedOrder(token);
       setOrder(found);
+      setToken(token);
       setStep(STEP.SHOWING);
     } catch (err) {
       setError(err.message || 'That tracking link is not valid any more.');
@@ -138,6 +144,16 @@ export default function Track() {
             )}
 
             <OrderTimeline order={order} />
+
+            {/* Still to pay, and we have the token that gets there. An
+                order that was cancelled is not offered a payment page. */}
+            {order.payment_status !== 'paid' && order.status === 'pending' && token ? (
+              <p className="track-pay">
+                <Link className="btn btn--primary btn--sm" to={`/pay/${token}`}>
+                  <IndianRupee size={14} /> Pay for this order
+                </Link>
+              </p>
+            ) : null}
 
             <p className="form-note">
               Questions about this order? Write to us quoting <strong>{order.order_code}</strong>.
