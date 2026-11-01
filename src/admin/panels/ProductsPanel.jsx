@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ImagePlus, Plus, Save, Trash2, X } from 'lucide-react';
 
 import { adminFetch, adminUpload } from '../../lib/adminClient';
+import { CATEGORIES as SHOP_CATEGORIES } from '../../data/categories';
 
 const BLANK = {
   name: '',
@@ -25,7 +26,29 @@ const BLANK = {
   published: true
 };
 
-const CATEGORIES = ['magazine', 'polaroid', 'bouquet', 'hamper'];
+/* The categories the shop has, taken from the shop's own list rather
+   than written out again here - this was a hand-kept array, and it had
+   gone stale: photo frames and wall posters were both missing, so the
+   panel could not file a product under either of them.
+
+   The label is the singular one a product card prints ("Wall Poster"),
+   not the plural heading the category page uses ("WALL POSTERS"), and
+   it is spelt out because the two do not derive from one another -
+   capitalising the id gives "Poster", which is not what the cards
+   say. A category with no entry here falls back to its id, so a new
+   one shows up usable rather than not at all. */
+const CATEGORY_LABELS = {
+  magazine: 'Magazine',
+  polaroid: 'Polaroid',
+  bouquet: 'Bouquet',
+  frame: 'Photo Frame',
+  poster: 'Wall Poster',
+  hamper: 'Hamper'
+};
+
+const titleCase = (id) => id.charAt(0).toUpperCase() + id.slice(1);
+const labelFor = (id) => CATEGORY_LABELS[id] || titleCase(id);
+const CATEGORIES = SHOP_CATEGORIES.map((c) => c.id);
 
 const list = (v) => (Array.isArray(v) ? v.join('\n') : '');
 const unlist = (v) =>
@@ -174,13 +197,13 @@ export default function ProductsPanel() {
                     setEditing({
                       ...editing,
                       category: e.target.value,
-                      categoryLabel: e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1)
+                      categoryLabel: labelFor(e.target.value)
                     })
                   }
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
-                      {c}
+                      {labelFor(c)}
                     </option>
                   ))}
                 </select>

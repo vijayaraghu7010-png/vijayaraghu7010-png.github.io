@@ -27,10 +27,17 @@ const SCOPES = [
 
 const localDate = (iso) => (iso ? new Date(iso).toISOString().slice(0, 16) : '');
 
+/* Plural here, because an offer applies to a whole category: "Wall
+   Posters only", not "Wall Poster only". Photo frames and wall posters
+   were missing, so an offer on either read as the bare id. The list of
+   categories offered comes from the products themselves, so an id with
+   no label still works - it just reads less well. */
 const CATEGORY_LABELS = {
   magazine: 'Magazines',
   polaroid: 'Polaroids',
   bouquet: 'Bouquets',
+  frame: 'Photo Frames',
+  poster: 'Wall Posters',
   hamper: 'Hampers'
 };
 
