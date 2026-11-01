@@ -3274,18 +3274,50 @@
    over it stay readable; a faint cream wash keeps it that way where
    the page is busy. ---- */
 .about-page {
+  position: relative;
+  /* Its own stacking context, so the backdrop layer below can sit at a
+     negative z-index without falling behind the page itself. Nothing
+     here may use transform/filter/perspective, which would turn this
+     element into the containing block for the fixed layer. */
+  isolation: isolate;
+}
+
+/* The backdrop is a fixed layer of its own rather than a background on
+   the page box. Painted on the page box it would be sized to the full
+   scroll height, so the taller the page the more the portrait image was
+   blown up - a different crop and a different apparent size on every
+   screen, and on iOS `background-attachment: fixed` is ignored outright.
+   Pinned to the viewport it is always sized to the viewport, so `cover`
+   scales it by one factor on both axes: the 940x1672 original keeps its
+   aspect ratio, is never stretched or squashed, and reads the same on a
+   phone, a tablet and a desktop. */
+.about-page::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Height, not `inset: 0`. On a phone the address bar slides away as
+     you scroll, which changes the viewport height; a layer pinned to
+     `bottom: 0` is resized by that, `cover` re-solves against the new
+     box, and the picture visibly jumps mid-scroll. `lvh` is the
+     viewport at its largest - the height with the bar already gone -
+     so the box never changes and neither does the image. */
+  height: 100vh;
+  height: 100lvh;
+  /* Give it a compositor layer of its own. A fixed layer without one
+     is re-rastered on every scroll frame and lags behind the content
+     on a fast flick, which reads as the background sliding about. The
+     petal canvas solves the same problem the same way. */
+  will-change: transform;
+  contain: paint;
   background-image: linear-gradient(rgba(247, 241, 238, 0.35), rgba(247, 241, 238, 0.55)),
     url('/images/about-bg.webp');
   background-repeat: no-repeat, no-repeat;
   background-position: center top, center top;
   background-size: cover, cover;
-  background-attachment: fixed, fixed;
-}
-
-@media (max-width: 760px) {
-  .about-page {
-    background-attachment: scroll, scroll;
-  }
 }
 
 /* ---- About page: the designed intro banner replaces the text header.
@@ -3299,24 +3331,182 @@
 
 .about-hero img {
   display: block;
+  /* The banner is cut-out artwork on a transparent ground, so it is
+     capped and centred rather than run to the full column width: at
+     1200px wide this near-square graphic would be over a metre of
+     screen. No radius and no shadow - there is no card edge to round
+     or cast, only type, and a shadow would trace a rectangle around
+     nothing. */
   width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
   height: auto;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  /* Its own ratio, stated so the row is reserved before the file
+     arrives and the cards below never jump. `object-fit: contain`
+     keeps it letterboxed rather than distorted if the box is ever a
+     different shape than the file. */
+  aspect-ratio: 887 / 909;
+  object-fit: contain;
 }
 
+/* ---- About page: the FAQ and policy artwork. Same treatment as the
+   banner - cut out on a transparent ground, so no card fill, no radius
+   and no shadow, only the type over the sunset. Capped at a little
+   under the file's own 915px so it is never upscaled, which on dense
+   body copy is the difference between crisp and mushy. ---- */
+.about-poster {
+  margin: 0 0 clamp(18px, 2.5vw, 34px);
+}
+
+.about-poster img {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  margin-inline: auto;
+  height: auto;
+}
+
+/* The header is sticky, so an anchored section landing at scroll
+   position 0 would sit underneath it. Hold it clear by the header's
+   own height. */
+.about-poster,
+.about-page .info-card {
+  scroll-margin-top: clamp(84px, 12vh, 112px);
+}
+
+/* The banner used to break out of the gutters on a phone: it was a
+   wide photograph whose baked-in wording went unreadably small at
+   column width, so running it edge to edge was the only way to keep it
+   legible. The cut-out version is taller than it is wide and carries no
+   background of its own, so it reads at column width and keeps the
+   page's gutters instead - full bleed would only push the type against
+   the edge of the screen. */
 @media (max-width: 640px) {
   .about-hero {
-    /* Safe full-bleed: span the viewport regardless of the shell's
-       padding, without causing horizontal scroll. */
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-top: calc(-1 * clamp(16px, 4vw, 28px));
     margin-bottom: clamp(20px, 5vw, 30px);
   }
+}
 
-  .about-hero img {
-    border-radius: 0;
-    box-shadow: none;
-  }
+/* ---- About page: the cards are glass over the sunset. Same padding,
+   radius, type and spacing as everywhere else - only the fill changes,
+   from solid cream to a cream wash the backdrop reads through, with a
+   white hairline to keep the edge legible against a busy photograph.
+   No backdrop-filter: the blur was taken out of this site on purpose,
+   it costs too much on a phone. The wash is kept heavy enough that
+   --ink on it still clears AA contrast over the brightest part of the
+   image. ---- */
+.about-page .info-card {
+  background: rgba(250, 246, 242, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 22px rgba(96, 61, 66, 0.08);
+}
+
+/* ------------------------------------------------- frame card
+   Used only on the Photo Frames page. The card is the frame: a dark
+   moulding around the picture, bevelled on its inner edge, with a
+   white mat between the moulding and the photograph - so the grid
+   reads as a wall of framed prints rather than a wall of thumbnails.
+
+   The moulding is drawn with borders and inset shadows rather than an
+   image, so it costs nothing to load and takes the page's own colours.
+   Everything below the picture is the plate: unframed, on cream. */
+
+.product-card--frame {
+  background: var(--cream-2);
+  border-radius: 3px;
+  overflow: visible;
+  padding: 0;
+  box-shadow:
+    0 10px 24px rgba(46, 36, 37, 0.14),
+    0 26px 48px rgba(46, 36, 37, 0.1);
+}
+
+/* the moulding, and the mat inside it */
+.product-card--frame .product-card__media {
+  aspect-ratio: 3 / 4;
+  border-radius: 2px;
+  /* the moulding */
+  border: 13px solid var(--coral-dark);
+  /* the mat: a white card between moulding and picture */
+  outline: 7px solid var(--white);
+  outline-offset: -20px;
+  background: var(--white);
+  box-shadow:
+    /* bevel - lit from the top left, as a real moulding is */
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.14),
+    inset -2px -2px 5px rgba(0, 0, 0, 0.35),
+    /* the picture sitting below the mat */
+    inset 0 0 16px rgba(46, 36, 37, 0.22);
+}
+
+/* The picture is inset by the mat, so it must not be painted over it. */
+.product-card--frame .product-card__media img {
+  padding: 7px;
+  background: var(--white);
+}
+
+/* The chips sit on the moulding, so they are pulled in clear of it. */
+.product-card--frame .product-card__tag,
+.product-card--frame .wish-btn {
+  top: 4px;
+  z-index: 1;
+}
+.product-card--frame .product-card__tag {
+  left: 4px;
+}
+.product-card--frame .wish-btn {
+  right: 4px;
+}
+
+.product-card--frame .product-card__body {
+  padding: 13px 14px 15px;
+}
+
+.product-card--frame .product-card__name {
+  font-family: var(--font-serif);
+  font-size: 16px;
+}
+
+/* ------------------------------------------------ poster card
+   Used only on the Wall Posters page. A poster is a sheet of paper, so
+   the card is one: portrait, square-cornered, a narrow white margin
+   around the print the way a poster is trimmed, and a shadow low
+   enough to read as paper against a wall rather than a raised tile. */
+
+.product-card--poster {
+  background: var(--white);
+  border-radius: 2px;
+  overflow: visible;
+  padding: 9px 9px 0;
+  box-shadow:
+    0 1px 2px rgba(46, 36, 37, 0.08),
+    0 12px 26px rgba(46, 36, 37, 0.12);
+}
+
+.product-card--poster .product-card__media {
+  /* ISO 216 - the shape of every A5 and A4 this page sells */
+  aspect-ratio: 1 / 1.414;
+  border-radius: 0;
+  background: var(--cream);
+  box-shadow: 0 0 0 1px rgba(46, 36, 37, 0.07);
+}
+
+/* Pulled in over the print rather than sitting on the paper margin. */
+.product-card--poster .product-card__tag {
+  left: 6px;
+  top: 6px;
+}
+.product-card--poster .wish-btn {
+  right: 6px;
+  top: 6px;
+}
+
+.product-card--poster .product-card__body {
+  padding: 13px 3px 15px;
+}
+
+.product-card--poster .product-card__name {
+  font-family: var(--font-serif);
+  font-size: 16px;
 }

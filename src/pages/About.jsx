@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone } from 'lucide-react';
-
 import usePageMeta from '../hooks/usePageMeta';
-import { CONTACT } from '../data/categories';
 
+/* The FAQ and the cancellation policy are the studio's own designed
+   artwork, cut out on a transparent ground so the page's sunset shows
+   through them. Their wording lives here as well as in the picture:
+   it is what goes into the alt text, so a screen reader and a search
+   engine still get every question and every clause, which a bare
+   "FAQ poster" alt would throw away. Edit the words here and the
+   description follows - the artwork itself has to be redrawn. */
 const FAQS = [
   {
     q: 'How do I place an order?',
@@ -46,6 +49,20 @@ const FAQS = [
     a: 'Eligibility depends on the reason for the return and our published return policy. Personalised products may have different eligibility rules, but issues such as damage or an incorrect item should still be reported to us.'
   }
 ];
+
+const FAQ_ALT = `Frequently asked questions. ${FAQS.map(
+  (faq) => `${faq.q} ${faq.a}`
+).join(' ')} Still have questions? We're happy to help! Contact WrappedStudio through our official support channel and we'll help you with your gifting questions.`;
+
+const POLICY_ALT = [
+  'Cancellation, returns and refunds policy.',
+  'At WrappedStudio, every gift is prepared with care to make your moments special. Please read our policy before placing an order.',
+  'Order cancellation: If you wish to cancel an order, please contact us as soon as possible after placing it. Cancellation requests will be reviewed based on the order’s preparation and customisation status. Orders that have already been personalised, prepared, or dispatched may not be eligible for cancellation, subject to applicable consumer rights and our policy. Any cancellation charges, if applicable, will be disclosed and handled in accordance with applicable law.',
+  'Returns and exchanges: Please check your order upon delivery. Returns or exchanges may be considered if an item arrives damaged, defective, incorrect, or significantly different from what was ordered. Personalised products may have limited return eligibility when there is no defect or error, subject to applicable consumer rights. Change-of-mind returns will be handled according to the product’s stated return eligibility.',
+  'Refunds: Approved refunds will be processed through the original payment method wherever possible. The time taken for the refund to appear may depend on the payment provider or bank. If your order has an issue, please contact us with your order number and clear photographs so we can review it.',
+  'Need help? For cancellation, return, or refund assistance, contact WrappedStudio through the official contact details listed on our website. We aim to make every gifting experience smooth, thoughtful, and reliable.'
+].join(' ');
+
 export default function About() {
   usePageMeta(
     'About',
@@ -54,152 +71,58 @@ export default function About() {
 
   return (
     <div className="about-page">
-    <div className="shell">
-      <header className="page-head about-hero">
-        {/* The whole introduction is the studio's own designed banner;
-            the alt carries its words so the page still reads the same to
-            a screen reader and a search engine. */}
-        <img
-          src="/images/about-banner.webp"
-          alt="About WrappedStudio — more than gifts, a little piece of your story. We believe every gift tells a story, from thoughtfully curated hampers to personalised keepsakes and adorable crochet creations. Choose your favourite gifts, add your personal touch, and let us turn little moments into beautiful memories. Wrapped with love, made for memories."
-          width="1600"
-          height="902"
-        />
-      </header>
+      <div className="shell">
+        <header className="page-head about-hero">
+          {/* The whole introduction is the studio's own designed banner;
+              the alt carries its words so the page still reads the same to
+              a screen reader and a search engine. */}
+          <img
+            src="/images/about-banner.webp"
+            alt="About WrappedStudio — more than gifts, a little piece of your story. We believe every gift tells a story, from thoughtfully curated hampers to personalised keepsakes and adorable crochet creations. Choose your favourite gifts, add your personal touch, and let us turn little moments into beautiful memories. Wrapped with love, made for memories."
+            width="887"
+            height="909"
+          />
+        </header>
 
-      <div className="two-col">
-        <section className="info-card">
-          <h3>What we make</h3>
-          <p>
-            Three things, done properly: personalised magazines from ₹200, medium polaroid prints at ₹6 each, and
-            handmade bouquets from ₹1,299. Every order is made after you place it — nothing sits on a shelf.
-          </p>
-          <p>
-            Prices are in Indian Rupees and shipping is charged separately, confirmed with you before any payment is
-            made.
-          </p>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 6 }}>
-            <Link className="btn btn--primary btn--sm" to="/magazines">
-              See magazines
-            </Link>
-            <Link className="btn btn--ghost btn--sm" to="/custom-gifts">
-              Ask for something custom
-            </Link>
-          </div>
+        {/* Both posters are below the fold on every screen, so they load
+            lazily and are decoded off the main thread - together they are
+            the heaviest thing on this page. */}
+        <section className="about-poster" id="faqs" aria-label="Frequently asked questions">
+          <img
+            src="/images/about-faq.webp"
+            alt={FAQ_ALT}
+            width="915"
+            height="1603"
+            loading="lazy"
+            decoding="async"
+          />
         </section>
 
-        <section className="info-card" id="orders">
-          <h3>Contact &amp; orders</h3>
-          {/* Icons only, exactly as the footer does it: the address and
-              number live in the href and the aria-label, not in text on
-              the page. */}
-          <ul className="footer__contact">
-            <li>
-              <a href={`mailto:${CONTACT.email}`} aria-label={`Email us at ${CONTACT.email}`} title="Email us">
-                <Mail size={18} />
-              </a>
-            </li>
-            <li>
-              <a href={CONTACT.phoneHref} aria-label={`Call us on ${CONTACT.phone}`} title="Call us">
-                <Phone size={18} />
-              </a>
-            </li>
-            <li>
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.city)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`Find us in ${CONTACT.city}`}
-                title={CONTACT.city}
-              >
-                <MapPin size={18} />
-              </a>
-            </li>
-          </ul>
-          <p>Mail us, call us, or find us in {CONTACT.city}.</p>
+        <section
+          className="about-poster"
+          id="returns"
+          aria-label="Cancellation, returns and refunds policy"
+        >
+          <img
+            src="/images/about-policy.webp"
+            alt={POLICY_ALT}
+            width="911"
+            height="1546"
+            loading="lazy"
+            decoding="async"
+          />
         </section>
-      </div>
 
-      <section className="section two-col">
-        <div className="info-card" id="faqs">
-          <h3>Frequently asked questions 💌</h3>
-          {FAQS.map((faq) => (
-            <div key={faq.q}>
-              <p style={{ fontWeight: 600, color: 'var(--ink)' }}>{faq.q}</p>
-              <p>{faq.a}</p>
-            </div>
-          ))}
-          <p style={{ fontWeight: 600, color: 'var(--ink)' }}>Still have questions?</p>
-          <p>
-            We&rsquo;re happy to help! Contact WrappedStudio through our official support channel and we&rsquo;ll
-            help you with your gifting questions.
-          </p>
-        </div>
-
+        {/* What the artwork does not cover. These stay as text: the
+            footer links straight to each one, and shipping terms, privacy
+            and terms of sale need to be selectable and indexable rather
+            than baked into a picture. */}
         <div className="stack">
           <div className="info-card" id="shipping">
             <h3>Shipping &amp; delivery</h3>
             <p>
               We ship across India. Shipping is charged separately from the product price and confirmed with you
               before payment, because it depends on where the order is going and how it has to be packed.
-            </p>
-          </div>
-
-          <div className="info-card" id="cancellation">
-            <h3>Order cancellation</h3>
-            <p>
-              Every gift is prepared with care to make your moments special. Please read this before placing an
-              order.
-            </p>
-            <ul className="policy-list">
-              <li>If you wish to cancel an order, please contact us as soon as possible after placing it.</li>
-              <li>
-                Cancellation requests will be reviewed based on the order&rsquo;s preparation and customisation
-                status.
-              </li>
-              <li>
-                Orders that have already been personalised, prepared, or dispatched may not be eligible for
-                cancellation, subject to applicable consumer rights and our policy.
-              </li>
-              <li>
-                Any cancellation charges, if applicable, will be disclosed and handled in accordance with
-                applicable law.
-              </li>
-            </ul>
-          </div>
-
-          <div className="info-card" id="returns">
-            <h3>Returns &amp; exchanges</h3>
-            <ul className="policy-list">
-              <li>Please check your order upon delivery.</li>
-              <li>
-                Returns or exchanges may be considered if an item arrives damaged, defective, incorrect, or
-                significantly different from what was ordered.
-              </li>
-              <li>
-                Personalised products may have limited return eligibility when there is no defect or error, subject
-                to applicable consumer rights.
-              </li>
-              <li>
-                Change-of-mind returns will be handled according to the product&rsquo;s stated return eligibility.
-              </li>
-            </ul>
-          </div>
-
-          <div className="info-card" id="refunds">
-            <h3>Refunds</h3>
-            <ul className="policy-list">
-              <li>Approved refunds will be processed through the original payment method wherever possible.</li>
-              <li>The time taken for the refund to appear may depend on the payment provider or bank.</li>
-              <li>
-                If your order has an issue, please contact us with your order number and clear photographs so we can
-                review it.
-              </li>
-            </ul>
-            <p>
-              For cancellation, return, or refund assistance, contact WrappedStudio through the official contact
-              details listed on our website. We aim to make every gifting experience smooth, thoughtful and
-              reliable.
             </p>
           </div>
 
@@ -220,8 +143,7 @@ export default function About() {
             </p>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
     </div>
   );
 }

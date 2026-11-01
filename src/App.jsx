@@ -58,11 +58,45 @@ function TrackFallback() {
   );
 }
 
+/* Every navigation starts at the top of the new page - except one that
+   names a section. React Router does not act on the fragment at all: it
+   puts #faqs in the address bar and leaves the page where it was, so
+   the footer's Help links did nothing. Handle it here.
+
+   The target usually is not in the DOM yet, because the route behind it
+   is code-split and still loading, so look again each frame for a short
+   while before falling back to the top of the page. `key` is in the
+   deps so that clicking the same link twice scrolls back to the section
+   both times, the way a plain anchor would. */
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash, key } = useLocation();
+
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [pathname]);
+    if (!hash) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      return undefined;
+    }
+
+    const id = decodeURIComponent(hash.slice(1));
+    const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let frame = 0;
+    let raf = 0;
+
+    const find = () => {
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+      } else if (frame++ < 40) {
+        raf = requestAnimationFrame(find);
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+    };
+
+    raf = requestAnimationFrame(find);
+    return () => cancelAnimationFrame(raf);
+  }, [pathname, hash, key]);
+
   return null;
 }
 

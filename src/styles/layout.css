@@ -418,10 +418,27 @@
 
 /* ------------------------------------------------------------- footer */
 
+/* The footer is a wash rather than a solid band, so whatever the page
+   puts behind it carries through - on About that is the sunset, which
+   the old opaque --peach-deep cut off in a hard line just as the page
+   ended. Elsewhere it is the cream page, so this reads almost exactly
+   as it did. The hairline keeps the footer legible as a separate
+   region now that the fill alone no longer marks it. */
 .footer {
   margin-top: clamp(24px, 2.6vw, 44px);
-  background: var(--peach-deep);
+  background: rgba(229, 217, 209, 0.45);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
   padding: clamp(26px, 2.6vw, 44px) 0 clamp(20px, 2vw, 32px);
+  /* A layer of its own, and not for decoration. The About page hangs
+     its sunset on a `position: fixed` backdrop, and a fixed element is
+     painted in the positioned phase, after ordinary in-flow content.
+     Its `z-index: -1` only sends it to the back of its own stacking
+     context - the page wrapper - so everything inside that wrapper is
+     safely in front of it, while the footer, which lives outside the
+     wrapper and had no layer at all, was painted under it and vanished
+     completely. Positioning the footer puts it back on top. */
+  position: relative;
+  z-index: 1;
 }
 
 .footer__inner {
