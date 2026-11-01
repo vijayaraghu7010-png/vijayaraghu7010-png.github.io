@@ -19,7 +19,7 @@
    Run:  node --import ./tests/resolve-extensions.mjs scripts/catalogue-sql.mjs
    It prints SQL. It does not connect to anything.                    */
 
-import { PRODUCTS, FRAME_SIZES } from '../src/data/products.js';
+import { PRODUCTS, FRAME_SIZES, POSTER_SIZES } from '../src/data/products.js';
 import { BOX_VARIANTS } from '../src/data/hamperKit.js';
 
 const q = (v) =>
@@ -78,6 +78,27 @@ for (const size of FRAME_SIZES) {
       [q(`${frame.id}-${size.id}`), q('frame-size'), q(frame.id), q(size.label), paise(size.price), 'true'].join(', ') +
       `) on conflict (id) do update set price_paise = excluded.price_paise, label = excluded.label, active = true;`
   );
+}
+
+/* Every poster is sold at every size, and each design prices
+   separately, so this is a row per poster per size - not one row like
+   the frames above. Without them the server cannot price
+   `poster-botanical-pair-poster-a4` and refuses the order. */
+for (const poster of PRODUCTS.filter((p) => p.customiser === 'poster')) {
+  for (const size of poster.posterSizes || POSTER_SIZES) {
+    lines.push(
+      `insert into public.price_variants (id, kind, parent_product_id, label, price_paise, active) values (` +
+        [
+          q(`${poster.id}-${size.id}`),
+          q('poster-size'),
+          q(poster.id),
+          q(size.label),
+          paise(size.price),
+          'true'
+        ].join(', ') +
+        `) on conflict (id) do update set price_paise = excluded.price_paise, label = excluded.label, active = true;`
+    );
+  }
 }
 
 for (const box of BOX_VARIANTS) {

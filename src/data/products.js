@@ -179,6 +179,55 @@ export const FRAME_OCCASIONS = [
   'Just Because'
 ];
 
+/* Wall posters are the one ready-made print the shop sells: the artwork
+   is the studio's, nothing is uploaded and nothing is personalised, so
+   the only choice is how big and on what paper. Two sizes at a flat
+   price each, the same for every design.
+
+   These are not wired to a picker yet. The catalogue states both prices
+   on the product and the studio confirms the size when it replies to
+   the order, which is how the shop already works - no payment gateway
+   is connected, so every order is an enquiry. Giving posters a real
+   size selector means a small customiser plus a `price_variants` row
+   per id below, exactly as FRAME_SIZES documents. */
+export const POSTER_SIZES = [
+  { id: 'poster-a5', label: 'A5', blurb: '14.8 x 21 cm', price: 50 },
+  { id: 'poster-a4', label: 'A4', blurb: '21 x 29.7 cm', price: 100 }
+];
+
+/* How many prints are ordered together. A set is priced straight off
+   the sheet count - a single A5 is ₹50, so a set of three is ₹150 -
+   so there is no price here either, only the multiplier.
+
+   It is applied by multiplying the basket line's quantity rather than
+   by minting a variant per set: the server prices a line as unit x
+   quantity, so three prints at ₹50 come to ₹150 there exactly as they
+   do on the page, and no new price_variants rows are needed. */
+export const POSTER_SETS = [
+  { id: 'set-1', label: 'Single', blurb: 'One print', count: 1 },
+  { id: 'set-2', label: 'Set of 2', blurb: 'Two prints', count: 2 },
+  { id: 'set-3', label: 'Set of 3', blurb: 'Three prints', count: 3 },
+  { id: 'set-5', label: 'Set of 5', blurb: 'Five prints', count: 5 }
+];
+
+/* The stock a poster is printed on. It does not change the price - the
+   size does that - so these carry no price of their own and are
+   recorded on the order so the studio knows what to print. */
+export const POSTER_PAPERS = [
+  { id: 'photo-sheet', label: 'Photo sheet', blurb: 'Glossy photo paper' },
+  { id: 'card', label: 'Card poster', blurb: '250–400 gsm card' }
+];
+
+/* Printed either on photo sheet or on 250-400 gsm card. Every poster
+   says the same thing, so it is written once. */
+const POSTER_DETAILS = [
+  'A5 ₹50, A4 ₹100',
+  'Photo sheet, or card poster on 250–400 gsm',
+  'Printed to order',
+  'Frame not included',
+  'Shipping charged separately'
+];
+
 export const HAMPER_OCCASIONS = [
   'Love',
   'Birthday',
@@ -628,6 +677,210 @@ export const PRODUCTS = [
     rating: 5.0,
     reviews: 14,
     addedAt: '2026-10-31'
+  },
+  /* ------------------------------------------------- posters */
+  /* The one poster with no artwork of its own: the customer brings the
+     picture. `upload: true` is what turns the upload step on in
+     PosterOptions; everything else about it is an ordinary poster.
+     sortOrder 69 keeps it first in the category, ahead of the
+     ready-made designs. */
+  {
+    id: 'poster-your-own',
+    slug: 'make-your-own-poster',
+    name: 'Make Your Own Poster',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/your-own.webp',
+    alt: 'A photograph printed as a poster with a white border, resting against a warm grey wall',
+    gallery: ['/images/posters/your-own.webp'],
+    shortDescription: 'Your own picture, printed as a poster. Send it and we print it.',
+    description:
+      'Anything you like on the wall: a photograph, a design you made, a drawing, a line of lettering. Upload the picture, pick A5 or A4 and the paper, and we print it to order. Send the largest copy you have — a small picture prints soft. Add several and each is printed as its own poster.',
+    details: [
+      'A5 ₹50, A4 ₹100',
+      'Photo sheet, or card poster on 250–400 gsm',
+      'Upload your own picture on this page',
+      'Printed to order, unframed',
+      'Shipping charged separately'
+    ],
+    occasions: ['Birthday', 'Anniversary', 'Love', 'Housewarming', 'Thank You', 'Just Because'],
+    keywords: ['poster', 'wall poster', 'custom', 'personalised', 'your own', 'upload', 'photo poster', 'print my photo', 'make your own', 'custom poster'],
+    customiser: 'poster',
+    upload: true,
+    sizeId: 'poster-a5',
+    featured: true,
+    published: true,
+    sortOrder: 69,
+    rating: 5.0,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-botanical-pair',
+    slug: 'boho-botanical-poster-pair',
+    name: 'Boho Botanical — Pair',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/botanical-pair.webp',
+    alt: 'Two botanical posters above a sofa — scattered leaves and flowers beside the words "it’s never too late" over rolling hills',
+    gallery: ['/images/posters/botanical-pair.webp'],
+    shortDescription: 'Scattered leaves and a quiet reminder, in terracotta, olive and blush.',
+    description:
+      'A pair made to hang together: one a scatter of pressed-looking leaves and flowers, the other "it’s never too late" lettered over soft hills. Earthy terracotta, olive and blush — the calm wall above a sofa or a reading chair. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Housewarming', 'Just Because', 'Birthday', 'Thank You'],
+    keywords: ['poster', 'wall poster', 'botanical', 'boho', 'leaves', 'floral', 'terracotta', 'olive', 'quote', 'minimal', 'living room'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    setId: 'set-2',
+    featured: true,
+    published: true,
+    sortOrder: 70,
+    rating: 4.8,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-i-am-doom',
+    slug: 'i-am-doom-poster',
+    name: 'I Am Doom',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/i-am-doom.webp',
+    alt: 'An armoured fist holding a cracked golden mask against a dark green haze, under the words "I Am Doom"',
+    gallery: ['/images/posters/i-am-doom.webp'],
+    shortDescription: 'A cracked mask in an armoured grip, lit green out of the dark.',
+    description:
+      'An armoured gauntlet closed around a battered golden mask, picked out of a black-and-green haze. Heavy, cinematic and built for a dark wall — a gaming corner, a desk setup, a teenager’s room. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Birthday', 'Just Because'],
+    keywords: ['poster', 'wall poster', 'doom', 'mask', 'dark', 'green', 'gaming', 'movie', 'cinematic', 'room decor'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    featured: false,
+    published: true,
+    sortOrder: 71,
+    rating: 4.7,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-cricket-legends',
+    slug: 'cricket-legends-poster-set',
+    name: 'Cricket Legends — Set of 3',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/cricket-legends.webp',
+    alt: 'Three blue cricket posters hung in a row above a sideboard, each a portrait of a player with their shirt number',
+    gallery: ['/images/posters/cricket-legends.webp'],
+    shortDescription: 'Three in a row, each in blue with the number on the back of the shirt.',
+    description:
+      'A set of three portraits in deep blue, each with the player’s number set large behind them. Hung in a row they read as one piece — the wall above a desk, a sideboard or a bed. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Birthday', 'Just Because', 'Thank You'],
+    keywords: ['poster', 'wall poster', 'cricket', 'sport', 'india', 'blue', 'set of 3', 'room decor'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    setId: 'set-3',
+    featured: true,
+    published: true,
+    sortOrder: 72,
+    rating: 4.9,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-red-aesthetic-kit',
+    slug: 'red-aesthetic-collage-kit',
+    name: 'Red Aesthetic — Collage Kit',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/red-aesthetic-kit.webp',
+    alt: 'A grid of small red and pink collage cards taped above a desk, lit by fairy lights',
+    gallery: ['/images/posters/red-aesthetic-kit.webp'],
+    shortDescription: 'A grid of small red cards — hearts, lips, cherries and slogans.',
+    description:
+      'A wall of small prints rather than one big one: hearts, cherries, lips, film stills and slogans, all in reds and deep pinks. Tape them in a block above a desk or scatter them down a wall, and add to it whenever you like. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Birthday', 'Valentine', 'Just Because', 'Love'],
+    keywords: ['poster', 'wall poster', 'collage kit', 'red', 'aesthetic', 'hearts', 'dorm', 'teen', 'room decor', 'set'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    featured: true,
+    published: true,
+    sortOrder: 73,
+    rating: 4.8,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-pink-aesthetic-kit',
+    slug: 'pink-aesthetic-collage-kit',
+    name: 'Pink Aesthetic — Collage Kit',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/pink-aesthetic-kit.webp',
+    alt: 'A gallery wall of pink and sage collage prints — tulips, flower-market posters, affirmations and butterflies — above a dresser',
+    gallery: ['/images/posters/pink-aesthetic-kit.webp'],
+    shortDescription: 'Tulips, flower-market prints and affirmations, in blush and sage.',
+    description:
+      'A soft gallery wall in blush, cream and sage: tulips and daisies, flower-market prints, bows, butterflies and a few lines worth reading twice. Mix the sizes and build it outwards from the middle. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Birthday', 'Housewarming', 'Just Because', 'Thank You'],
+    keywords: ['poster', 'wall poster', 'collage kit', 'pink', 'blush', 'sage', 'aesthetic', 'floral', 'tulips', 'affirmations', 'room decor', 'set'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    featured: true,
+    published: true,
+    sortOrder: 74,
+    rating: 4.9,
+    reviews: 0,
+    addedAt: '2026-11-01'
+  },
+  {
+    id: 'poster-music-collage-kit',
+    slug: 'music-collage-kit',
+    name: 'Music & Film — Collage Kit',
+    category: 'poster',
+    categoryLabel: 'Wall Poster',
+    price: 50,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: 'from',
+    image: '/images/posters/music-collage-kit.webp',
+    alt: 'Red and black music and film collage prints clipped to a black wire grid panel above a sofa',
+    gallery: ['/images/posters/music-collage-kit.webp'],
+    shortDescription: 'Album art and film posters in red, black and white, for a grid wall.',
+    description:
+      'Album covers, track lists and film posters in red, black and white — the wall for someone whose music is the whole personality. Clip them to a wire grid or tape them straight up. Printed to order at A5 or A4, on photo sheet or heavy card.',
+    details: POSTER_DETAILS,
+    occasions: ['Birthday', 'Just Because'],
+    keywords: ['poster', 'wall poster', 'collage kit', 'music', 'album', 'film', 'movie', 'red', 'black', 'grid wall', 'teen', 'room decor', 'set'],
+    customiser: 'poster',
+    sizeId: 'poster-a5',
+    featured: false,
+    published: true,
+    sortOrder: 75,
+    rating: 4.7,
+    reviews: 0,
+    addedAt: '2026-11-01'
   },
   /* ------------------------------------------------- hampers */
   {

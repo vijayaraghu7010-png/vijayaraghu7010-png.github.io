@@ -9,6 +9,7 @@ import ProductCard from '../components/ProductCard';
 import MagazineCustomiser from '../components/MagazineCustomiser';
 import PolaroidStudio from '../components/PolaroidStudio';
 import FrameOptions from '../components/FrameOptions';
+import PosterOptions from '../components/PosterOptions';
 import NotFound from './NotFound';
 import usePageMeta from '../hooks/usePageMeta';
 import { PRODUCTS, getProductBySlug } from '../data/products';
@@ -19,20 +20,25 @@ import { ratingFor } from '../utils/ratings';
 
 /* hamper was missing from both of these, so the breadcrumb on a hamper
    linked to undefined and read "All undefined"; frame would have done
-   the same. */
+   the same. poster was missing too, and worse: the page reads the name
+   back with .toLowerCase(), so the first poster product crashed the
+   whole route to a blank screen rather than merely reading oddly.
+   Every category in products.js needs a row in both. */
 const CATEGORY_PATHS = {
   magazine: '/magazines',
   polaroid: '/polaroids',
   bouquet: '/bouquets',
   hamper: '/hampers',
-  frame: '/photo-frames'
+  frame: '/photo-frames',
+  poster: '/wall-posters'
 };
 const CATEGORY_NAMES = {
   magazine: 'Magazines',
   polaroid: 'Polaroids',
   bouquet: 'Bouquets',
   hamper: 'Hampers',
-  frame: 'Photo Frames'
+  frame: 'Photo Frames',
+  poster: 'Wall Posters'
 };
 
 export default function ProductDetails() {
@@ -146,6 +152,8 @@ export default function ProductDetails() {
           {product.customiser === 'magazine' && <MagazineCustomiser product={product} />}
 
           {product.customiser === 'frame' && <FrameOptions product={product} />}
+
+          {product.customiser === 'poster' && <PosterOptions product={product} />}
         </div>
       </div>
 
