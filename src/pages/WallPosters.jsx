@@ -76,6 +76,7 @@ export default function WallPosters() {
 
       <ProductGrid
         products={products}
+        variant="poster"
         emptyText="Posters are being made ready — tell us what you have in mind and we will print it for you."
       />
     </div>

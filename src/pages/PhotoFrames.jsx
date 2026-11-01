@@ -77,6 +77,7 @@ export default function PhotoFrames() {
 
       <ProductGrid
         products={products}
+        variant="frame"
         emptyText="Frames are being made ready — tell us what you have in mind and we will frame it for you."
       />
     </div>
