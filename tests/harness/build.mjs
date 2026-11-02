@@ -123,3 +123,12 @@ export function buildPricing() {
     ]
   });
 }
+
+/* The email boundary with the Resend provider behind it.
+
+   Nothing is replaced. The branching, the wording and the way a
+   refusal is read are the things under test, so they are the shipping
+   ones; the test supplies Deno's env and fetch and nothing else. */
+export function buildEmail() {
+  return bundle(path.join(repo, 'supabase', 'functions', '_shared', 'email.ts'));
+}

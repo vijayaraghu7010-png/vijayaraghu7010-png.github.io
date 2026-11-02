@@ -12,14 +12,30 @@
    When a provider is chosen, it arrives as one more branch in send()
    and one more module beside this one. Nothing else moves.
 
-   What may go in a message: that an order exists, its code, and a
-   short-lived way to look at it. What may not: an address, a phone
-   number, a price, a photograph, or anything about another order. */
+   There are two kinds of message here and they are allowed different
+   things, because they are sent to addresses that were trusted in
+   different ways.
+
+   A LOOKUP message - a tracking code, a tracking link - goes to an
+   address somebody typed into a form. That person has not proved they
+   are the customer, so the message may say only that an order exists,
+   its code, and a short-lived way to look at it. Never a price, never
+   an address, never a photograph.
+
+   An ORDER message - a confirmation, a status change - goes to the
+   address on the order itself, which the customer gave at checkout.
+   Telling them what they just bought and what it cost is the point of
+   it. Still never a photograph, never a phone number or a postal
+   address, and never anything about an order that is not theirs. */
 
 export type EmailMessage = {
   to: string;
   subject: string;
   text: string;
+  /* Optional, and always alongside the text - never instead of it.
+     A mail client that will not render HTML still has the whole
+     message. */
+  html?: string;
   /* Letting the same request be retried without sending twice. The
      provider is asked to treat two messages with one key as one. */
   idempotency_key: string;
@@ -55,6 +71,13 @@ export async function sendEmail(message: EmailMessage): Promise<EmailResult> {
   const provider = providerName();
 
   if (provider === 'log') return logProvider(message);
+
+  if (provider === 'resend') {
+    /* Imported here rather than at the top so that a shop with no
+       provider never loads one. */
+    const { sendViaResend } = await import('./resend.ts');
+    return await sendViaResend(message);
+  }
 
   if (provider === 'none') {
     return {
@@ -98,6 +121,165 @@ export function trackingLinkMessage(to: string, orderCode: string, url: string, 
       `You can follow order ${orderCode} here:\n\n${url}\n\n` +
       `The link is private - anybody who has it can see this order's progress, ` +
       `so please keep it to yourself.\n`,
+    idempotency_key: key
+  };
+}
+
+/* ---------------------------------------------------- order messages
+
+   These go to the address on the order, so they may name what was
+   bought and what it came to. The shaping is deliberate: a line is a
+   name and a count, never a photograph and never a configuration -
+   "9 x Polaroid Prints (Medium)" tells the customer what they bought
+   without reprinting the message they wrote inside a card. */
+
+export type OrderLine = { product_name: string; quantity: number };
+
+const rupees = (paise: number) =>
+  `₹${(Math.round(Number(paise) || 0) / 100).toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  })}`;
+
+const listLines = (lines: OrderLine[]) =>
+  lines.map((l) => `  ${l.quantity} x ${l.product_name}`).join('\n');
+
+export function orderPlacedMessage(
+  to: string,
+  orderCode: string,
+  lines: OrderLine[],
+  totals: { subtotal_paise: number; discount_paise: number; total_paise: number },
+  trackUrl: string,
+  key: string
+): EmailMessage {
+  /* The discount is named only when there was one. A line reading
+     "Discount ₹0" invites the question of why not. */
+  const money =
+    totals.discount_paise > 0
+      ? `Subtotal: ${rupees(totals.subtotal_paise)}\n` +
+        `Discount: -${rupees(totals.discount_paise)}\n` +
+        `Total: ${rupees(totals.total_paise)}`
+      : `Total: ${rupees(totals.total_paise)}`;
+
+  return {
+    to,
+    subject: `We have your order ${orderCode}`,
+    text:
+      `Thank you - your order is with us.\n\n` +
+      `Order ${orderCode}\n\n` +
+      `${listLines(lines)}\n\n` +
+      `${money}\n\n` +
+      `Shipping is worked out separately and confirmed with you before ` +
+      `anything is sent.\n\n` +
+      `You can follow it here:\n${trackUrl}\n\n` +
+      `We will write again when it moves along.\n\n` +
+      `WrappedStudio\n`,
+    idempotency_key: key
+  };
+}
+
+/* To the studio, not to a customer. It may therefore name the
+   customer - this is the shop's own post about its own order - but it
+   still carries no address, no telephone number and no photograph.
+   Those are in the panel, behind a sign-in, which is where they
+   belong. */
+export function studioAlertMessage(
+  to: string,
+  orderCode: string,
+  customerName: string,
+  lines: OrderLine[],
+  totalPaise: number,
+  key: string
+): EmailMessage {
+  return {
+    to,
+    subject: `New order ${orderCode} - ${rupees(totalPaise)}`,
+    text:
+      `${customerName} has placed order ${orderCode}.\n\n` +
+      `${listLines(lines)}\n\n` +
+      `Total: ${rupees(totalPaise)}\n\n` +
+      `The delivery details and any photographs are on the order in the ` +
+      `panel.\n`,
+    idempotency_key: key
+  };
+}
+
+/* What each status is called when a customer is told about it. The
+   panel's own words, so the two never disagree. */
+const STATUS_SAID: Record<string, { subject: string; line: string }> = {
+  paid: {
+    subject: 'Payment received',
+    line: 'Your payment has come through, and your order is in the queue to be made.'
+  },
+  in_progress: {
+    subject: 'Being made',
+    line: 'Your order is being made now.'
+  },
+  completed: {
+    subject: 'On its way',
+    line: 'Your order is finished and on its way to you.'
+  },
+  cancelled: {
+    subject: 'Cancelled',
+    line: 'Your order has been cancelled. If that is a surprise, please reply and we will put it right.'
+  }
+};
+
+export function orderStatusMessage(
+  to: string,
+  orderCode: string,
+  status: string,
+  trackUrl: string,
+  key: string
+): EmailMessage | null {
+  const said = STATUS_SAID[status];
+  /* A status nobody has written a sentence for is not announced.
+     Silence is better than a customer being emailed the word
+     "pending". */
+  if (!said) return null;
+
+  return {
+    to,
+    subject: `${said.subject} - order ${orderCode}`,
+    text: `${said.line}\n\nOrder ${orderCode}\n\n${trackUrl}\n\nWrappedStudio\n`,
+    idempotency_key: key
+  };
+}
+
+/* The manual UPI flow. A refusal has to say what to do next, or it is
+   just bad news with no door out of it. */
+export function paymentMessage(
+  to: string,
+  orderCode: string,
+  outcome: 'confirmed' | 'rejected' | 'correction',
+  trackUrl: string,
+  key: string
+): EmailMessage {
+  const said =
+    outcome === 'confirmed'
+      ? {
+          subject: `Payment confirmed - order ${orderCode}`,
+          body: `We have checked your payment for order ${orderCode} and it is confirmed. Your order is in the queue to be made.`
+        }
+      : outcome === 'rejected'
+        ? {
+            subject: `We could not confirm your payment - order ${orderCode}`,
+            body:
+              `We could not match a payment to order ${orderCode}.\n\n` +
+              `Nothing has been taken by us. If you have paid, reply to this ` +
+              `message and we will look again.`
+          }
+        : {
+            subject: `Your payment needs a correction - order ${orderCode}`,
+            body:
+              `There is something to fix with the payment for order ${orderCode}.\n\n` +
+              `Open the order below and send the details again.`
+          };
+
+  return {
+    to,
+    subject: said.subject,
+    text: `${said.body}\n\n${trackUrl}\n\nWrappedStudio\n`,
     idempotency_key: key
   };
 }
