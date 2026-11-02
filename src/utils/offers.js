@@ -81,3 +81,27 @@ export function lineDiscount(item, product, offers) {
 export function bannerOffers(offers) {
   return (offers || []).filter((o) => offerIsLive(o) && o.showBanner);
 }
+
+/* What one of these actually costs right now.
+
+   The card and the bag both took the live offer into account; the
+   customisers did not. They priced straight off the product, or off
+   the size the customer had chosen, so a shop advertising twenty per
+   cent off showed the full price the moment anybody opened the thing
+   they wanted to buy - and put the full price in the bag's line.
+
+   `price` is passed separately because a frame, a magazine and a
+   poster are each sold at several prices under one product, and it is
+   the chosen one the discount comes off.
+
+   Returns the price to charge and the offer it came from, or the
+   price unchanged and no offer. */
+export function unitPriceWithOffer(product, price, offers) {
+  const base = Number(price);
+  if (!product || !Number.isFinite(base)) return { price: base || 0, offer: null, was: null };
+
+  const deal = bestOfferFor({ ...product, price: base }, offers);
+  if (!deal) return { price: base, offer: null, was: null };
+
+  return { price: deal.price, offer: deal.offer, was: base };
+}

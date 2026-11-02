@@ -3,6 +3,8 @@ import { ArrowRight, ImagePlus, X } from 'lucide-react';
 
 import QuantitySelector from './QuantitySelector';
 import { useCart } from '../context/CartContext';
+import { useSiteConfig } from '../context/SiteConfigContext';
+import { unitPriceWithOffer } from '../utils/offers';
 import { BORDER_SWATCHES, POLAROID_BORDERS, getProductById } from '../data/products';
 import { ACCEPTED_TYPES, MAX_BYTES_PER_PHOTO, maxPhotosFor } from '../data/uploadLimits';
 import { putLinePhotos } from '../lib/photoStore';
@@ -36,7 +38,11 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
 
   const product = getProductById(formatId);
   const min = product.minQty || 1;
-  const subtotal = product.price * quantity;
+  /* The live offer comes off the per-print price, so the studio shows
+     what the card and the bag already show. */
+  const { offers } = useSiteConfig();
+  const unit = unitPriceWithOffer(product, product.price, offers);
+  const subtotal = unit.price * quantity;
 
   /* switching format resets the count to that format's minimum */
   useEffect(() => {
@@ -159,7 +165,7 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
               label="Number of prints"
             />
             <span className="studio__qtyNote">
-              Calculated at {formatRupees(product.price)} per print
+              Calculated at {formatRupees(unit.price)} per print
             </span>
           </div>
         </div>

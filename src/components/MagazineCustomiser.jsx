@@ -9,6 +9,8 @@ import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
 import { makeLineKey } from '../utils/cartCalculations';
 import { useCart } from '../context/CartContext';
+import { useSiteConfig } from '../context/SiteConfigContext';
+import { unitPriceWithOffer } from '../utils/offers';
 
 /* Seven steps, as described on the magazines page. Each step validates
    before the configured magazine can go in the bag. */
@@ -30,7 +32,9 @@ export default function MagazineCustomiser({ product }) {
   /* The chosen size decides which catalogue product (and price)
      applies — each size row names its own. */
   const priced = getProductById(size.productId) || product;
-  const lineTotal = priced.price * quantity;
+  const { offers } = useSiteConfig();
+  const unit = unitPriceWithOffer(priced, priced.price, offers);
+  const lineTotal = unit.price * quantity;
 
   /* How many photographs this length takes. A shorter size chosen
      after the photos were picked can leave more than it holds, so the

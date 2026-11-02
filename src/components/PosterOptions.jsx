@@ -8,6 +8,8 @@ import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
 import { makeLineKey } from '../utils/cartCalculations';
 import { useCart } from '../context/CartContext';
+import { useSiteConfig } from '../context/SiteConfigContext';
+import { unitPriceWithOffer } from '../utils/offers';
 
 const MAX_MB = Math.round(MAX_BYTES_PER_PHOTO / 1048576);
 const MAX_PHOTOS = maxPhotosFor('poster');
@@ -55,7 +57,9 @@ export default function PosterOptions({ product }) {
   /* The basket counts prints, not sets, so a set of three ordered
      twice is six prints - which is what the server prices. */
   const sheets = set.count * quantity;
-  const subtotal = size.price * sheets;
+  const { offers } = useSiteConfig();
+  const unit = unitPriceWithOffer(product, size.price, offers);
+  const subtotal = unit.price * sheets;
 
   /* Numbered here so the steps stay in sequence whether the upload
      step is shown or not. */
@@ -270,12 +274,12 @@ export default function PosterOptions({ product }) {
             >
               <strong>{s.label}</strong>
               <span>{s.blurb}</span>
-              <span>{formatRupees(size.price * s.count)}</span>
+              <span>{formatRupees(unitPriceWithOffer(product, size.price, offers).price * s.count)}</span>
             </button>
           ))}
         </div>
         <p className="field-hint">
-          A set is priced by the sheet — {formatRupees(size.price)} a print at {size.label}.
+          A set is priced by the sheet — {formatRupees(unit.price)} a print at {size.label}.
         </p>
       </div>
 

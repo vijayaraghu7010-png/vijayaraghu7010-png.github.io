@@ -8,6 +8,8 @@ import { putLinePhotos } from '../lib/photoStore';
 import { formatRupees } from '../utils/currency';
 import { makeLineKey } from '../utils/cartCalculations';
 import { useCart } from '../context/CartContext';
+import { useSiteConfig } from '../context/SiteConfigContext';
+import { unitPriceWithOffer } from '../utils/offers';
 
 const MAX_MB = Math.round(MAX_BYTES_PER_PHOTO / 1048576);
 const MAX_PHOTOS = maxPhotosFor('frame');
@@ -58,7 +60,9 @@ export default function FrameOptions({ product }) {
      themed frames are products now, so there is no picker. Recorded on
      the order so the studio sees the design on the line. */
   const theme = FRAME_THEMES.find((t) => String(product.id || '').endsWith(t.id));
-  const subtotal = size.price * quantity;
+  const { offers } = useSiteConfig();
+  const unit = unitPriceWithOffer(product, size.price, offers);
+  const subtotal = unit.price * quantity;
 
   /* Object URLs are revoked when this leaves the screen, so a long
      browsing session does not leak them. */
