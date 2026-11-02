@@ -127,7 +127,7 @@ export default function OrdersPanel() {
       ) : rows.length === 0 ? (
         <p className="admin__hint">No orders yet.</p>
       ) : (
-        <table className="admin__table">
+        <table className="admin__orders">
           <thead>
             <tr>
               <th>Order</th>
@@ -142,17 +142,17 @@ export default function OrdersPanel() {
           <tbody>
             {rows.map((order) => (
               <tr key={order.id}>
-                <td>
+                <td data-label="Order">
                   <strong>{order.order_code}</strong>
                 </td>
-                <td>{when(order.created_at)}</td>
-                <td>
+                <td data-label="Placed">{when(order.created_at)}</td>
+                <td data-label="Customer">
                   {order.customer_name}
                   <br />
                   <span className="admin__hint">{order.customer_email}</span>
                 </td>
-                <td>{rupees(order.total_paise)}</td>
-                <td>
+                <td data-label="Total">{rupees(order.total_paise)}</td>
+                <td data-label="Photos">
                   {order.photos_deleted_at ? (
                     <span className="admin__hint">deleted</span>
                   ) : (
@@ -161,10 +161,10 @@ export default function OrdersPanel() {
                     </>
                   )}
                 </td>
-                <td>
+                <td data-label="Status">
                   <span className="admin__badge">{LABEL[order.status] || order.status}</span>
                 </td>
-                <td>
+                <td data-label="">
                   <button type="button" className="admin__ghost" onClick={() => setOpenId(order.id)}>
                     Open
                   </button>
@@ -358,7 +358,7 @@ function OrderDetail({ orderId, onBack }) {
 
         <div className="admin__card">
           <h3>What was ordered</h3>
-          <table className="admin__table">
+          <table className="admin__orders admin__orders--lines">
             <tbody>
               {items.map((item) => (
                 <tr key={item.id}>

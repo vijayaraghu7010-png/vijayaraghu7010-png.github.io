@@ -196,16 +196,30 @@ export const offerFromDb = (r) => ({
   showBanner: Boolean(r.show_banner)
 });
 
+/* An empty optional number is nothing, not zero and not "".
+
+   "Maximum discount" is left blank far more often than it is filled
+   in, and the input hands back the empty string. Postgres will not
+   take that for a numeric column - `invalid input syntax for type
+   numeric: ""` - and the whole offer failed to save over a field
+   nobody had touched. Blank, and anything that is not a number, is
+   null; the column is nullable because the cap really is optional. */
+const optionalNumber = (v) => {
+  if (v === '' || v === null || v === undefined) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
 export const offerToDb = (o) => ({
   id: o.id,
   code: o.code || null,
   title: o.title || '',
   description: o.description || '',
   discount_type: o.discountType || 'percent',
-  value: Number(o.value) || 0,
+  value: optionalNumber(o.value) ?? 0,
   applies_to: o.appliesTo || { scope: 'all' },
-  min_order: Number(o.minOrder) || 0,
-  max_discount: o.maxDiscount ?? null,
+  min_order: optionalNumber(o.minOrder) ?? 0,
+  max_discount: optionalNumber(o.maxDiscount),
   starts_at: o.startsAt || null,
   ends_at: o.endsAt || null,
   active: o.active !== false,

@@ -761,3 +761,119 @@
   color: #b03a3a;
   font-weight: 600;
 }
+
+/* ------------------------------------------------- orders tables
+
+   .admin__table is `display: grid`, which suits the <div> the
+   products and offers panels use it on and ruins a real <table>. The
+   orders panel has two actual tables, and they carried that class:
+   the seven columns stopped collapsing, the widest cell set the
+   width, and on a phone the whole page scrolled sideways with the
+   heading and toolbar cut off at both edges.
+
+   They get their own class. On a wide screen it is a table. On a
+   narrow one each order becomes a card, every cell labelled from the
+   column it came from, which is the only honest way to read seven
+   columns on a phone - a sideways scrollbar hides the status and the
+   Open button, the two things the studio is looking for. */
+
+.admin__orders {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin__orders th,
+.admin__orders td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin__orders thead th {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.admin__orders tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* The line-items table inside the drawer is two columns, and the
+   money belongs on the right. */
+.admin__orders--lines td:last-child,
+.admin__orders--lines th:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  /* One card per order. */
+  .admin__orders,
+  .admin__orders tbody,
+  .admin__orders tr,
+  .admin__orders td {
+    display: block;
+    width: 100%;
+  }
+
+  /* The column headings are carried by each cell instead. */
+  .admin__orders thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .admin__orders tr {
+    margin-bottom: 10px;
+    padding: 4px 2px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+
+  .admin__orders td {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 7px 12px;
+    border-bottom: 0;
+    text-align: right;
+  }
+
+  .admin__orders td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+  }
+
+  /* A cell with no heading - the Open button - gets the full width
+     rather than an empty label holding a gap open. */
+  .admin__orders td[data-label='']::before {
+    display: none;
+  }
+  .admin__orders td[data-label=''] {
+    justify-content: flex-end;
+  }
+
+  .admin__orders--lines td {
+    text-align: left;
+    justify-content: flex-start;
+  }
+  .admin__orders--lines td::before {
+    display: none;
+  }
+}
