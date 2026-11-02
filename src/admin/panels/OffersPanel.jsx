@@ -25,7 +25,36 @@ const SCOPES = [
   { id: 'product', label: 'One product' }
 ];
 
-const localDate = (iso) => (iso ? new Date(iso).toISOString().slice(0, 16) : '');
+/* A datetime-local input speaks local wall-clock time and carries no
+   zone. Both directions have to say so, and neither did.
+
+   Reading, toISOString() rendered the instant in UTC and put that in
+   a box the studio reads as its own clock, so a sale starting at
+   eight in the evening was shown as half past two.
+
+   Writing, the bare "2026-11-02T20:04" went to a timestamptz column,
+   which reads an unzoned stamp as UTC - five and a half hours later
+   than intended here. A Diwali sale set for this afternoon was
+   therefore still in the future at tea time and applied to nobody. */
+const localDate = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  );
+};
+
+/* The other way: a bare datetime-local string is parsed as local time
+   by JavaScript, and toISOString then states the instant it actually
+   is, zone and all. */
+const fromLocalDate = (value) => {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
 
 /* Plural here, because an offer applies to a whole category: "Wall
    Posters only", not "Wall Poster only". Photo frames and wall posters
@@ -278,7 +307,7 @@ export default function OffersPanel() {
                 <input
                   type="datetime-local"
                   value={localDate(editing.startsAt)}
-                  onChange={(e) => setEditing({ ...editing, startsAt: e.target.value || null })}
+                  onChange={(e) => setEditing({ ...editing, startsAt: fromLocalDate(e.target.value) })}
                 />
               </div>
               <div>
@@ -286,7 +315,7 @@ export default function OffersPanel() {
                 <input
                   type="datetime-local"
                   value={localDate(editing.endsAt)}
-                  onChange={(e) => setEditing({ ...editing, endsAt: e.target.value || null })}
+                  onChange={(e) => setEditing({ ...editing, endsAt: fromLocalDate(e.target.value) })}
                 />
               </div>
             </div>

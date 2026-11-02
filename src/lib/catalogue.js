@@ -212,7 +212,11 @@ const optionalNumber = (v) => {
 
 export const offerToDb = (o) => ({
   id: o.id,
-  code: o.code || null,
+  /* A code is typed by a customer, so it is stored the way one will
+     be typed: trimmed and in capitals. "DIWALI " with the space the
+     keyboard left behind would never have matched anything. An empty
+     box is no code at all, which is what makes an offer automatic. */
+  code: o.code ? String(o.code).trim().toUpperCase() || null : null,
   title: o.title || '',
   description: o.description || '',
   discount_type: o.discountType || 'percent',
