@@ -3510,3 +3510,31 @@
   font-family: var(--font-serif);
   font-size: 16px;
 }
+
+/* ---- the offer badge on the shaped cards
+
+   The badge is pinned to the top right of the picture, which is right
+   for a rectangle and wrong for the two cards that are not one.
+
+   A bouquet's picture is an arch, clipped to that curve, so a badge in
+   its top corner was sliced into a dark crescent - there is no corner
+   there to sit in. It moves to the foot of the arch, where the radius
+   is 16px and the wishlist heart is already comfortable on the other
+   side.
+
+   A frame's picture is inset behind a 13px moulding and a mat. The
+   badge belongs on the moulding, pulled in to match the caption and
+   the heart, rather than straddling the two. ---- */
+
+.product-card--bouquet .product-card__deal {
+  top: auto;
+  right: auto;
+  bottom: 12px;
+  left: 12px;
+}
+
+.product-card--frame .product-card__deal {
+  top: 4px;
+  right: 4px;
+  z-index: 2;
+}
