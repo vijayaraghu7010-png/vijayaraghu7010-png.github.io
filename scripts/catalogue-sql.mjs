@@ -35,9 +35,28 @@ lines.push('begin;');
 
 // ------------------------------------------------------------ products
 
-/* Only the columns the server prices from. The shop's own copy of a
-   product - its photographs, its description - is already in the
-   bundle and is not what this is for. */
+/* The whole product, not just what it costs.
+
+   This used to write only the columns the server prices from, on the
+   reasoning that the shop had its own copy of everything else. It
+   does not any more: the shop reads what the panel writes, so a row
+   that carries no picture and no description is a product with no
+   picture and no description. Seeding half a product left the
+   catalogue showing seven posters with empty images.
+
+   `published` is deliberately NOT overwritten on conflict. Something
+   the studio has taken out of the shop must stay out when the
+   catalogue is seeded again; only the sweep below, which names every
+   id the bundle still has, decides that. */
+const jsonb = (v) => `${q(JSON.stringify(Array.isArray(v) ? v : []))}::jsonb`;
+
+const COLUMNS = [
+  'id', 'slug', 'name', 'category', 'category_label', 'price', 'price_mode',
+  'unit_label', 'min_qty', 'image', 'alt', 'gallery', 'short_description',
+  'description', 'details', 'occasions', 'keywords', 'customiser', 'size_id',
+  'featured', 'sort_order'
+];
+
 const rows = PRODUCTS.map((p) =>
   '  (' +
   [
@@ -47,19 +66,35 @@ const rows = PRODUCTS.map((p) =>
     q(p.category),
     q(p.categoryLabel || ''),
     Number(p.price),
+    q(p.priceMode || 'fixed'),
+    q(p.unitLabel || ''),
     p.minQty ? Number(p.minQty) : 'null',
-    q(p.customiser || null)
+    q(p.image || ''),
+    q(p.alt || ''),
+    jsonb(p.gallery),
+    q(p.shortDescription || ''),
+    q(p.description || ''),
+    jsonb(p.details),
+    jsonb(p.occasions),
+    jsonb(p.keywords),
+    q(p.customiser || null),
+    q(p.sizeId || null),
+    p.featured ? 'true' : 'false',
+    Number(p.sortOrder) || 0
   ].join(', ') +
   ')'
 );
 
+/* Everything except id, which is what the conflict is on, and
+   published, which the studio owns. */
+const UPDATES = COLUMNS.filter((c) => c !== 'id')
+  .map((c) => `${c} = excluded.${c}`)
+  .join(', ');
+
 lines.push(
-  'insert into public.products (id, slug, name, category, category_label, price, min_qty, customiser) values\n' +
+  `insert into public.products (${COLUMNS.join(', ')}) values\n` +
     rows.join(',\n') +
-    '\non conflict (id) do update set name = excluded.name, slug = excluded.slug, ' +
-    'category = excluded.category, category_label = excluded.category_label, ' +
-    'price = excluded.price, min_qty = excluded.min_qty, ' +
-    'customiser = excluded.customiser, published = true;'
+    `\non conflict (id) do update set ${UPDATES};`
 );
 
 const known = PRODUCTS.map((p) => q(p.id)).join(', ');
