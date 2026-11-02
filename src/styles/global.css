@@ -17,7 +17,23 @@ body {
   color: var(--ink-2);
   background: var(--peach);
   -webkit-font-smoothing: antialiased;
+
+  /* Keep anything that pokes out sideways from making the page
+     scroll, WITHOUT turning the body into a scroll container.
+
+     `overflow-x: hidden` does both: the spec makes the other axis
+     `auto`, so the body becomes the scroller, and a mobile browser
+     then stops pinning `position: sticky` to the viewport - the
+     header rode up and down the page on a phone while behaving
+     perfectly on a desktop, which is why it looked fine here for so
+     long.
+
+     `clip` clips and nothing else: no scroll container, no scrollport,
+     so the sticky header goes on sticking. The `hidden` above it is
+     the fallback for a browser too old to know `clip`, which keeps
+     today's behaviour rather than letting the page slide sideways. */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 img {
