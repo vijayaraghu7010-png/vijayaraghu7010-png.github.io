@@ -27,6 +27,12 @@
   --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-sans: 'Inter', 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-script: 'Caveat', 'Segoe Script', cursive;
+  /* Caveat is the shop's handwriting - a note in the margin, the line
+     under the footer logo. It is a marker pen, and at heading size it
+     reads as a scrawl. The painted page headings are formal
+     calligraphy, so a title set in type to sit beside them needs the
+     same manner: high contrast, looped, swashed. */
+  --font-display-script: 'Great Vibes', 'Caveat', cursive;
 
   /* shape */
   --radius-xl: 28px;

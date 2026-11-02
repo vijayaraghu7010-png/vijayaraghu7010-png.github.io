@@ -3538,3 +3538,23 @@
   right: 4px;
   z-index: 2;
 }
+
+/* ---- a page title set in type, next to five that are painted
+
+   Great Vibes has a small x-height and long descenders, so it needs
+   to be set large to carry a page, and it needs room underneath or
+   the tails of the p and the capital W are sliced off by the line
+   box. The colour is the softer burgundy rather than the ink, which
+   is what keeps it beside the painted headings instead of shouting
+   over the products below it. ---- */
+.page-head__script {
+  font-family: var(--font-display-script);
+  font-weight: 400;
+  font-size: clamp(46px, 8.5vw, 96px);
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+  color: var(--burgundy-soft);
+  /* room for the descenders */
+  padding-bottom: 0.12em;
+  margin: 0;
+}

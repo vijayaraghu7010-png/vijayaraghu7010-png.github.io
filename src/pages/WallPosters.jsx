@@ -46,7 +46,10 @@ export default function WallPosters() {
   return (
     <div className="shell">
       <header className="page-head">
-        <h1>{useText('posters.title', 'Wall Posters')}</h1>
+        {/* The other five category pages open on painted lettering;
+            this one has none, so it is set in type that keeps their
+            manner rather than dropping to the body serif. */}
+        <h1 className="page-head__script">{useText('posters.title', 'Wall Posters')}</h1>
         <p>
           {useText(
             'posters.subtitle',
