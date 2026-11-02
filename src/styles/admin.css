@@ -811,7 +811,29 @@
   white-space: nowrap;
 }
 
+/* The whole value of a cell, as one thing.
+
+   Each cell is label-then-value, and the value is often several bits:
+   a name and an email, a count and a size. Left loose they became
+   separate flex items and the cell spread them from edge to edge -
+   "PHOTOS   0        0.0 MB". Wrapped, they stay together and the
+   long ones wrap instead of running off the side, which is what a
+   gmail address on a phone did. */
+.admin__cellv {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 760px) {
+  /* The filter bar is a select and a search box; side by side they do
+     not fit a phone. */
+  .admin__row {
+    flex-wrap: wrap;
+  }
+  .admin__search {
+    width: 100%;
+  }
+
   /* One card per order. */
   .admin__orders,
   .admin__orders tbody,
@@ -841,12 +863,11 @@
 
   .admin__orders td {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     align-items: baseline;
     justify-content: space-between;
     padding: 7px 12px;
     border-bottom: 0;
-    text-align: right;
   }
 
   .admin__orders td::before {
@@ -857,7 +878,10 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--muted);
-    text-align: left;
+  }
+
+  .admin__orders td .admin__cellv {
+    text-align: right;
   }
 
   /* A cell with no heading - the Open button - gets the full width
@@ -867,13 +891,16 @@
   }
   .admin__orders td[data-label=''] {
     justify-content: flex-end;
+    padding-top: 2px;
   }
 
   .admin__orders--lines td {
-    text-align: left;
     justify-content: flex-start;
   }
   .admin__orders--lines td::before {
     display: none;
+  }
+  .admin__orders--lines td .admin__cellv {
+    text-align: left;
   }
 }

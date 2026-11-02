@@ -143,31 +143,46 @@ export default function OrdersPanel() {
             {rows.map((order) => (
               <tr key={order.id}>
                 <td data-label="Order">
-                  <strong>{order.order_code}</strong>
+                  <span className="admin__cellv">
+                    <strong>{order.order_code}</strong>
+                  </span>
                 </td>
-                <td data-label="Placed">{when(order.created_at)}</td>
+                <td data-label="Placed">
+                  <span className="admin__cellv">{when(order.created_at)}</span>
+                </td>
                 <td data-label="Customer">
-                  {order.customer_name}
-                  <br />
-                  <span className="admin__hint">{order.customer_email}</span>
+                  <span className="admin__cellv">
+                    {order.customer_name}
+                    <br />
+                    <span className="admin__hint">{order.customer_email}</span>
+                  </span>
                 </td>
-                <td data-label="Total">{rupees(order.total_paise)}</td>
+                <td data-label="Total">
+                  <span className="admin__cellv">{rupees(order.total_paise)}</span>
+                </td>
                 <td data-label="Photos">
-                  {order.photos_deleted_at ? (
-                    <span className="admin__hint">deleted</span>
-                  ) : (
-                    <>
-                      {order.photo_count} <span className="admin__hint">{mb(order.photo_bytes_total)}</span>
-                    </>
-                  )}
+                  <span className="admin__cellv">
+                    {order.photos_deleted_at ? (
+                      <span className="admin__hint">deleted</span>
+                    ) : (
+                      <>
+                        {order.photo_count}{' '}
+                        <span className="admin__hint">{mb(order.photo_bytes_total)}</span>
+                      </>
+                    )}
+                  </span>
                 </td>
                 <td data-label="Status">
-                  <span className="admin__badge">{LABEL[order.status] || order.status}</span>
+                  <span className="admin__cellv">
+                    <span className="admin__badge">{LABEL[order.status] || order.status}</span>
+                  </span>
                 </td>
                 <td data-label="">
-                  <button type="button" className="admin__ghost" onClick={() => setOpenId(order.id)}>
-                    Open
-                  </button>
+                  <span className="admin__cellv">
+                    <button type="button" className="admin__ghost" onClick={() => setOpenId(order.id)}>
+                      Open
+                    </button>
+                  </span>
                 </td>
               </tr>
             ))}
