@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { setLiveProducts } from '../data/products';
-import { getAll, getReviews, setReviews, newId, onStoreChange, connectShared } from '../lib/store';
+import { fetchCatalogue, shippedCatalogue } from '../lib/catalogue';
+import { customerSupabase } from '../lib/customerClient';
 import { pickActiveTheme } from '../lib/shape';
 
 /* Everything the admin controls, read from the local store: the
@@ -55,8 +56,11 @@ export function SiteConfigProvider({ children }) {
      into. This is the cheap way to tell a real change from a no-op. */
   const seen = useRef('');
 
-  function load() {
-    const data = getAll();
+  /* Paints from what the site shipped with, then replaces it with
+     what the studio has actually saved. Never awaited by the render:
+     the shop is on screen before the database answers, and redraws
+     only if the answer differs. */
+  function apply(data) {
     const theme = pickActiveTheme(data.themes);
 
     const stamp = JSON.stringify([
@@ -76,7 +80,7 @@ export function SiteConfigProvider({ children }) {
 
     setState((s) => ({
       ready: true,
-      source: 'local',
+      source: data.source || 'live',
       content: Object.fromEntries(data.content.map((r) => [r.key, r.value])),
       theme,
       offers: data.offers,
@@ -85,15 +89,22 @@ export function SiteConfigProvider({ children }) {
     }));
   }
 
+  function load() {
+    return fetchCatalogue()
+      .then(apply)
+      .catch(() => {
+        /* The database could not be reached at all. The shop still
+           has everything it was built with. */
+        if (!seen.current) apply({ ...shippedCatalogue(), source: 'built-in' });
+      });
+  }
+
   useEffect(() => {
-    /* Paint from what this browser already has, then ask whether the
-       page is being served by the demo server. If it is, the shared
-       shop arrives a moment later and the page redraws; if it is not,
-       nothing happens and this stays a one-browser shop. */
+    /* Shipped data on screen immediately, the studio's own a moment
+       later. There is no demo server any more: the shop everybody
+       sees is the one in the database. */
+    apply({ ...shippedCatalogue(), source: 'built-in' });
     load();
-    connectShared().then((isShared) => {
-      if (isShared) load();
-    });
     return () => clearTheme(state.theme?.tokens);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -103,7 +114,6 @@ export function SiteConfigProvider({ children }) {
      stay because a scheduled festival theme turns itself on at a time
      when nobody is editing anything. */
   useEffect(() => {
-    const stop = onStoreChange(load);
     const onFocus = () => {
       if (document.visibilityState === 'visible') load();
     };
@@ -111,7 +121,6 @@ export function SiteConfigProvider({ children }) {
     window.addEventListener('focus', onFocus);
     const every = window.setInterval(onFocus, 60_000);
     return () => {
-      stop();
       document.removeEventListener('visibilitychange', onFocus);
       window.removeEventListener('focus', onFocus);
       window.clearInterval(every);
@@ -120,24 +129,34 @@ export function SiteConfigProvider({ children }) {
   }, []);
 
   /* Anyone can leave one: the shop has no accounts to check against,
-     and a demo that asks you to sign in first never gets reviewed.
-     The panel can delete whatever should not be there. */
-  function addReview({ productId, rating, name, text }) {
+     and a site that asks you to sign in first never gets reviewed.
+     The panel can delete whatever should not be there.
+
+     The same bounds the table itself enforces are applied here, so a
+     customer is told what is wrong rather than handed a constraint
+     violation. */
+  async function addReview({ productId, rating, name, text }) {
     const score = Math.round(Number(rating));
     if (!productId || !(score >= 1 && score <= 5)) throw new Error('Pick between one and five stars');
 
-    setReviews([
-      ...getReviews(),
-      {
-        id: newId('review'),
-        productId,
-        rating: score,
-        name: String(name || '').trim().slice(0, 40) || 'A customer',
-        text: String(text || '').trim().slice(0, 600),
-        at: new Date().toISOString()
-      }
-    ]);
-    load();
+    const body = String(text || '').trim().slice(0, 2000);
+    if (!body) throw new Error('Please write a line or two');
+
+    if (!customerSupabase) throw new Error('Reviews are not available right now');
+
+    const { error } = await customerSupabase.from('reviews').insert({
+      product_id: productId,
+      rating: score,
+      name: String(name || '').trim().slice(0, 80) || 'A customer',
+      text: body
+    });
+
+    if (error) throw new Error('That review could not be saved');
+
+    /* Straight back from the table, so the review appears for the
+       person who wrote it and for everybody else alike. */
+    seen.current = '';
+    await load();
   }
 
   const value = useMemo(() => ({ ...state, refresh: load, addReview }), [state]);
