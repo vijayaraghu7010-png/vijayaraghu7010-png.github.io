@@ -181,16 +181,37 @@ async function content(method, query, body) {
 // ----------------------------------------------------------- themes
 
 /* The shipped palette, so the panel can show what a token was before
-   anybody touched it. */
-const SHIPPED_THEMES = Object.fromEntries(
-  DEFAULT_THEMES.map((t) => [t.id, { ...t.tokens }])
+   anybody touched it.
+
+   themes.id is a uuid the table generates; the built-in themes in
+   siteDefaults.js are identified by a word - 'base', 'diwali'. The
+   two never meet, so everything here matches on the name instead,
+   and the panel is handed `shipped` keyed by the row's own id, which
+   is what it looks up by. Sending 'base' as an id is what produced
+   `invalid input syntax for type uuid: "base"`. */
+const SHIPPED_BY_NAME = new Map(
+  DEFAULT_THEMES.map((t) => [t.name.trim().toLowerCase(), t])
 );
+
+const BASE_THEME = DEFAULT_THEMES.find((t) => t.isDefault) || DEFAULT_THEMES[0];
 
 async function themes(method, query, body) {
   if (method === 'GET') {
     const { data, error } = await supabase.from('themes').select('*').order('name');
     blew(error, 'theme');
-    return { themes: (data || []).map(themeFromDb), shipped: SHIPPED_THEMES };
+
+    const rows = (data || []).map(themeFromDb);
+
+    /* Keyed by the id the panel holds, not by the word the file uses. */
+    const shipped = {};
+    for (const row of rows) {
+      const original = SHIPPED_BY_NAME.get((row.name || '').trim().toLowerCase());
+      if (original) shipped[row.id] = { ...original.tokens };
+    }
+    /* The panel falls back to `shipped.base` for a theme made here. */
+    if (BASE_THEME) shipped.base = { ...BASE_THEME.tokens };
+
+    return { themes: rows, shipped };
   }
 
   if (method === 'POST') {
@@ -209,20 +230,49 @@ async function themes(method, query, body) {
       return { ok: true };
     }
 
+    /* Back to the palettes the shop shipped with: anything added here
+       goes, the built-in colours are restored, and the default is
+       live again - which is what the panel warns it will do. */
     if (query.get('reset')) {
-      const rows = DEFAULT_THEMES.map(themeToDb);
-      const { error } = await supabase.from('themes').upsert(rows, { onConflict: 'id' });
-      blew(error, 'theme');
-      return { reset: rows.length };
+      const { data: existing, error: readError } = await supabase
+        .from('themes')
+        .select('id, name');
+      blew(readError, 'theme');
+
+      const byName = new Map(
+        (existing || []).map((r) => [(r.name || '').trim().toLowerCase(), r.id])
+      );
+
+      /* Added here means: not one of the shipped names. */
+      const strays = (existing || [])
+        .filter((r) => !SHIPPED_BY_NAME.has((r.name || '').trim().toLowerCase()))
+        .map((r) => r.id);
+      if (strays.length) {
+        const { error } = await supabase.from('themes').delete().in('id', strays);
+        blew(error, 'theme');
+      }
+
+      for (const t of DEFAULT_THEMES) {
+        const id = byName.get(t.name.trim().toLowerCase());
+        const row = themeToDb(t);
+        delete row.id; /* the table owns the uuid */
+        row.is_active = Boolean(t.isDefault);
+
+        if (id) {
+          const { error } = await supabase.from('themes').update(row).eq('id', id);
+          blew(error, 'theme');
+        } else {
+          const { error } = await supabase.from('themes').insert(row);
+          blew(error, 'theme');
+        }
+      }
+
+      return { reset: DEFAULT_THEMES.length };
     }
 
     if (!body?.name) throw new Error('name is required');
-    const row = themeToDb({
-      ...body,
-      id: body.id || slugify(body.name),
-      kind: body.kind || 'custom',
-      isActive: false
-    });
+    const row = themeToDb({ ...body, kind: body.kind || 'custom', isActive: false });
+    delete row.id; /* a new theme is given its uuid by the table */
     const { error } = await supabase.from('themes').insert(row);
     blew(error, 'theme');
     return { ok: true };

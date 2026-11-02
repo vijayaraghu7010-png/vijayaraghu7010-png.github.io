@@ -102,11 +102,33 @@ export function productToDb(p) {
   };
 }
 
+/* Fields where blank means "the panel has nothing for this", not
+   "erase what the product had". A catalogue seeded with only the
+   columns the server prices from left every picture and description
+   empty, and the shop dutifully showed empty cards: seven posters,
+   seven blank squares. A product with no picture is a fault, never a
+   decision, so a blank here falls back to what shipped.
+
+   The cost is that blanking one of these in the panel will not take
+   on a product the site ships with. That is the right way round: a
+   shop with the wrong description is a smaller problem than a shop
+   with no pictures. */
+const BLANK_MEANS_UNSET = new Set([
+  'image', 'alt', 'categoryLabel', 'shortDescription', 'description',
+  'gallery', 'details', 'occasions', 'keywords'
+]);
+
+const isBlank = (v) =>
+  v === '' || v === null || (Array.isArray(v) && v.length === 0);
+
 /* The shipped product, with the studio's edits laid over it. */
 function overlay(shipped, edited) {
   const merged = { ...shipped };
   for (const field of EDITABLE) {
-    if (edited[field] !== undefined) merged[field] = edited[field];
+    const value = edited[field];
+    if (value === undefined) continue;
+    if (isBlank(value) && BLANK_MEANS_UNSET.has(field) && !isBlank(shipped[field])) continue;
+    merged[field] = value;
   }
   return merged;
 }
