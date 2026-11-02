@@ -155,10 +155,17 @@
   border-radius: var(--radius-pill);
   background: var(--coral);
   color: var(--white);
+  /* The count is a number on a chip, not body copy, so it is pinned
+     to its own size rather than inheriting one that a phone browser
+     may inflate. */
   font-size: 10.5px;
+  line-height: 1;
   font-weight: 700;
   display: grid;
   place-content: center;
+  /* A ring in the bar's own colour, so the chip reads as sitting on
+     the icon rather than swallowing its corner. */
+  box-shadow: 0 0 0 2px var(--cream);
 }
 
 .burger {

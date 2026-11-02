@@ -76,7 +76,11 @@ export default function Header({ onOpenSearch, onOpenAuth }) {
               onClick={openCart}
             >
               <ShoppingBag size={20} />
-              <span className="icon-btn__count">{count}</span>
+              {/* An empty bag says so by being empty. A "0" badge is
+                  the loudest thing on a phone header and means
+                  nothing - the wishlist beside it has always hidden
+                  its own at zero. */}
+              {count > 0 && <span className="icon-btn__count">{count}</span>}
             </button>
 
             <AccountButton onOpenAuth={onOpenAuth} />
