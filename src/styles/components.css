@@ -3547,7 +3547,9 @@
    box. The colour is the softer burgundy rather than the ink, which
    is what keeps it beside the painted headings instead of shouting
    over the products below it. ---- */
-.page-head__script {
+/* `.page-head h1` sets a size of its own and outranks a lone class,
+   so this is qualified to match it and win on order. */
+.page-head h1.page-head__script {
   font-family: var(--font-display-script);
   font-weight: 400;
   font-size: clamp(46px, 8.5vw, 96px);
