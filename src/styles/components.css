@@ -3560,3 +3560,34 @@
   padding-bottom: 0.12em;
   margin: 0;
 }
+
+/* ---- the custom-gift banner on a narrow screen
+
+   The copy is laid out for a wide card: it sits on the right, over
+   the half of the scrim that is nearly opaque, and has no left
+   padding because it never needed any there.
+
+   Narrow, `width: min(100%, 420px)` resolves to the full width, the
+   auto margin has nothing left to push against, and the block lands
+   hard against the left edge - where the scrim is still transparent
+   and the card's own rounded corner clips the first letter of every
+   line. Dark type on a lit sunset, with the H and the C shaved off.
+
+   So on a narrow card the scrim covers the whole picture rather than
+   one side of it, and the copy is padded on all four sides. ---- */
+@media (max-width: 760px) {
+  .gift-banner::after {
+    background: linear-gradient(
+      180deg,
+      rgba(250, 246, 242, 0.74) 0%,
+      rgba(250, 246, 242, 0.9) 45%,
+      rgba(250, 246, 242, 0.97) 100%
+    );
+  }
+
+  .gift-banner__copy {
+    width: 100%;
+    margin-left: 0;
+    padding: clamp(18px, 4.5vw, 28px);
+  }
+}
