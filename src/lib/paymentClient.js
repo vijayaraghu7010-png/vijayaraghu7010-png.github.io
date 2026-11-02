@@ -61,14 +61,27 @@ export async function submitPayment({ token, method, utr, note, file }) {
    installed. On a desktop nothing happens, which is why the UPI ID
    and the QR code are both on the page as well. */
 export function upiLink({ upiId, displayName, amountPaise, orderCode }) {
-  const params = new URLSearchParams({
-    pa: upiId,
-    pn: displayName || 'WrappedStudio',
-    am: (Number(amountPaise) / 100).toFixed(2),
-    cu: 'INR'
-  });
-  if (orderCode) params.set('tn', `Order ${orderCode}`);
-  return `upi://pay?${params.toString()}`;
+  const fields = [
+    ['pa', upiId],
+    ['pn', displayName || 'WrappedStudio'],
+    ['am', (Number(amountPaise) / 100).toFixed(2)],
+    ['cu', 'INR']
+  ];
+  if (orderCode) fields.push(['tn', `Order ${orderCode}`]);
+
+  /* Percent-encoded by hand, not by URLSearchParams.
+
+     URLSearchParams writes a space as `+`, which is correct for an
+     HTML form and wrong here: a UPI app takes the query literally and
+     does not turn `+` back into a space. The payee name and the note
+     both contain spaces, so the phone showed "Order+WS-2026-0019" and
+     would have shown "Wrapped+Studio" for a two-word name.
+     encodeURIComponent writes %20, which every UPI app reads. */
+  const query = fields
+    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+    .join('&');
+
+  return `upi://pay?${query}`;
 }
 
 export const PAYMENT_APPS = {
