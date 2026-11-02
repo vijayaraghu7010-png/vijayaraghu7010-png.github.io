@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import useAccountSync from '../hooks/useAccountSync';
+import { mergeLines } from '../lib/customerBag';
 import { cartCount, cartSubtotal, clampQuantity, makeLineKey } from '../utils/cartCalculations';
 import { getProductById } from '../data/products';
 
@@ -11,6 +13,12 @@ export function CartProvider({ children }) {
   const [items, setItems] = useLocalStorage(STORAGE_KEY, []);
   const [isOpen, setOpen] = useState(false);
   const [toast, setToast] = useState(null);
+
+  /* The bag belongs to the customer, not to the browser it was filled
+     in. Signed in, it is kept with the account and is the same bag on
+     a phone and a laptop; signed out, this is a guest bag in
+     localStorage exactly as it always was. */
+  useAccountSync({ field: 'lines', value: items, setValue: setItems, merge: mergeLines });
 
   const notify = useCallback((message) => {
     setToast({ message, at: Date.now() });

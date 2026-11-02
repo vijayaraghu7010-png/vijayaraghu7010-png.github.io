@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo } from 'react';
 import useLocalStorage from '../hooks/useLocalStorage';
+import useAccountSync from '../hooks/useAccountSync';
+import { mergeWishlist } from '../lib/customerBag';
 
 const WishlistContext = createContext(null);
 
@@ -7,6 +9,11 @@ const STORAGE_KEY = 'wrappedstudio.wishlist.v1';
 
 export function WishlistProvider({ children }) {
   const [ids, setIds] = useLocalStorage(STORAGE_KEY, []);
+
+  /* Saved with the account when there is one, so the same heart is
+     filled in on every device. A guest's wishlist stays in this
+     browser, as it always did. */
+  useAccountSync({ field: 'wishlist', value: ids, setValue: setIds, merge: mergeWishlist });
 
   const has = useCallback((id) => ids.includes(id), [ids]);
 
