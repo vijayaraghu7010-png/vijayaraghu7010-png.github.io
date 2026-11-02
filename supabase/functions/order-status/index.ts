@@ -10,6 +10,7 @@
    them is a separate, deliberate act with its own function.        */
 
 import { serviceClient, json, fail, corsHeaders, text, requireAdmin } from '../_shared/common.ts';
+import { notifyStatusChange } from '../_shared/notify.ts';
 
 const ALLOWED: Record<string, string[]> = {
   pending: ['paid', 'cancelled'],
@@ -41,7 +42,7 @@ Deno.serve(async (req) => {
 
   const { data: order } = await db
     .from('orders')
-    .select('id, order_code, status')
+    .select('id, order_code, status, customer_email')
     .eq('id', orderId)
     .maybeSingle();
 
@@ -66,6 +67,16 @@ Deno.serve(async (req) => {
     actor: admin.email,
     event: `order.${next}`,
     detail: { from: order.status }
+  });
+
+  /* After the move is written down, never before: a customer told
+     their order is being made, when the update then failed, is worse
+     than a customer told nothing. */
+  await notifyStatusChange({
+    id: orderId,
+    order_code: order.order_code,
+    customer_email: order.customer_email,
+    status: next
   });
 
   return json({ order_id: orderId, status: next, changed: true }, 200, origin);

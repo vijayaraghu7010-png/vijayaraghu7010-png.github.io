@@ -16,6 +16,7 @@
    history. Rejections are kept exactly as verifications are.      */
 
 import { serviceClient, json, fail, corsHeaders, text, requireAdmin } from '../_shared/common.ts';
+import { notifyPaymentOutcome } from '../_shared/notify.ts';
 import { presignGet, r2Configured } from '../_shared/r2.ts';
 import { upiConfig, UPI_METHODS } from '../_shared/payments.ts';
 
@@ -197,7 +198,7 @@ async function decide(
 
   const { data: order } = await db
     .from('orders')
-    .select('id, order_code, status, payment_status, total_paise')
+    .select('id, order_code, status, payment_status, total_paise, customer_email')
     .eq('id', payment.order_id)
     .maybeSingle();
 
@@ -292,6 +293,22 @@ async function decide(
       detail: { reason: note || null }
     });
   }
+
+  /* The customer is told what was decided, after it has been. The
+     three decisions map to three messages; a correction asks them to
+     send the details again rather than just refusing them. */
+  await notifyPaymentOutcome({
+    id: order.id,
+    order_code: order.order_code,
+    customer_email: order.customer_email,
+    outcome:
+      decision.status === 'verified'
+        ? 'confirmed'
+        : decision.status === 'rejected'
+          ? 'rejected'
+          : 'correction',
+    paymentId
+  });
 
   return json(
     { payment_id: paymentId, status: decision.status, order_status: orderStatus },

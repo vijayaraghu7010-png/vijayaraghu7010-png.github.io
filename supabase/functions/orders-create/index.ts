@@ -15,6 +15,7 @@ import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
 import { serviceClient, json, fail, corsHeaders, text, newToken, hashToken, getLimits, photoLimitFor } from '../_shared/common.ts';
 import { priceOrder } from '../_shared/pricing.ts';
+import { notifyOrderPlaced } from '../_shared/notify.ts';
 import { unverifiedJwtRole } from '../_shared/customer.ts';
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -178,6 +179,24 @@ Deno.serve(async (req) => {
          was this one cheaper" without guessing at what was live. */
       offers: [...new Set(priced.priced.map((l) => l.offer_id).filter(Boolean))]
     }
+  });
+
+  /* The post goes last, after everything that matters is written
+     down. It is awaited so the function is not torn down mid-send,
+     and it swallows its own failures - a shop that cannot send mail
+     is still a shop that took the order. */
+  await notifyOrderPlaced({
+    id: order.id,
+    order_code: order.order_code,
+    customer_name: name,
+    customer_email: email,
+    subtotal_paise: priced.subtotal,
+    discount_paise: priced.discount,
+    total_paise: priced.total,
+    lines: priced.priced.map((l) => ({
+      product_name: l.product_name,
+      quantity: l.quantity
+    }))
   });
 
   const limits = await getLimits(db);
