@@ -107,3 +107,19 @@ export function buildPanel() {
     }
   });
 }
+
+/* The real pricing module, with only the Supabase types stubbed.
+
+   Nothing else is replaced: the offer rules under test are the ones
+   that will decide what a customer is charged, so they have to be the
+   shipping ones. The database is handed in as an argument, which is
+   all priceOrder ever wanted. */
+export function buildPricing() {
+  return bundle(path.join(repo, 'supabase', 'functions', '_shared', 'pricing.ts'), {
+    plugins: [
+      redirect({
+        '^https://esm\.sh/@supabase/supabase-js': stub('stubs', 'supabase-types.js')
+      })
+    ]
+  });
+}

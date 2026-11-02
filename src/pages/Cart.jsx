@@ -6,7 +6,7 @@ import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { CONTACT } from '../data/categories';
-import { getProductById } from '../data/products';
+import { getProductById, getProductBySlug } from '../data/products';
 import { lineDiscount } from '../utils/offers';
 import { formatRupees } from '../utils/currency';
 
@@ -15,9 +15,18 @@ export default function Cart() {
   const { items, subtotal, count, clear } = useCart();
   const { offers } = useSiteConfig();
 
-  /* automatic offers come off the bag without anyone typing a code */
+  /* Automatic offers come off the bag without anyone typing a code.
+
+     A frame or a poster line is filed under an id the cart made for
+     the size - `poster-botanical-pair-poster-a4` - which is in no
+     catalogue, so looking it up found nothing and the line fell back
+     to a stand-in with no category. A category offer therefore passed
+     over every sized product in the bag while the server, which knows
+     the real product, took it off. The slug on the line is the
+     product's own, so it finds it. */
   const savings = items.reduce((sum, item) => {
-    const line = lineDiscount(item, getProductById(item.productId), offers);
+    const product = getProductById(item.productId) || getProductBySlug(item.slug);
+    const line = lineDiscount(item, product, offers);
     return sum + (line ? line.saved : 0);
   }, 0);
   const payable = Math.max(0, subtotal - savings);

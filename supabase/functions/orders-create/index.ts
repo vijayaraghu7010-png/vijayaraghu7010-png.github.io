@@ -95,7 +95,8 @@ Deno.serve(async (req) => {
       state,
       pincode,
       subtotal_paise: priced.subtotal,
-      total_paise: priced.subtotal,
+      discount_paise: priced.discount,
+      total_paise: priced.total,
       notes: notes || null
     })
     .select('id, order_code, total_paise')
@@ -105,7 +106,16 @@ Deno.serve(async (req) => {
 
   const { data: items, error: itemError } = await db
     .from('order_items')
-    .insert(priced.priced.map((line) => ({ ...line, order_id: order.id })))
+    /* order_items holds what was bought, not why it was cheap: the
+       discount is the order's and lives on the order. These two are
+       worked out per line so the total can be, and are dropped here
+       rather than widening a table for a figure already recorded. */
+    .insert(
+      priced.priced.map(({ discount_paise: _d, offer_id: _o, ...line }) => ({
+        ...line,
+        order_id: order.id
+      }))
+    )
     .select('id, product_id, product_name, customiser, position');
 
   if (itemError) {
@@ -159,7 +169,15 @@ Deno.serve(async (req) => {
     order_id: order.id,
     actor: 'customer',
     event: 'order.created',
-    detail: { lines: priced.priced.length, total_paise: priced.subtotal }
+    detail: {
+      lines: priced.priced.length,
+      subtotal_paise: priced.subtotal,
+      discount_paise: priced.discount,
+      total_paise: priced.total,
+      /* Which offers actually came off, so the studio can answer "why
+         was this one cheaper" without guessing at what was live. */
+      offers: [...new Set(priced.priced.map((l) => l.offer_id).filter(Boolean))]
+    }
   });
 
   const limits = await getLimits(db);
