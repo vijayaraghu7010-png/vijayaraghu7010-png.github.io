@@ -9,12 +9,35 @@
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 
 /* Which sites may call these functions. Anything not named here is
-   refused by the browser before the request is made. */
-const ALLOWED_ORIGINS = (Deno.env.get('ALLOWED_ORIGINS') ||
-  'http://localhost:5173,http://127.0.0.1:5173')
+   refused by the browser before the request is made.
+
+   The shop's own addresses are built in rather than only configured.
+   They were configured once and the shop moved to a new domain, and
+   every function went on answering with the old one - so checkout,
+   the bag and the payment page were all refused by the browser on
+   wrappedstudio.in while working perfectly on the address nobody uses
+   any more. A secret that has to be remembered when a domain changes
+   is a secret that will be forgotten.
+
+   This is not a widening: these are the shop's own front doors, not
+   anybody's. ALLOWED_ORIGINS still adds to the list, for a staging
+   site or a new domain before this file knows about it. */
+const SHOP_ORIGINS = [
+  'https://wrappedstudio.in',
+  'https://www.wrappedstudio.in',
+  'https://wrappedstudio.vercel.app',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
+const CONFIGURED = (Deno.env.get('ALLOWED_ORIGINS') || '')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
+
+/* The live site first, so that an origin nobody recognises is sent
+   there rather than to a developer's laptop. */
+const ALLOWED_ORIGINS = [...new Set([...CONFIGURED, ...SHOP_ORIGINS])];
 
 export function corsHeaders(origin: string | null): Record<string, string> {
   const allowed = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
