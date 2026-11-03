@@ -141,6 +141,24 @@ export const GIFT_TEXT_MAX = 40;
    as a texture on the faces that carry artwork. */
 const KIT = '/images/kit';
 
+/* Categories the catalogue will not refuse on size.
+
+   Everything else is gated on the packer's own fit test, so a card
+   that cannot go in the box says so instead of offering a dead
+   button. Crochet is exempt by decision: these are soft, squashable
+   things, and the manifest's measurements are the shape at rest
+   rather than the shape they take once something is pressed in
+   beside them. The geometry is not wrong enough to stand between a
+   customer and a keyring.
+
+   The packer is NOT told to ignore them. A crochet gift that truly
+   has nowhere to go still comes back unplaced, so the preview and
+   the hamper's own count stay honest - the catalogue simply stops
+   deciding that in advance. */
+export const UNGATED_CATEGORIES = ['crochet'];
+
+export const giftIsUngated = (kind) => UNGATED_CATEGORIES.includes(kind?.category);
+
 export const GIFT_CATEGORIES = [
   { id: 'crochet', label: 'Crochet & keyrings' },
   { id: 'chocolate', label: 'Chocolates' },
@@ -167,6 +185,10 @@ export const GIFT_KINDS = [
     /* body, then the smaller head on top of it */
     proxy: [[0, 0.28, 0, 0.45, 0.28, 0.45], [0, 0.74, 0, 0.33, 0.26, 0.33]],
     maxQty: 2,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#C4161C', '#8E1116', '#1B2A52'],
     supportsScale: true,
     figure: {
@@ -196,6 +218,10 @@ export const GIFT_KINDS = [
     size: [7, 12, 5],
     proxy: [[0, 0.28, 0, 0.45, 0.28, 0.48], [0, 0.74, 0, 0.33, 0.26, 0.33]],
     maxQty: 2,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#1A1A1E', '#3A3A42', '#B9B9C0'],
     supportsScale: true,
     figure: {
@@ -228,6 +254,10 @@ export const GIFT_KINDS = [
     size: [5, 8, 4],
     proxy: [[0, 0.28, 0, 0.45, 0.28, 0.45], [0, 0.74, 0, 0.36, 0.26, 0.36]],
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#FFFFFF', '#F2EFE8'],
     supportsScale: true,
     figure: {
@@ -259,6 +289,10 @@ export const GIFT_KINDS = [
     size: [5, 9, 4],
     proxy: [[0, 0.28, 0, 0.45, 0.28, 0.45], [0, 0.74, 0, 0.36, 0.26, 0.36]],
     maxQty: 4,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#9A6B46', '#F6CBD2', '#E8B02A', '#FFFFFF'],
     supportsScale: true,
     figure: {
@@ -294,6 +328,10 @@ export const GIFT_KINDS = [
     model: 'crochet-turtle',
     size: [8, 4, 9],
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#FFFFFF', '#F7F2EA'],
     supportsScale: true,
     previewPath: KIT + '/crochet-turtle.jpg',
@@ -312,6 +350,10 @@ export const GIFT_KINDS = [
     model: 'crochet-bow',
     size: [9, 11, 2],
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#D98A9A', '#E7BFBD', '#F6EDE3', '#A8B79C'],
     supportsScale: true,
     previewPath: KIT + '/crochet-bow.jpg',
@@ -334,6 +376,10 @@ export const GIFT_KINDS = [
     proxy: [[0, 0.16, 0, 0.40, 0.16, 0.40], [0, 0.80, 0, 0.50, 0.20, 0.50]],
     clearance: 0.6,
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#E8B02A', '#F0C24A', '#E7BFBD'],
     supportsScale: true,
     previewPath: KIT + '/crochet-sunflower.jpg',
@@ -354,6 +400,10 @@ export const GIFT_KINDS = [
     proxy: [[0, 0.27, 0, 0.32, 0.27, 0.32], [0, 0.74, 0, 0.50, 0.26, 0.50]],
     clearance: 0.6,
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#F3DFA2', '#F6EDE3', '#E7BFBD'],
     supportsScale: true,
     previewPath: KIT + '/crochet-bouquet.jpg',
@@ -373,6 +423,10 @@ export const GIFT_KINDS = [
     size: [7, 10, 3],
     proxy: [[0, 0.22, 0, 0.50, 0.22, 0.42], [0, 0.62, 0, 0.26, 0.38, 0.22]],
     maxQty: 3,
+    /* Soft, and packed lying down the way a crochet toy
+       actually goes into a box. Standing these up was what
+       made a 10 cm keyring ask for a 14 x 12 x 5 in box. */
+    orientations: ['upright', 'on-side'],
     colours: ['#B3121D', '#7E1020', '#D9434E'],
     supportsScale: true,
     previewPath: KIT + '/crochet-cherries.jpg',

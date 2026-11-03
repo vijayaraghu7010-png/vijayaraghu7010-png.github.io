@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 
-import { GIFT_CATEGORIES, GIFT_KINDS, getBoxVariant, giftUnitPrice } from '../../data/hamperKit';
+import { GIFT_CATEGORIES, GIFT_KINDS, getBoxVariant, giftIsUngated, giftUnitPrice } from '../../data/hamperKit';
 import { giftCouldFit, smallestBoxFor } from '../../lib/packing';
 import { formatRupees } from '../../utils/currency';
 
@@ -80,8 +80,12 @@ export default function GiftCatalogPanel({ design, change }) {
                  lying down if the manifest allows it. Said plainly,
                  with the size that would take it, rather than a dead
                  button. This is the packer's own test, so the card
-                 and the box can never disagree. */
-              const tooTall = !giftCouldFit(kind, variant);
+                 and the box can never disagree.
+
+                 Except for the categories the catalogue does not gate
+                 on size: those are offered whatever the measurements
+                 say, and the packer has the last word instead. */
+              const tooTall = !giftIsUngated(kind) && !giftCouldFit(kind, variant);
               const needsBox = tooTall ? smallestBoxFor(kind) : null;
 
               return (
