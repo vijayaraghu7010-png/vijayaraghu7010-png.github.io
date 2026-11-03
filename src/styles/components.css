@@ -3218,6 +3218,30 @@
   margin-top: 4px;
 }
 
+/* The payment's own state, inside the tracking card.
+
+   `.pay-state` on the payment page is always a child of `.info-card`
+   and so arrives with a box around it already. Here it sits inside
+   one, so it brings its own. */
+.track-paystate {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-2, #e7ddd6);
+  border-radius: 12px;
+  background: var(--white, #fff);
+}
+
+.track-paystate h3 {
+  margin: 0;
+  font-size: 14.5px;
+}
+
+.track-paystate p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* ---- Frame theme picker: the design templates a customer chooses
    from. Portrait sample images in a responsive grid, the chosen one
    ringed in coral like the other option buttons. ---- */

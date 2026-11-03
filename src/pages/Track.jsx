@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowRight, IndianRupee, Loader2, Search } from 'lucide-react';
+import { ArrowRight, Clock, IndianRupee, Loader2, Search, TriangleAlert } from 'lucide-react';
 
 import OrderTimeline from '../components/OrderTimeline';
 import usePageMeta from '../hooks/usePageMeta';
+import { formatRupees } from '../utils/currency';
 import { fetchTrackedOrder, requestTrackingCode, verifyTrackingCode } from '../lib/trackingClient';
 
 /* Following an order without an account.
@@ -115,6 +116,22 @@ export default function Track() {
     }
   }
 
+  /* The customer's own last payment attempt, if there has been one.
+     Named here rather than inline so the three things that depend on
+     it - the waiting note, the refusal, and whether to offer the
+     payment page at all - cannot drift apart. */
+  const payment = order?.payment ?? null;
+  const awaitingCheck = payment?.status === 'submitted';
+  const refused = payment?.status === 'rejected' || payment?.status === 'correction_requested';
+
+  /* Offered only when paying is genuinely the next thing. A payment
+     sitting with the studio is not a reason to send money again. */
+  const canPay =
+    Boolean(token) &&
+    order?.payment_status !== 'paid' &&
+    order?.status === 'pending' &&
+    !awaitingCheck;
+
   return (
     <div className="shell">
       <header className="page-head">
@@ -145,12 +162,52 @@ export default function Track() {
 
             <OrderTimeline order={order} />
 
+            {/* What became of the payment, in the same words the
+                payment page uses.
+
+                This reply has always carried the customer's own last
+                submission, and this page threw it away. So somebody
+                waiting on a check saw nothing to say the studio had
+                their details, and somebody whose payment was refused
+                saw neither the refusal nor the reason the studio
+                wrote out for them - only a button inviting them to
+                pay, which is how a customer ends up paying twice. */}
+            {awaitingCheck ? (
+              <section className="pay-state pay-state--waiting track-paystate">
+                <h3>
+                  <Clock size={16} /> We are checking your payment
+                </h3>
+                <p>
+                  You told us about {formatRupees(payment.amount_paise / 100)} with reference{' '}
+                  <strong>{payment.utr}</strong>. Somebody at the studio is comparing that with the
+                  account — it is a person looking, not a rule, so it can take a few hours.
+                </p>
+                <p className="admin__hint">
+                  There is nothing more to do, and nothing more to pay.
+                </p>
+              </section>
+            ) : refused ? (
+              <section className="pay-state pay-state--bad track-paystate">
+                <h3>
+                  <TriangleAlert size={16} /> That payment could not be confirmed
+                </h3>
+                {payment.note ? <p>{payment.note}</p> : null}
+                <p className="admin__hint">
+                  Nothing has been taken from you by us. If the money did leave your account, check
+                  with your bank using reference {payment.utr} before paying again.
+                </p>
+              </section>
+            ) : null}
+
             {/* Still to pay, and we have the token that gets there. An
-                order that was cancelled is not offered a payment page. */}
-            {order.payment_status !== 'paid' && order.status === 'pending' && token ? (
+                order that was cancelled is not offered a payment page,
+                and neither is one whose payment is already being
+                checked. */}
+            {canPay ? (
               <p className="track-pay">
                 <Link className="btn btn--primary btn--sm" to={`/pay/${token}`}>
-                  <IndianRupee size={14} /> Pay for this order
+                  <IndianRupee size={14} />
+                  {refused ? ' Send your payment details again' : ' Pay for this order'}
                 </Link>
               </p>
             ) : null}

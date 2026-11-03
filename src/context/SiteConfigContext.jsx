@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 
 import { setLiveProducts } from '../data/products';
 import { fetchCatalogue, shippedCatalogue } from '../lib/catalogue';
-import { customerSupabase } from '../lib/customerClient';
+import { customerSupabase, callCustomerFunction } from '../lib/customerClient';
 import { pickActiveTheme } from '../lib/shape';
 
 /* Everything the admin controls, read from the local store: the
@@ -144,14 +144,24 @@ export function SiteConfigProvider({ children }) {
 
     if (!customerSupabase) throw new Error('Reviews are not available right now');
 
-    const { error } = await customerSupabase.from('reviews').insert({
-      product_id: productId,
-      rating: score,
-      name: String(name || '').trim().slice(0, 80) || 'A customer',
-      text: body
-    });
+    /* Through the server, not straight into the table.
 
-    if (error) throw new Error('That review could not be saved');
+       The checks above are a courtesy to whoever is typing - they
+       catch a slip before a round trip. They are not what stops a
+       bad review being written, because anything in this file can be
+       skipped by anybody who opens a console. The same checks, and
+       the rate limits, are applied again in reviews-create, which is
+       the only thing that can write to the table now. */
+    try {
+      await callCustomerFunction('reviews-create', {
+        product_id: productId,
+        rating: score,
+        name: String(name || '').trim().slice(0, 80) || 'A customer',
+        text: body
+      });
+    } catch (err) {
+      throw new Error(err?.message || 'That review could not be saved');
+    }
 
     /* Straight back from the table, so the review appears for the
        person who wrote it and for everybody else alike. */

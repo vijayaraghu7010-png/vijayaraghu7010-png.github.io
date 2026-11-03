@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 
-import { BRAND, CONTACT, SOCIALS } from '../data/categories';
+import { BRAND, SOCIALS } from '../data/categories';
+import useContact from '../hooks/useContact';
 
 const QUICK_LINKS = [
   { to: '/', label: 'Home' },
@@ -38,6 +39,16 @@ const SOCIAL_ICONS = {
 };
 
 export default function Footer() {
+  const contact = useContact();
+
+  /* The WhatsApp entry is the studio's own number, so it follows the
+     number in the panel rather than the one SOCIALS was built with at
+     import time. Everything else in that list is a real URL and is
+     left exactly as it is. */
+  const socials = SOCIALS.map((s) =>
+    s.id === 'whatsapp' ? { ...s, url: contact.whatsappHref } : s
+  );
+
   return (
     <footer className="footer">
       <div className="shell">
@@ -55,7 +66,7 @@ export default function Footer() {
             <p className="footer__brandline">{BRAND.footerLine}</p>
 
             <div className="footer__socials">
-              {SOCIALS.map((social) => {
+              {socials.map((social) => {
                 const Icon = SOCIAL_ICONS[social.id] || Instagram;
                 /* No invented URLs: an unconfigured channel renders as a
                    disabled icon rather than linking somewhere unrelated. */
@@ -111,8 +122,8 @@ export default function Footer() {
             <ul className="footer__contact">
               <li>
                 <a
-                  href={`mailto:${CONTACT.email}`}
-                  aria-label={`Email us at ${CONTACT.email}`}
+                  href={`mailto:${contact.email}`}
+                  aria-label={`Email us at ${contact.email}`}
                   title="Email us"
                 >
                   <Mail size={18} />
@@ -120,8 +131,8 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={CONTACT.phoneHref}
-                  aria-label={`Call us on ${CONTACT.phone}`}
+                  href={contact.phoneHref}
+                  aria-label={`Call us on ${contact.phone}`}
                   title="Call us"
                 >
                   <Phone size={18} />
@@ -129,11 +140,11 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CONTACT.city)}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.city)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`Find us in ${CONTACT.city}`}
-                  title={CONTACT.city}
+                  aria-label={`Find us in ${contact.city}`}
+                  title={contact.city}
                 >
                   <MapPin size={18} />
                 </a>

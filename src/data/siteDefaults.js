@@ -15,7 +15,7 @@ const base = [
   ['brand.footerLine', BRAND.footerLine || '', 'brand', 'Footer line'],
   ['contact.phone', CONTACT.phone || '', 'contact', 'Phone'],
   ['contact.email', CONTACT.email || '', 'contact', 'Email'],
-  ['contact.address', CONTACT.address || '', 'contact', 'Address'],
+  ['contact.address', CONTACT.city || '', 'contact', 'Address'],
   ['home.hero.eyebrow', 'Personalised gifts for beautiful people', 'home', 'Hero eyebrow'],
   ['home.hero.title', 'Make Every Memory Bloom', 'home', 'Hero title'],
   [

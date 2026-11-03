@@ -1,3 +1,5 @@
+import { telHref, whatsappNumber } from '../utils/phone';
+
 /* Home-page categories, benefits and site-wide contact details.
    Edit here to change the three category cards or the footer.
 
@@ -89,11 +91,20 @@ export const BENEFITS = [
 
    A social link with an empty url is rendered as a disabled icon
    rather than being pointed at an unrelated website. */
+/* What the shop ships with, and the fallback when the database
+   cannot be reached. The live values come from the panel - see
+   useContact - so this is a starting point, not the source.
+
+   The dialler link and the WhatsApp number are derived from the one
+   number rather than typed out beside it, so they cannot fall out of
+   step with it the way three hand-edited fields do. */
+const STUDIO_PHONE = '+91 99406 41271';
+
 export const CONTACT = {
   email: 'wrapped.studio07@gmail.com',
-  phone: '+91 99406 41271',
-  phoneHref: 'tel:+919940641271',
-  whatsapp: '919940641271',
+  phone: STUDIO_PHONE,
+  phoneHref: telHref(STUDIO_PHONE),
+  whatsapp: whatsappNumber(STUDIO_PHONE),
   city: 'Chennai, India'
 };
 

@@ -3,7 +3,7 @@ import { Check, Info } from 'lucide-react';
 
 import PhotoUpload from '../components/PhotoUpload';
 import usePageMeta from '../hooks/usePageMeta';
-import { CONTACT } from '../data/categories';
+import useContact from '../hooks/useContact';
 
 const CATEGORIES = ['Magazine', 'Polaroids', 'Bouquet', 'A mix of things', 'Something else'];
 const OCCASIONS = ['Birthday', 'Anniversary', 'Wedding', 'Farewell', 'Friendship', 'Just because', 'Other'];
@@ -13,6 +13,7 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE = /^\+?\d[\d\s-]{8,15}$/;
 
 export default function CustomGifts() {
+  const contact = useContact();
   usePageMeta(
     'Custom Gifts',
     'Tell us your idea and we will make something personal — custom magazines, polaroid sets and handmade bouquets.'
@@ -70,7 +71,7 @@ export default function CustomGifts() {
     });
   };
 
-  const mailto = `mailto:${CONTACT.email}?subject=${encodeURIComponent(
+  const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(
     'Custom gift request'
   )}&body=${encodeURIComponent(
     [
@@ -266,9 +267,9 @@ export default function CustomGifts() {
           <div className="info-card">
             <h3>Prefer to talk?</h3>
             <p>
-              Write to <a href={`mailto:${CONTACT.email}`} style={{ color: 'var(--coral)' }}>{CONTACT.email}</a> or
-              call <a href={CONTACT.phoneHref} style={{ color: 'var(--coral)' }}>{CONTACT.phone}</a>. We are in{' '}
-              {CONTACT.city}.
+              Write to <a href={`mailto:${contact.email}`} style={{ color: 'var(--coral)' }}>{contact.email}</a> or
+              call <a href={contact.phoneHref} style={{ color: 'var(--coral)' }}>{contact.phone}</a>. We are in{' '}
+              {contact.city}.
             </p>
           </div>
         </aside>

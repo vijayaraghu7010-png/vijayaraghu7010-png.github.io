@@ -45,26 +45,12 @@ export async function claimOrder({ orderCode, code }) {
   });
 }
 
-/* The line a customer is walked along, and where they are on it.
-
-   These are the shop's five statuses and no others. cancelled is not
-   a step, so an order that was cancelled shows the steps it reached
-   and then stops - inventing "shipped" here would be telling the
-   customer something the studio never recorded. */
-export const TRACK_STEPS = [
-  { id: 'pending', label: 'Order placed', hint: 'We have your order and your photographs.' },
-  { id: 'paid', label: 'Payment received', hint: 'Payment confirmed with the studio.' },
-  { id: 'in_progress', label: 'Being made', hint: 'Your order is being printed and put together.' },
-  { id: 'completed', label: 'Completed', hint: 'Finished and on its way to you.' }
-];
-
-export function stepStateFor(status, stepId) {
-  if (status === 'cancelled') return 'cancelled';
-  const order = TRACK_STEPS.map((s) => s.id);
-  const at = order.indexOf(status);
-  const here = order.indexOf(stepId);
-  if (at < 0 || here < 0) return 'future';
-  if (here < at) return 'done';
-  if (here === at) return 'current';
-  return 'future';
-}
+/* The steps, and how a status reads against them. They live in
+   orderProgress, which has no network in it; re-exported here so
+   that every existing import of this module still works. */
+export {
+  TRACK_STEPS,
+  OWN_EVENT,
+  stepStateFor,
+  entriesForStep
+} from './orderProgress';
