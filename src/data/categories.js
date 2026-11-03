@@ -84,17 +84,16 @@ export const BENEFITS = [
   { icon: 'truck', title: 'Delivery Across India', text: 'Bringing happiness to your doorstep' }
 ];
 
-/* The studio's own details. The email is the real one; the phone
-   number and WhatsApp below are still placeholders and want
-   replacing before launch.
+/* The studio's own details. The email, phone number and WhatsApp
+   below are the studio's real ones.
 
    A social link with an empty url is rendered as a disabled icon
    rather than being pointed at an unrelated website. */
 export const CONTACT = {
   email: 'wrapped.studio07@gmail.com',
-  phone: '+91 98765 43210',
-  phoneHref: 'tel:+919876543210',
-  whatsapp: '919876543210',
+  phone: '+91 99406 41271',
+  phoneHref: 'tel:+919940641271',
+  whatsapp: '919940641271',
   city: 'Chennai, India'
 };
 
