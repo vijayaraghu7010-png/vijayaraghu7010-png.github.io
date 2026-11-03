@@ -246,6 +246,73 @@ export function orderStatusMessage(
   };
 }
 
+/* A payment has just been submitted, and nobody has looked at it yet.
+
+   Two messages, because the two readers need opposite things. The
+   customer needs to know the money is not lost and that a person will
+   look at it - the worst moment in a manual UPI flow is paying and
+   then hearing nothing. The studio needs to know there is something
+   waiting, because until somebody opens the panel the order does not
+   move at all.
+
+   The customer's wording is deliberately not "Payment received": that
+   is what the shop says once a payment has been *confirmed*, and the
+   two must not sound the same. */
+export function paymentSubmittedMessage(
+  to: string,
+  orderCode: string,
+  trackUrl: string,
+  key: string
+): EmailMessage {
+  return {
+    to,
+    subject: `Payment details received - order ${orderCode}`,
+    text:
+      `Thank you - we have your payment details for order ${orderCode}.
+
+` +
+      `Somebody at the studio checks each payment by hand. You will get ` +
+      `another message as soon as it is confirmed, and your order is not ` +
+      `made until then.
+
+` +
+      `${trackUrl}
+
+WrappedStudio
+`,
+    idempotency_key: key
+  };
+}
+
+/* The studio's half: there is money to check. The reference number is
+   not in here - it lives on the order in the panel, and an email is
+   not the place for it. */
+export function studioPaymentAlertMessage(
+  to: string,
+  orderCode: string,
+  method: string,
+  amountPaise: number,
+  key: string
+): EmailMessage {
+  return {
+    to,
+    subject: `Payment to check - order ${orderCode} - ${rupees(amountPaise)}`,
+    text:
+      `A payment has been submitted for order ${orderCode}.
+
+` +
+      `Method: ${method}
+` +
+      `Amount: ${rupees(amountPaise)}
+
+` +
+      `The reference number and the screenshot are on the order in the ` +
+      `panel. Nothing moves until somebody confirms it there.
+`,
+    idempotency_key: key
+  };
+}
+
 /* The manual UPI flow. A refusal has to say what to do next, or it is
    just bad news with no door out of it. */
 export function paymentMessage(

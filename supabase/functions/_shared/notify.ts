@@ -15,8 +15,10 @@ import {
   orderPlacedMessage,
   orderStatusMessage,
   paymentMessage,
+  paymentSubmittedMessage,
   sendEmail,
   studioAlertMessage,
+  studioPaymentAlertMessage,
   type OrderLine
 } from './email.ts';
 
@@ -129,6 +131,57 @@ export async function notifyStatusChange(order: {
     note(`status ${order.status}`, order.order_code, out.delivered, out.reason);
   } catch (e) {
     console.warn(`[mail] status for ${order.order_code} threw: ${(e as Error).message}`);
+  }
+}
+
+/* A payment has just been submitted and is waiting to be judged.
+
+   This is the moment the shop used to say nothing at all: the customer
+   paid, the row was written, and both sides were left guessing. The
+   studio's copy is the one that matters most - a manual UPI order does
+   not move until somebody opens the panel and confirms it, so nobody
+   being told is the same as the order stopping.
+
+   Keyed on the payment rather than the order: a customer who submits a
+   corrected payment after a rejection is submitting a new payment, and
+   should be told about that one too. */
+export async function notifyPaymentSubmitted(order: {
+  id: string;
+  order_code: string;
+  customer_email: string;
+  method: string;
+  amount_paise: number;
+  paymentId: string;
+}): Promise<void> {
+  try {
+    const customer = await sendEmail(
+      paymentSubmittedMessage(
+        order.customer_email,
+        order.order_code,
+        trackUrl(),
+        `payment-submitted:${order.paymentId}`
+      )
+    );
+    note('payment submitted', order.order_code, customer.delivered, customer.reason);
+
+    for (const to of studioAddresses()) {
+      const studio = await sendEmail(
+        studioPaymentAlertMessage(
+          to,
+          order.order_code,
+          order.method,
+          order.amount_paise,
+          /* Keyed per recipient, or the second would be treated as a
+             repeat of the first and never arrive. */
+          `studio-payment:${order.paymentId}:${to}`
+        )
+      );
+      note('studio payment alert', order.order_code, studio.delivered, studio.reason);
+    }
+  } catch (e) {
+    console.warn(
+      `[mail] payment submitted for ${order.order_code} threw: ${(e as Error).message}`
+    );
   }
 }
 

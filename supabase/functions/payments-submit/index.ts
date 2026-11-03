@@ -21,6 +21,7 @@
 import { serviceClient, json, fail, corsHeaders, text } from '../_shared/common.ts';
 import { requireCustomer, attemptKey, rateLimit, noteVerdict } from '../_shared/customer.ts';
 import { headObject, r2Configured, deleteObject } from '../_shared/r2.ts';
+import { notifyPaymentSubmitted } from '../_shared/notify.ts';
 import {
   normaliseUtr,
   orderFromClaim,
@@ -152,6 +153,19 @@ Deno.serve(async (req) => {
     actor: 'customer',
     event: 'payment.submitted',
     detail: { method }
+  });
+
+  /* Tell both sides. Last, and after everything has been written down,
+     because the post is the least important part of this request and
+     may not fail it - notifyPaymentSubmitted swallows its own
+     failures and leaves a line in the log. */
+  await notifyPaymentSubmitted({
+    id: order.id,
+    order_code: order.order_code,
+    customer_email: order.customer_email,
+    method,
+    amount_paise: order.total_paise,
+    paymentId: row.id
   });
 
   return json({ payment: paymentView(row) }, 201, origin);
