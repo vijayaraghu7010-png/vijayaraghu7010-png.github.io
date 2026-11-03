@@ -1723,6 +1723,37 @@
   background: var(--cream);
 }
 
+/* Skip. The intro used to have no way out, which made a slow network
+   feel like a broken site. It sits clear of the phone's bottom bar. */
+.intro__skip {
+  position: absolute;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 1;
+  padding: 9px 20px;
+  border: 1px solid rgba(96, 61, 66, 0.35);
+  border-radius: 999px;
+  background: rgba(250, 246, 242, 0.82);
+  color: var(--burgundy, #603d42);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.intro__skip:hover {
+  background: rgba(250, 246, 242, 0.96);
+  transform: translateY(-1px);
+}
+
+.intro__skip:focus-visible {
+  outline: 2px solid var(--burgundy, #603d42);
+  outline-offset: 2px;
+}
+
 /* -------------------------------------------- polaroid-frame card
    Used only on the Polaroids page: a white print frame with the photo
    inset at the top and the deep blank margin a polaroid has below it. */

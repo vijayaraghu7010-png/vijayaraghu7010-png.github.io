@@ -17,20 +17,28 @@ import IntroVideo from './components/IntroVideo';
 import OfferBanner from './components/OfferBanner';
 import CustomGiftBanner from './components/CustomGiftBanner';
 
+/* Home and the not-found page are the two a visitor can arrive at
+   without having chosen anything, so they ship with the shell. Every
+   other page is fetched when it is first opened.
+
+   All fourteen of these used to be in the entry bundle: 600 KB of
+   JavaScript to parse before the first screen could be drawn, most of
+   it pages that visit never reaches. */
 import Home from './pages/Home';
-import Magazines from './pages/Magazines';
-import Polaroids from './pages/Polaroids';
-import Bouquets from './pages/Bouquets';
-import Hampers from './pages/Hampers';
-import PhotoFrames from './pages/PhotoFrames';
-import WallPosters from './pages/WallPosters';
-import CustomGifts from './pages/CustomGifts';
-import ProductDetails from './pages/ProductDetails';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Wishlist from './pages/Wishlist';
-import About from './pages/About';
 import NotFound from './pages/NotFound';
+
+const Magazines = lazy(() => import('./pages/Magazines'));
+const Polaroids = lazy(() => import('./pages/Polaroids'));
+const Bouquets = lazy(() => import('./pages/Bouquets'));
+const Hampers = lazy(() => import('./pages/Hampers'));
+const PhotoFrames = lazy(() => import('./pages/PhotoFrames'));
+const WallPosters = lazy(() => import('./pages/WallPosters'));
+const CustomGifts = lazy(() => import('./pages/CustomGifts'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const About = lazy(() => import('./pages/About'));
 
 /* The admin panel is a separate bundle: a customer never downloads it. */
 const AdminApp = lazy(() => import('./admin/AdminApp'));
@@ -169,6 +177,10 @@ function Shop() {
           />
 
           <main className="page" id="main">
+            {/* One boundary for the whole switch: a page that has not
+                been downloaded yet shows this for the moment it takes,
+                and the header, footer and bag stay put while it does. */}
+            <Suspense fallback={<TrackFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/magazines" element={<Magazines />} />
@@ -239,6 +251,7 @@ function Shop() {
               <Route path="/about" element={<About />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </Suspense>
 
             <GiftInvite />
           </main>

@@ -13,10 +13,32 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- the catalogue is fetched from here the moment the app boots;
+         opening the connection now saves a round trip then -->
+    <link rel="preconnect" href="https://rhzqveijuclwegztogsr.supabase.co" crossorigin />
+
+    <!-- The first screen is the hero photograph. Asking for it here
+         starts it downloading while the JavaScript is still parsing,
+         instead of after React has drawn the tag. -->
+    <link rel="preload" as="image" href="/images/hero-sunset.jpg" fetchpriority="high" />
+
+    <!-- Fonts no longer hold up the first paint. A stylesheet in the
+         head blocks rendering until it has been fetched from Google;
+         loading it as print and promoting it on arrival means the text
+         is on screen immediately in the fallback face and swaps to
+         Playfair and Inter when they land (display=swap, below). -->
     <link
       href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all';this.onload=null"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>
