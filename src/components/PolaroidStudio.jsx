@@ -143,7 +143,14 @@ export default function PolaroidStudio({ initialFormat = 'polaroid-medium' }) {
                 >
                   <span className="format-card__top">
                     <span className="format-card__name">{f.formatTitle}</span>
-                    <span className="format-card__price">{f.formatPrice}</span>
+                    {/* Built from the live price, not from the `formatPrice`
+                        string that ships beside it: that string was written
+                        once and never moved again, so a price changed in the
+                        panel showed everywhere on this page except here. */}
+                    <span className="format-card__price">
+                      {formatRupees(f.price)}
+                      {f.unitLabel ? ` ${f.unitLabel}` : ''}
+                    </span>
                   </span>
                   <span className="format-card__note">{f.formatNote}</span>
                   <span className="format-card__meta">{f.formatMeta}</span>
