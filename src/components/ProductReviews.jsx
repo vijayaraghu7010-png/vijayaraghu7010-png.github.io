@@ -4,6 +4,7 @@ import { Star } from 'lucide-react';
 import StarRating from './StarRating';
 import { useSiteConfig } from '../context/SiteConfigContext';
 import { ratingFor, reviewsFor, spreadOf } from '../utils/ratings';
+import { formatDbDate } from '../utils/dates';
 
 /* What customers thought, and the form that lets the next one say so.
 
@@ -13,6 +14,13 @@ import { ratingFor, reviewsFor, spreadOf } from '../utils/ratings';
    served by the demo server. */
 
 const WHEN = new Intl.DateTimeFormat('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+/* `at` was never a field on a review - the mapper writes `createdAt`,
+   and the raw timestamp needs normalising before a Date will take it.
+   Reading the wrong name put an Invalid Date into format(), which
+   throws, which took this whole section - and so the product page -
+   down for any product that actually had a review. */
+const when = (value) => formatDbDate(value, WHEN);
 
 function StarPicker({ value, onChange }) {
   const [hover, setHover] = useState(0);
@@ -134,7 +142,9 @@ export default function ProductReviews({ product }) {
               <div className="reviews__head">
                 <StarRating value={r.rating} size={13} showValue={false} />
                 <strong>{r.name}</strong>
-                <time dateTime={r.at}>{WHEN.format(new Date(r.at))}</time>
+                {when(r.createdAt) ? (
+                  <time dateTime={r.createdAt}>{when(r.createdAt)}</time>
+                ) : null}
               </div>
               {r.text ? <p>{r.text}</p> : null}
             </li>

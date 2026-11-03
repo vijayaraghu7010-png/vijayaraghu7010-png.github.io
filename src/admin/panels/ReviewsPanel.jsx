@@ -3,6 +3,8 @@ import { Trash2 } from 'lucide-react';
 
 import StarRating from '../../components/StarRating';
 import { adminFetch } from '../../lib/adminClient';
+import { getProductById } from '../../data/products';
+import { formatDbDate } from '../../utils/dates';
 
 /* Everything customers have said, newest first.
 
@@ -17,6 +19,23 @@ const WHEN = new Intl.DateTimeFormat('en-IN', {
   hour: 'numeric',
   minute: '2-digit'
 });
+
+/* The review as the database gives it carries a product id and a
+   `createdAt`. This panel used to read `productName` and `at`, which
+   no mapper has ever written: the name came out blank, and
+   Intl.DateTimeFormat threw `Invalid time value` on the undefined
+   date - during render, so the whole panel went down the moment a
+   single review existed. An empty shop looked fine; a shop with one
+   review looked broken. */
+
+const when = (value) => formatDbDate(value, WHEN);
+
+/* A review outlives the product it was left on, so a missing one is
+   named by its id rather than left blank. */
+function productName(id) {
+  if (!id) return 'Unknown product';
+  return getProductById(id)?.name || id;
+}
 
 export default function ReviewsPanel() {
   const [rows, setRows] = useState([]);
@@ -69,11 +88,13 @@ export default function ReviewsPanel() {
       {rows.map((r) => (
         <div className="admin__row" key={r.id}>
           <div className="admin__row-main">
-            <strong>{r.productName}</strong>
+            <strong>{productName(r.productId)}</strong>
             <div className="admin__review-line">
               <StarRating value={r.rating} size={12} showValue={false} />
               <span>{r.name}</span>
-              <time dateTime={r.at}>{WHEN.format(new Date(r.at))}</time>
+              {when(r.createdAt) ? (
+                <time dateTime={r.createdAt}>{when(r.createdAt)}</time>
+              ) : null}
             </div>
             {r.text ? <p className="admin__review-text">{r.text}</p> : null}
           </div>
