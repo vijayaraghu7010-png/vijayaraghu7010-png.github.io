@@ -148,18 +148,29 @@ export function orderPlacedMessage(
   to: string,
   orderCode: string,
   lines: OrderLine[],
-  totals: { subtotal_paise: number; discount_paise: number; total_paise: number },
+  totals: {
+    subtotal_paise: number;
+    discount_paise: number;
+    shipping_paise?: number;
+    total_paise: number;
+  },
   trackUrl: string,
   key: string
 ): EmailMessage {
-  /* The discount is named only when there was one. A line reading
-     "Discount ₹0" invites the question of why not. */
-  const money =
-    totals.discount_paise > 0
-      ? `Subtotal: ${rupees(totals.subtotal_paise)}\n` +
-        `Discount: -${rupees(totals.discount_paise)}\n` +
-        `Total: ${rupees(totals.total_paise)}`
-      : `Total: ${rupees(totals.total_paise)}`;
+  const shipping = Number(totals.shipping_paise) || 0;
+  const charged = shipping > 0;
+
+  /* Each line is named only when there is one. "Discount ₹0" invites
+     the question of why not, and "Shipping ₹0" on a shop that settles
+     delivery separately is just noise. */
+  const money = [
+    totals.discount_paise > 0 || charged ? `Subtotal: ${rupees(totals.subtotal_paise)}` : null,
+    totals.discount_paise > 0 ? `Discount: -${rupees(totals.discount_paise)}` : null,
+    charged ? `Shipping: ${rupees(shipping)}` : null,
+    `Total: ${rupees(totals.total_paise)}`
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return {
     to,
@@ -169,8 +180,13 @@ export function orderPlacedMessage(
       `Order ${orderCode}\n\n` +
       `${listLines(lines)}\n\n` +
       `${money}\n\n` +
-      `Shipping is worked out separately and confirmed with you before ` +
-      `anything is sent.\n\n` +
+      /* Only promise a separate conversation about shipping when
+         there is going to be one. An order that has already paid for
+         delivery should not be told to expect a bill for it. */
+      (charged
+        ? ''
+        : `Shipping is worked out separately and confirmed with you before ` +
+          `anything is sent.\n\n`) +
       `You can follow it here:\n${trackUrl}\n\n` +
       `We will write again when it moves along.\n\n` +
       `WrappedStudio\n`,

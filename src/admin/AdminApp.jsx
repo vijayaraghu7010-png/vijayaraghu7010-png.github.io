@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, IndianRupee, LogOut, Package, Palette, Percent, Star, Type } from 'lucide-react';
+import { Boxes, IndianRupee, LogOut, Package, Palette, Percent, Star, Truck, Type } from 'lucide-react';
 
 import { currentAdmin, restoreSession, signOut as endSession } from '../lib/adminAuth';
 import AdminLogin from './AdminLogin';
@@ -11,6 +11,7 @@ import ContentPanel from './panels/ContentPanel';
 import ThemePanel from './panels/ThemePanel';
 import OffersPanel from './panels/OffersPanel';
 import ReviewsPanel from './panels/ReviewsPanel';
+import ShippingPanel from './panels/ShippingPanel';
 import '../styles/admin.css';
 
 const TABS = [
@@ -20,7 +21,8 @@ const TABS = [
   { id: 'content', label: 'Text', icon: Type, panel: ContentPanel },
   { id: 'theme', label: 'Theme', icon: Palette, panel: ThemePanel },
   { id: 'offers', label: 'Offers', icon: Percent, panel: OffersPanel },
-  { id: 'reviews', label: 'Reviews', icon: Star, panel: ReviewsPanel }
+  { id: 'reviews', label: 'Reviews', icon: Star, panel: ReviewsPanel },
+  { id: 'shipping', label: 'Shipping', icon: Truck, panel: ShippingPanel }
 ];
 
 export default function AdminApp() {

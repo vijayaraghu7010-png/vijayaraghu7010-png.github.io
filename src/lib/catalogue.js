@@ -1,6 +1,7 @@
 import { PRODUCTS } from '../data/products';
 import { DEFAULT_CONTENT, DEFAULT_THEMES, DEFAULT_OFFERS } from '../data/siteDefaults';
 import { customerSupabase, CUSTOMER_BACKEND_READY } from './customerClient';
+import { normaliseShipping, SHIPPING_OFF } from '../utils/shipping';
 
 /* The shop as the studio last saved it, for everybody.
 
@@ -266,7 +267,10 @@ export function shippedCatalogue() {
     content: DEFAULT_CONTENT.map((c) => ({ ...c })),
     themes: DEFAULT_THEMES.map((t) => ({ ...t, tokens: { ...t.tokens } })),
     offers: [...DEFAULT_OFFERS],
-    reviews: []
+    reviews: [],
+    /* Delivery is arranged separately until the studio says
+       otherwise, which is what a shop with no settings row does. */
+    shipping: { ...SHIPPING_OFF }
   };
 }
 
@@ -278,12 +282,17 @@ export async function fetchCatalogue() {
 
   const shipped = shippedCatalogue();
 
-  const [products, content, themes, offers, reviews] = await Promise.all([
+  const [products, content, themes, offers, reviews, shipping] = await Promise.all([
     customerSupabase.from('products').select('*').order('sort_order'),
     customerSupabase.from('site_content').select('*'),
     customerSupabase.from('themes').select('*'),
     customerSupabase.from('offers').select('*'),
-    customerSupabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(500)
+    customerSupabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(500),
+    /* The shipping charge. A settings row, readable by anybody,
+       because the bag has to print the figure before there is an
+       order or a signed-in customer. What is actually charged is
+       still decided by the server when the order is placed. */
+    customerSupabase.from('settings').select('value').eq('key', 'shipping.config').maybeSingle()
   ]);
 
   /* Nothing came back at all - offline, or the project is asleep.
@@ -300,6 +309,7 @@ export async function fetchCatalogue() {
     themes: themes.data?.length ? themes.data.map(themeFromDb) : shipped.themes,
     offers: offers.data ? offers.data.map(offerFromDb) : shipped.offers,
     reviews: (reviews.data || []).map(reviewFromDb),
+    shipping: normaliseShipping(shipping.data?.value),
     source: 'live'
   };
 }

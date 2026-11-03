@@ -4,10 +4,17 @@ import { ShoppingBag, X } from 'lucide-react';
 
 import CartLine from './CartLine';
 import { useCart } from '../context/CartContext';
+import useBasketTotals from '../hooks/useBasketTotals';
 import { formatRupees } from '../utils/currency';
 
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, subtotal, count } = useCart();
+  const { items, isOpen, closeCart, count } = useCart();
+
+  /* The same sum the bag and the checkout use. The drawer used to add
+     the lines up itself and never subtract offers, so a discounted
+     basket showed one total here and a smaller one on the next page. */
+  const { subtotal, savings, shippingConfig, shipping, shippingIsFree: freeShipping, payable } =
+    useBasketTotals();
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -65,13 +72,25 @@ export default function CartDrawer() {
                   <span>Product subtotal</span>
                   <span>{formatRupees(subtotal)}</span>
                 </div>
+                {savings > 0 && (
+                  <div className="totals__row totals__row--save">
+                    <span>Offer applied</span>
+                    <span>− {formatRupees(savings)}</span>
+                  </div>
+                )}
                 <div className="totals__row">
                   <span>Shipping</span>
-                  <span>Charged separately</span>
+                  <span>
+                    {!shippingConfig.enabled
+                      ? 'Charged separately'
+                      : freeShipping
+                        ? 'Free'
+                        : formatRupees(shipping)}
+                  </span>
                 </div>
                 <div className="totals__row totals__row--grand">
                   <span>Total</span>
-                  <span>{formatRupees(subtotal)}</span>
+                  <span>{formatRupees(payable)}</span>
                 </div>
               </div>
 

@@ -4,31 +4,19 @@ import { Info, ShoppingBag } from 'lucide-react';
 import CartLine from '../components/CartLine';
 import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
-import { useSiteConfig } from '../context/SiteConfigContext';
-import { getProductById, getProductBySlug } from '../data/products';
-import { lineDiscount } from '../utils/offers';
+import useBasketTotals from '../hooks/useBasketTotals';
 import { formatRupees } from '../utils/currency';
 
 export default function Cart() {
   usePageMeta('Your Bag', 'Review the magazines, polaroids and bouquets in your WrappedStudio bag.');
-  const { items, subtotal, count, clear } = useCart();
-  const { offers } = useSiteConfig();
+  const { items, count, clear } = useCart();
 
-  /* Automatic offers come off the bag without anyone typing a code.
-
-     A frame or a poster line is filed under an id the cart made for
-     the size - `poster-botanical-pair-poster-a4` - which is in no
-     catalogue, so looking it up found nothing and the line fell back
-     to a stand-in with no category. A category offer therefore passed
-     over every sized product in the bag while the server, which knows
-     the real product, took it off. The slug on the line is the
-     product's own, so it finds it. */
-  const savings = items.reduce((sum, item) => {
-    const product = getProductById(item.productId) || getProductBySlug(item.slug);
-    const line = lineDiscount(item, product, offers);
-    return sum + (line ? line.saved : 0);
-  }, 0);
-  const payable = Math.max(0, subtotal - savings);
+  /* Subtotal, offers and delivery, worked out in one place so the
+     drawer, this page and the checkout summary cannot disagree. */
+  const {
+    subtotal, savings, shippingConfig, shipping,
+    shippingIsFree: freeShipping, toFreeShipping, payable
+  } = useBasketTotals();
 
   if (items.length === 0) {
     return (
@@ -92,8 +80,19 @@ export default function Cart() {
             )}
             <div className="totals__row">
               <span>Shipping</span>
-              <span>Charged separately</span>
+              <span>
+                {!shippingConfig.enabled
+                  ? 'Charged separately'
+                  : freeShipping
+                    ? 'Free'
+                    : formatRupees(shipping)}
+              </span>
             </div>
+            {toFreeShipping > 0 && (
+              <p className="totals__nudge">
+                Spend {formatRupees(toFreeShipping)} more for free delivery.
+              </p>
+            )}
             <div className="totals__row totals__row--grand">
               <span>Total</span>
               <span>{formatRupees(payable)}</span>
@@ -102,8 +101,10 @@ export default function Cart() {
 
           <p className="form-note">
             <Info size={14} style={{ verticalAlign: '-2px', marginRight: 6, color: 'var(--coral)' }} />
-            Online payment is not connected yet, so nothing here is charged. Place the order and send
-            us your photographs, and we reply with the shipping cost and how to pay.
+            {shippingConfig.enabled
+              ? shippingConfig.note ||
+                'The studio prices every order when it is placed, delivery included.'
+              : 'Place the order and send us your photographs, and we reply with the shipping cost and how to pay.'}
           </p>
 
           <Link className="btn btn--primary btn--block" to="/checkout">

@@ -69,6 +69,7 @@ export async function notifyOrderPlaced(order: {
   customer_email: string;
   subtotal_paise: number;
   discount_paise: number;
+  shipping_paise?: number;
   total_paise: number;
   lines: OrderLine[];
 }): Promise<void> {
@@ -81,6 +82,7 @@ export async function notifyOrderPlaced(order: {
         {
           subtotal_paise: order.subtotal_paise,
           discount_paise: order.discount_paise,
+          shipping_paise: order.shipping_paise ?? 0,
           total_paise: order.total_paise
         },
         trackUrl(),

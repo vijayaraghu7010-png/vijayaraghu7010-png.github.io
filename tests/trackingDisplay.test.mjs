@@ -92,3 +92,59 @@ test('an empty number produces no link at all, rather than a broken one', () => 
     assert.equal(whatsappHref(blank), '');
   }
 });
+
+/* ------------------------------------------------------- delivery
+
+   The bag shows a shipping figure before the order exists, and the
+   server works the same figure out again when it is placed. Two
+   implementations of one sum is two chances to disagree about what
+   somebody owes, so these check the browser's copy against the rules
+   the server's copy follows - including the one that matters, which
+   is that a free-delivery threshold is read after the offer. */
+
+const { shippingFor, shippingIsFree, awayFromFreeShipping, normaliseShipping } =
+  await import('../src/utils/shipping.js');
+
+const ON = (over = {}) => ({ enabled: true, flat_paise: 6000, free_above_paise: null, note: '', ...over });
+
+test('delivery is not charged until the studio turns it on', () => {
+  assert.equal(shippingFor({ enabled: false, flat_paise: 6000 }, 540), 0);
+  assert.equal(shippingFor(null, 540), 0);
+  assert.equal(shippingFor(undefined, 540), 0);
+});
+
+test('a flat charge is returned in rupees', () => {
+  assert.equal(shippingFor(ON(), 540), 60);
+});
+
+test('charging switched on with no amount charges nothing', () => {
+  assert.equal(shippingFor(ON({ flat_paise: 0 }), 540), 0);
+  assert.equal(normaliseShipping({ enabled: true, flat_paise: 0 }).enabled, false);
+});
+
+test('the threshold is read against what is owed, not what it was', () => {
+  const config = ON({ free_above_paise: 5000 });
+  assert.equal(shippingFor(config, 54), 0, 'ClearS ₹50');
+  assert.equal(shippingFor(config, 43.2), 60, 'after a 20% offer it does not');
+  assert.equal(shippingIsFree(config, 54), true);
+  assert.equal(shippingIsFree(config, 43.2), false);
+});
+
+test('the nudge says how much more is needed, and nothing when there is none', () => {
+  const config = ON({ free_above_paise: 100000 });
+  assert.equal(awayFromFreeShipping(config, 400), 600);
+  assert.equal(awayFromFreeShipping(config, 1000), 0, 'already earned');
+  assert.equal(awayFromFreeShipping(ON(), 400), 0, 'no threshold set');
+  assert.equal(awayFromFreeShipping({ enabled: false }, 400), 0, 'not charging at all');
+});
+
+test('a threshold of zero is no threshold, not free for everybody', () => {
+  assert.equal(normaliseShipping(ON({ free_above_paise: 0 })).free_above_paise, null);
+  assert.equal(shippingFor(ON({ free_above_paise: 0 }), 1), 60);
+});
+
+test('a malformed row charges nothing rather than guessing', () => {
+  for (const bad of [{}, { enabled: true }, { enabled: 'yes', flat_paise: 'lots' }, { flat_paise: -1 }]) {
+    assert.equal(shippingFor(bad, 540), 0);
+  }
+});

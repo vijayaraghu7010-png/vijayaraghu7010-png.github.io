@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { setLiveProducts } from '../data/products';
 import { fetchCatalogue, shippedCatalogue } from '../lib/catalogue';
 import { customerSupabase, callCustomerFunction } from '../lib/customerClient';
+import { normaliseShipping, SHIPPING_OFF } from '../utils/shipping';
 import { pickActiveTheme } from '../lib/shape';
 
 /* Everything the admin controls, read from the local store: the
@@ -18,6 +19,7 @@ const SiteConfigContext = createContext({
   theme: null,
   offers: [],
   reviews: [],
+  shipping: SHIPPING_OFF,
   version: 0,
   refresh: () => {}
 });
@@ -45,6 +47,7 @@ export function SiteConfigProvider({ children }) {
     theme: null,
     offers: [],
     reviews: [],
+    shipping: SHIPPING_OFF,
     version: 0
   });
 
@@ -68,6 +71,7 @@ export function SiteConfigProvider({ children }) {
       data.content,
       data.offers,
       data.reviews || [],
+      data.shipping || null,
       theme?.id ?? null,
       theme?.tokens ?? null
     ]);
@@ -85,6 +89,7 @@ export function SiteConfigProvider({ children }) {
       theme,
       offers: data.offers,
       reviews: data.reviews || [],
+      shipping: normaliseShipping(data.shipping),
       version: s.version + 1
     }));
   }
@@ -194,4 +199,13 @@ export function useLiveOffers() {
     if (o.endsAt && new Date(o.endsAt).getTime() < now) return false;
     return true;
   });
+}
+
+/* What delivery costs on a basket, as the studio last set it.
+
+   The server decides what is actually charged when the order is
+   placed; this is for showing a figure before then. */
+export function useShipping() {
+  const { shipping } = useSiteConfig();
+  return normaliseShipping(shipping);
 }

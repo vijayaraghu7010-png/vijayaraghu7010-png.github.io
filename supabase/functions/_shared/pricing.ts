@@ -12,6 +12,7 @@
    quietly loses nine hundred rupees.                                */
 
 import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+import { shippingConfig, shippingPaise } from './shipping.ts';
 
 export type IncomingLine = {
   productId: string;
@@ -125,7 +126,13 @@ export async function priceOrder(
   db: SupabaseClient,
   lines: IncomingLine[]
 ): Promise<
-  | { priced: PricedLine[]; subtotal: number; discount: number; total: number }
+  | {
+      priced: PricedLine[];
+      subtotal: number;
+      discount: number;
+      shipping: number;
+      total: number;
+    }
   | { error: string }
 > {
   if (!Array.isArray(lines) || lines.length === 0) return { error: 'The basket is empty' };
@@ -251,7 +258,14 @@ export async function priceOrder(
   /* A discount may bring an order down but never through the floor. */
   discount = Math.max(0, Math.min(discount, subtotal));
 
-  return { priced, subtotal, discount, total: subtotal - discount };
+  /* Delivery is added last, on top of what the goods come to after
+     any offer. It is read from the settings row on every order, so a
+     charge the studio changed a minute ago is the charge this order
+     pays - and, like every other figure here, the browser's opinion
+     of it is never asked for. */
+  const shipping = shippingPaise(await shippingConfig(db), subtotal - discount);
+
+  return { priced, subtotal, discount, shipping, total: subtotal - discount + shipping };
 }
 
 /* A built hamper: the box it is packed in, plus everything in it. Both

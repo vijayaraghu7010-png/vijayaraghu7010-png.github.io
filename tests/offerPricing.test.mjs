@@ -33,8 +33,9 @@ const VARIANTS = [
     label: 'A4', price_paise: 45000, active: true }
 ];
 
-/* Only the two calls priceOrder makes. */
-function makeDb(offers) {
+/* Only the calls priceOrder makes: three plain selects, and the
+   settings row for shipping, which is looked up by key. */
+function makeDb(offers, shipping = null) {
   return {
     from(table) {
       return {
@@ -42,6 +43,14 @@ function makeDb(offers) {
           if (table === 'products') return Promise.resolve({ data: PRODUCTS });
           if (table === 'price_variants') return Promise.resolve({ data: VARIANTS });
           if (table === 'offers') return Promise.resolve({ data: offers });
+          if (table === 'settings') {
+            return {
+              eq: () => ({
+                maybeSingle: () =>
+                  Promise.resolve({ data: shipping ? { value: shipping } : null })
+              })
+            };
+          }
           return Promise.resolve({ data: [] });
         }
       };
@@ -64,7 +73,7 @@ const offer = (over = {}) => ({
   ...over
 });
 
-const price = (offers, lines) => priceOrder(makeDb(offers), lines);
+const price = (offers, lines, shipping = null) => priceOrder(makeDb(offers, shipping), lines);
 
 const NINE_PRINTS = [{ productId: 'polaroid-medium', quantity: 9, config: {} }];
 
@@ -201,4 +210,79 @@ test('a discount never makes an order worth less than nothing', async () => {
   const out = await price([offer({ value: 100 })], NINE_PRINTS);
   assert.equal(out.total, 0);
   assert.ok(out.discount <= out.subtotal);
+});
+
+/* ------------------------------------------------------------------
+   Delivery.
+
+   The charge is the studio's, read from settings on every order. The
+   browser never sends one and none is believed if it does, exactly as
+   with every other figure here. These check the two things that cost
+   somebody money if they are wrong: that it is added to the total,
+   and that a free-delivery threshold is measured against what is
+   actually owed rather than the pre-discount figure.
+   ------------------------------------------------------------------ */
+
+const SHIP = (over = {}) => ({
+  enabled: true, flat_paise: 6000, free_above_paise: null, note: '', ...over
+});
+
+test('with no shipping row, nothing is added and the total is unchanged', async () => {
+  const out = await price([], NINE_PRINTS);
+  assert.equal(out.shipping, 0);
+  assert.equal(out.total, out.subtotal - out.discount);
+});
+
+test('shipping switched off adds nothing', async () => {
+  const out = await price([], NINE_PRINTS, SHIP({ enabled: false }));
+  assert.equal(out.shipping, 0);
+  assert.equal(out.total, out.subtotal);
+});
+
+test('a flat charge is added on top of the goods', async () => {
+  const out = await price([], NINE_PRINTS, SHIP());
+  assert.equal(out.shipping, 6000);
+  assert.equal(out.total, out.subtotal - out.discount + 6000);
+});
+
+test('charging is on but the amount is zero, so nothing is charged', async () => {
+  /* "Shipping ₹0" on every page is worse than the sentence it
+     replaces, so a zero amount switches charging back off. */
+  const out = await price([], NINE_PRINTS, SHIP({ flat_paise: 0 }));
+  assert.equal(out.shipping, 0);
+});
+
+test('spending over the threshold earns free delivery', async () => {
+  const out = await price([], NINE_PRINTS, SHIP({ free_above_paise: 100 }));
+  assert.equal(out.shipping, 0, 'nine prints is well over ₹1');
+});
+
+test('spending under the threshold still pays', async () => {
+  const out = await price([], NINE_PRINTS, SHIP({ free_above_paise: 10_000_000 }));
+  assert.equal(out.shipping, 6000);
+});
+
+test('free delivery is measured after the offer, not before', async () => {
+  /* Nine medium prints are ₹54. With the threshold at ₹50 the order
+     qualifies on its gross - but a 20% offer brings it to ₹43.20, so
+     it does not. Measuring the wrong one promises free delivery to
+     somebody who is then charged for it. */
+  const gross = await price([], NINE_PRINTS, SHIP({ free_above_paise: 5000 }));
+  assert.equal(gross.shipping, 0, '₹54 clears a ₹50 threshold');
+
+  const discounted = await price([offer()], NINE_PRINTS, SHIP({ free_above_paise: 5000 }));
+  assert.equal(discounted.discount, 1080);
+  assert.equal(
+    discounted.shipping,
+    6000,
+    '₹43.20 does not clear ₹50, so delivery is charged'
+  );
+  assert.equal(discounted.total, 5400 - 1080 + 6000);
+});
+
+test('a malformed shipping row charges nothing rather than guessing', async () => {
+  for (const bad of [{}, { enabled: true }, { enabled: 'yes', flat_paise: 'lots' }, { flat_paise: -500 }]) {
+    const out = await price([], NINE_PRINTS, bad);
+    assert.equal(out.shipping, 0, `${JSON.stringify(bad)} should charge nothing`);
+  }
 });

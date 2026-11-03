@@ -4,6 +4,7 @@ import { ArrowRight, Check, Loader2, Upload } from 'lucide-react';
 
 import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
+import useBasketTotals from '../hooks/useBasketTotals';
 import { createOrder, uploadPhotos } from '../lib/orderClient';
 import { clearAllPhotos, getLinePhotos } from '../lib/photoStore';
 import { CUSTOMER_BACKEND_READY as BACKEND_READY } from '../lib/customerClient';
@@ -47,7 +48,13 @@ export default function Checkout() {
   usePageMeta('Checkout', 'Confirm your order with WrappedStudio.');
 
   const navigate = useNavigate();
-  const { items, subtotal, clear } = useCart();
+  const { items, clear } = useCart();
+
+  /* The same arithmetic as the bag and the drawer. What is actually
+     charged is decided by the server when the order is placed, and
+     that is the figure on the confirmation. */
+  const { subtotal, savings, shippingConfig, shipping, shippingIsFree: freeShipping, payable } =
+    useBasketTotals();
 
   const [form, setForm] = useState(BLANK);
   const [notes, setNotes] = useState('');
@@ -306,7 +313,25 @@ export default function Checkout() {
               </tr>
               <tr>
                 <th scope="row">Shipping</th>
-                <td>Confirmed separately before payment</td>
+                <td>
+                  {!shippingConfig.enabled
+                    ? 'Confirmed separately before payment'
+                    : freeShipping
+                      ? 'Free'
+                      : formatRupees(shipping)}
+                </td>
+              </tr>
+              {savings > 0 && (
+                <tr>
+                  <th scope="row">Offer applied</th>
+                  <td>− {formatRupees(savings)}</td>
+                </tr>
+              )}
+              <tr>
+                <th scope="row">Total</th>
+                <td>
+                  <strong>{formatRupees(payable)}</strong>
+                </td>
               </tr>
             </tbody>
           </table>

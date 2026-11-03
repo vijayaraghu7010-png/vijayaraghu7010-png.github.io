@@ -97,6 +97,7 @@ Deno.serve(async (req) => {
       pincode,
       subtotal_paise: priced.subtotal,
       discount_paise: priced.discount,
+      shipping_paise: priced.shipping,
       total_paise: priced.total,
       notes: notes || null
     })
@@ -174,6 +175,7 @@ Deno.serve(async (req) => {
       lines: priced.priced.length,
       subtotal_paise: priced.subtotal,
       discount_paise: priced.discount,
+      shipping_paise: priced.shipping,
       total_paise: priced.total,
       /* Which offers actually came off, so the studio can answer "why
          was this one cheaper" without guessing at what was live. */
@@ -192,6 +194,7 @@ Deno.serve(async (req) => {
     customer_email: email,
     subtotal_paise: priced.subtotal,
     discount_paise: priced.discount,
+    shipping_paise: priced.shipping,
     total_paise: priced.total,
     lines: priced.priced.map((l) => ({
       product_name: l.product_name,

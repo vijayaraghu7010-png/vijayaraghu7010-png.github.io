@@ -52,3 +52,30 @@ export async function saveUpiConfig(upi) {
   );
   return saved;
 }
+
+/* What delivery costs, as the studio sets it.
+
+   Amounts travel as rupees because that is what somebody types into a
+   box; the server converts and stores paise, which is what every
+   other figure in this shop is kept in. Doing the conversion in one
+   place at the edge is why this goes through a function rather than
+   writing the settings row directly. */
+export async function getShippingConfig() {
+  const { shipping } = await callFunction('shipping-admin', {}, { asAdmin: true });
+  return shipping;
+}
+
+export async function saveShippingConfig({ enabled, flatRupees, freeAboveRupees, note }) {
+  const { shipping } = await callFunction(
+    'shipping-admin',
+    {
+      action: 'save',
+      enabled,
+      flat_rupees: flatRupees,
+      free_above_rupees: freeAboveRupees,
+      note
+    },
+    { asAdmin: true }
+  );
+  return shipping;
+}

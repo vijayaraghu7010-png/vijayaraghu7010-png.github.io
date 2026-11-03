@@ -3218,6 +3218,16 @@
   margin-top: 4px;
 }
 
+/* The nudge under the shipping row: "spend a little more and delivery
+   is free". Quieter than a totals line, because it is an invitation
+   rather than something the customer owes. */
+.totals__nudge {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--coral, #b5705f);
+}
+
 /* The payment's own state, inside the tracking card.
 
    `.pay-state` on the payment page is always a child of `.info-card`
