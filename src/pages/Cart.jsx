@@ -5,7 +5,6 @@ import CartLine from '../components/CartLine';
 import usePageMeta from '../hooks/usePageMeta';
 import { useCart } from '../context/CartContext';
 import { useSiteConfig } from '../context/SiteConfigContext';
-import { CONTACT } from '../data/categories';
 import { getProductById, getProductBySlug } from '../data/products';
 import { lineDiscount } from '../utils/offers';
 import { formatRupees } from '../utils/currency';
@@ -110,35 +109,6 @@ export default function Cart() {
           <Link className="btn btn--primary btn--block" to="/checkout">
             Place this order
           </Link>
-
-          <a
-            className="btn btn--quiet btn--block btn--sm"
-            href={`mailto:${CONTACT.email}?subject=${encodeURIComponent('WrappedStudio order enquiry')}&body=${encodeURIComponent(
-              items
-                .map((i) => {
-                  const line = `${i.quantity} × ${i.name} — ${formatRupees(i.unitPrice * i.quantity)}`;
-                  /* A hamper built in the studio is only reproducible from
-                     its design, so the reference and the contents travel
-                     with the order rather than just a product name. */
-                  if (!i.config?.designRef) return line;
-                  return [
-                    line,
-                    `    design reference: ${i.config.designRef}`,
-                    `    ${i.config.summary || ''}`,
-                    ...(i.config.contents || []).map((entry) => `    - ${entry}`),
-                    i.config.message ? `    ${i.config.message}` : null
-                  ]
-                    .filter(Boolean)
-                    .join('\n');
-                })
-                .join('\n') +
-                `\n\nProduct subtotal: ${formatRupees(subtotal)}` +
-                (savings > 0 ? `\nOffer applied: -${formatRupees(savings)}` : '') +
-                `\nTotal: ${formatRupees(payable)}\nShipping: to be confirmed`
-            )}`}
-          >
-            Email this order to the studio
-          </a>
 
           <Link className="btn btn--quiet btn--block btn--sm" to="/bouquets">
             Continue shopping
