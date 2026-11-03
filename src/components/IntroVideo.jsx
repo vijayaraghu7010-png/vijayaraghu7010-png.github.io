@@ -14,7 +14,9 @@ import { useEffect, useRef, useState } from 'react';
      · if playback has not actually begun within 2.5s, it gives up and
        lets the visitor through
      · a stall of more than 3s mid-clip does the same
-     · there is a Skip button
+
+   There is deliberately no skip: the clip runs, and the two watchdogs
+   above are what keep a slow network from trapping anybody behind it.
 
    Sound: a browser will not let a page start audio on its own until it
    trusts the site. The clip asks once, and asks again on the first real
@@ -178,9 +180,6 @@ export default function IntroVideo() {
         onEnded={dismiss}
         onError={dismiss}
       />
-      <button type="button" className="intro__skip" onClick={dismiss}>
-        Skip
-      </button>
     </div>
   );
 }
