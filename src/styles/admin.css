@@ -127,6 +127,83 @@
   align-items: flex-start;
 }
 
+/* ---- What the customer chose, on an order.
+
+   A label and its value, one pair to a line. This used to borrow
+   `.admin__checks`, which is a flex ROW for inline checkboxes - so on
+   a narrow screen the labels ran across the top like a table header
+   and the values sat underneath, belonging to nothing. ---- */
+
+/* A plain stacked list - the order history, and anything else that
+   is a column of lines rather than a row of controls. */
+.admin__stack {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin__config {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.admin__config > li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.admin__config-key {
+  color: var(--muted, #9a8d85);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  /* Wide enough to line the values up on a roomy screen, and free to
+     collapse onto its own line on a phone. */
+  flex: 0 0 auto;
+  min-width: 104px;
+}
+
+.admin__config-value {
+  color: var(--ink, #2f2722);
+  /* A filename or a long message wraps rather than pushing the card
+     sideways. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* A nested block - a hamper's gifts, say - is indented under its own
+   heading rather than run together with the line above. */
+.admin__config .admin__config {
+  margin: 2px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--line-2, #e7ddd6);
+  flex: 1 1 100%;
+}
+
+.admin__config-list {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  flex: 1 1 100%;
+}
+
+.admin__config-list > li {
+  padding-left: 10px;
+  border-left: 2px solid var(--line-2, #e7ddd6);
+}
+
 .admin__error {
   margin-top: 10px;
   color: #b23a3a;

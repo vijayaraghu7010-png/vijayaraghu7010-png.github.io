@@ -705,7 +705,10 @@ function OrderDetail({ orderId, onBack }) {
 
       <div className="admin__card">
         <h3>History</h3>
-        <ul className="admin__checks">
+        {/* A log is a column. `admin__checks` is a flex row for
+            inline checkboxes, and borrowing it ran the entries
+            across the card on a narrow screen. */}
+        <ul className="admin__stack">
           {events.map((event) => (
             <li key={event.id}>
               <strong>{event.event}</strong> <span className="admin__hint">{when(event.created_at)} · {event.actor}</span>
@@ -717,23 +720,107 @@ function OrderDetail({ orderId, onBack }) {
   );
 }
 
-/* What the customer chose, as the customiser recorded it. Shown as it
-   is rather than prettified: this is the instruction the studio works
-   from, and a summary could leave something out. */
-function Config({ config }) {
+/* Names the studio uses, for the ones where the key is not one.
+   Anything missing here is turned into words from its own key, so a
+   customiser that grows a field does not need this list edited. */
+const CONFIG_LABELS = {
+  photoCount: 'Photographs',
+  photoNames: 'Files',
+  border: 'Border',
+  frameTheme: 'Frame design',
+  sizeId: 'Size',
+  setId: 'Set',
+  paperId: 'Paper',
+  variantId: 'Option',
+  productId: 'Product',
+  boxId: 'Box',
+  wrapColour: 'Wrap colour',
+  messageCard: 'Message card'
+};
+
+const configLabel = (key) =>
+  CONFIG_LABELS[key] ||
+  String(key)
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase());
+
+/* What the customer chose, as the customiser recorded it.
+
+   Everything is shown - this is the instruction the studio works
+   from, and a summary could leave something out - but it is shown as
+   words rather than as the shape it is stored in. It used to print
+   the raw key and JSON.stringify anything that was not a string, so
+   a polaroid order read `photoNames: ["1000169043.png"]`, and the
+   list carried `admin__checks`, which is a flex row meant for
+   checkboxes. On a phone the labels lined up across the top like a
+   table header with the values beneath them, which is not a table and
+   did not read as one. */
+function Config({ config, depth = 0 }) {
   const entries = Object.entries(config || {}).filter(
-    ([, v]) => v !== null && v !== undefined && v !== ''
+    ([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
   );
   if (!entries.length) return null;
 
   return (
-    <ul className="admin__checks">
-      {entries.map(([key, value]) => (
-        <li key={key}>
-          <span className="admin__hint">{key}:</span>{' '}
-          {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-        </li>
-      ))}
+    <ul className="admin__config">
+      {entries.map(([key, value]) => {
+        const label = configLabel(key);
+
+        /* A list of plain values reads as a list, not as JSON. */
+        if (Array.isArray(value) && value.every((v) => v === null || typeof v !== 'object')) {
+          return (
+            <li key={key}>
+              <span className="admin__config-key">{label}</span>
+              <span className="admin__config-value">{value.join(', ')}</span>
+            </li>
+          );
+        }
+
+        /* A hamper's gifts, or anything else shaped like them. Each
+           one is its own block rather than a count, because the count
+           is not what gets packed. */
+        if (Array.isArray(value)) {
+          return (
+            <li key={key}>
+              <span className="admin__config-key">{label}</span>
+              {depth < 2 ? (
+                <ol className="admin__config-list">
+                  {value.map((entry, i) => (
+                    <li key={i}>
+                      <Config config={entry} depth={depth + 1} />
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <span className="admin__config-value">{value.length} items</span>
+              )}
+            </li>
+          );
+        }
+
+        if (typeof value === 'object') {
+          return (
+            <li key={key}>
+              <span className="admin__config-key">{label}</span>
+              {depth < 2 ? (
+                <Config config={value} depth={depth + 1} />
+              ) : (
+                <span className="admin__config-value">{JSON.stringify(value)}</span>
+              )}
+            </li>
+          );
+        }
+
+        return (
+          <li key={key}>
+            <span className="admin__config-key">{label}</span>
+            <span className="admin__config-value">
+              {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+            </span>
+          </li>
+        );
+      })}
     </ul>
   );
 }

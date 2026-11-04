@@ -99,6 +99,33 @@ export default function Track() {
     }
   }
 
+  /* Back to the beginning, for another order.
+
+     This used to clear only the six-digit code, which is the one
+     field the customer could already see was gone. The order code
+     stayed in its box, so the form came back looking exactly as it
+     had, and the button read as dead. Worse, pressing "Send me a
+     code" again on that same order inside the one-minute cooldown
+     mints nothing and sends nothing - so the one obvious thing to
+     try next also did nothing.
+
+     The address stays. It is the same person looking for another of
+     their own orders, and making them type it again helps nobody. */
+  function startOver() {
+    setStep(STEP.ASK);
+    setError('');
+    setNote('');
+    setForm((f) => ({ ...f, orderCode: '', code: '' }));
+
+    /* The two steps look alike on a small screen. An empty box with
+       the cursor already in it is the clearest way to say that the
+       tap did something. */
+    window.setTimeout(() => {
+      const field = document.getElementById('track-code');
+      if (field) field.focus();
+    }, 0);
+  }
+
   async function submitCode(e) {
     e.preventDefault();
     setBusy(true);
@@ -281,7 +308,7 @@ export default function Track() {
                   className="btn btn--quiet btn--block btn--sm"
                   type="button"
                   disabled={busy}
-                  onClick={() => { setStep(STEP.ASK); setError(''); setForm((f) => ({ ...f, code: '' })); }}
+                  onClick={startOver}
                 >
                   Use a different order code
                 </button>
