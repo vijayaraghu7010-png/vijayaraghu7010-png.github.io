@@ -132,3 +132,10 @@ export function buildPricing() {
 export function buildEmail() {
   return bundle(path.join(repo, 'supabase', 'functions', '_shared', 'email.ts'));
 }
+
+/* One of the shared modules on its own, for the pieces that are pure
+   logic and have no database or bucket behind them. Nothing is
+   stubbed because there is nothing to stub. */
+export function buildShared(name) {
+  return bundle(path.join(repo, 'supabase', 'functions', '_shared', `${name}.ts`));
+}

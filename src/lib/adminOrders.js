@@ -1,4 +1,4 @@
-import { callFunction } from './supabaseClient';
+import { callFunction, callFunctionForBlob } from './supabaseClient';
 
 /* The studio's own calls about orders.
 
@@ -67,4 +67,12 @@ export async function removeOrder(orderId, confirmCode) {
     { order_id: orderId, confirm_code: confirmCode },
     { asAdmin: true }
   );
+}
+
+/* Every photograph in one order, as a single archive.
+
+   The zip is built by the server, so the bucket is never opened to
+   the browser. What comes back is the finished file. */
+export async function downloadOrderPhotosZip(orderId) {
+  return await callFunctionForBlob('photos-zip', { order_id: orderId }, { asAdmin: true });
 }

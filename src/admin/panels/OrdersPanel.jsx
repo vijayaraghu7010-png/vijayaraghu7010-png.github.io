@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, Download, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, Download, FileArchive, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
 
 import {
   deleteOrderPhotos,
+  downloadOrderPhotosZip,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
@@ -212,6 +213,7 @@ function OrderDetail({ orderId, onBack }) {
      which is the photographs-only delete that has always been here. */
   const [finishing, setFinishing] = useState(null);
   const [finishTyped, setFinishTyped] = useState('');
+  const [zipping, setZipping] = useState(false);
 
   const load = useCallback(async () => {
     setError('');
@@ -242,6 +244,10 @@ function OrderDetail({ orderId, onBack }) {
   const { order, items, photos, events } = data;
   const live = photos.filter((p) => !p.deleted_at);
   const canDelete = order.status === 'completed' && !order.photos_deleted_at && live.length > 0;
+
+  /* Only a confirmed upload is in the bucket to be zipped. One that
+     was started and never finished has a row and no object. */
+  const uploaded = live.filter((p) => p.upload_status === 'uploaded');
 
   /* Payment confirmed, so the job can be closed. */
   const canComplete = order.status === 'paid' || order.status === 'in_progress';
@@ -353,6 +359,40 @@ function OrderDetail({ orderId, onBack }) {
     } catch (err) {
       setError(err.message || 'That order could not be removed');
       setBusy(false);
+    }
+  }
+
+  /* The whole order in one file.
+
+     The archive is built by the server and arrives as the finished
+     thing, so there is nothing to assemble here - the blob is handed
+     to a link and the browser saves it. The object URL is revoked
+     straight afterwards: it pins the file in memory until it is, and
+     this one can be hundreds of megabytes.
+
+     Deliberately not window.open: the request carries the
+     administrator's token, which a navigation cannot. */
+  async function downloadAll() {
+    setZipping(true);
+    setError('');
+    setNote('');
+    try {
+      const { blob, filename } = await downloadOrderPhotosZip(order.id);
+
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = filename || `${order.order_code}-photos.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(href);
+
+      setNote(`${uploaded.length} photographs saved as ${link.download}.`);
+    } catch (err) {
+      setError(err.message || 'Those photographs could not be fetched');
+    } finally {
+      setZipping(false);
     }
   }
 
@@ -556,6 +596,27 @@ function OrderDetail({ orderId, onBack }) {
             {live.filter((p) => p.upload_status !== 'uploaded').length} not
           </p>
         )}
+
+        {uploaded.length > 0 && !order.photos_deleted_at ? (
+          <button
+            type="button"
+            className="admin__btn"
+            disabled={zipping || busy}
+            onClick={downloadAll}
+          >
+            <FileArchive size={15} />
+            {zipping
+              ? 'Building the archive…'
+              : `Download all ${uploaded.length} as a ZIP`}
+          </button>
+        ) : null}
+
+        {zipping ? (
+          <p className="admin__hint">
+            The studio server is fetching each photograph and packing them. Larger orders take a
+            moment — this does not stop if you look at another tab.
+          </p>
+        ) : null}
 
         {live.length > 0 && !order.photos_deleted_at ? (
           <ul className="admin__checks admin__photo-list">
