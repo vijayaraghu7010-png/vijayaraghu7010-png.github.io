@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, ChevronLeft, Download, Image, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, Download, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
 
 import {
   deleteOrderPhotos,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
+  removeOrder,
   setOrderStatus
 } from '../../lib/adminOrders';
 import { formatRupees } from '../../utils/currency';
@@ -30,8 +31,12 @@ const STATUSES = [
    worth showing. */
 const NEXT = {
   pending: ['paid', 'cancelled'],
+  /* 'completed' is not offered here from 'paid'. Closing a paid order
+     is the two-step finish below - Complete, then Shipped - because
+     completing it also clears the customer's photographs, and that is
+     not something to hang off a button sitting in a row of five. */
   paid: ['in_progress', 'cancelled'],
-  in_progress: ['completed', 'cancelled'],
+  in_progress: ['cancelled'],
   completed: [],
   cancelled: []
 };
@@ -202,6 +207,12 @@ function OrderDetail({ orderId, onBack }) {
   const [note, setNote] = useState('');
   const [fetching, setFetching] = useState(null);
 
+  /* The two-step finish: 'complete' clears the photographs, 'remove'
+     takes the order off the books. Kept apart from `confirming`,
+     which is the photographs-only delete that has always been here. */
+  const [finishing, setFinishing] = useState(null);
+  const [finishTyped, setFinishTyped] = useState('');
+
   const load = useCallback(async () => {
     setError('');
     try {
@@ -231,6 +242,12 @@ function OrderDetail({ orderId, onBack }) {
   const { order, items, photos, events } = data;
   const live = photos.filter((p) => !p.deleted_at);
   const canDelete = order.status === 'completed' && !order.photos_deleted_at && live.length > 0;
+
+  /* Payment confirmed, so the job can be closed. */
+  const canComplete = order.status === 'paid' || order.status === 'in_progress';
+  /* Completed and nothing of the customer's left in storage. Only
+     then is there nothing to strand by deleting the row. */
+  const canRemove = order.status === 'completed' && Boolean(order.photos_deleted_at);
 
   async function move(next) {
     setBusy(true);
@@ -289,6 +306,56 @@ function OrderDetail({ orderId, onBack }) {
     }
   }
 
+  /* Completing an order is also what clears the customer's
+     photographs - the studio has them printed by then, and holding
+     somebody's pictures after the job is done is the thing this shop
+     tries hardest not to do.
+
+     The status moves first because the server will not delete
+     photographs from an order that is not completed. If the delete
+     then fails, the order is simply completed with its photographs
+     still there, and the ordinary delete button below is how that is
+     finished off. */
+  async function completeAndClear() {
+    setBusy(true);
+    setError('');
+    setNote('');
+    try {
+      if (order.status !== 'completed') await setOrderStatus(order.id, 'completed');
+
+      const result = await deleteOrderPhotos(order.id, order.order_code);
+      setFinishing(null);
+      await load();
+      setNote(
+        result.complete
+          ? `Completed. ${result.deleted} photographs cleared.`
+          : `Completed, but ${result.remaining} photographs would not delete. Try clearing them again.`
+      );
+    } catch (err) {
+      await load();
+      setError(err.message || 'That could not be completed');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /* And this is the end of it. The row goes, and everything hanging
+     off it goes with it. */
+  async function removeForGood() {
+    setBusy(true);
+    setError('');
+    setNote('');
+    try {
+      await removeOrder(order.id, finishTyped.trim());
+      /* Straight back to the list, which reloads - there is nothing
+         left here to show. */
+      onBack();
+    } catch (err) {
+      setError(err.message || 'That order could not be removed');
+      setBusy(false);
+    }
+  }
+
   async function reallyDelete() {
     setBusy(true);
     setError('');
@@ -335,8 +402,85 @@ function OrderDetail({ orderId, onBack }) {
               Mark {LABEL[next]}
             </button>
           ))}
+
+          {/* The close-out, in the order it happens: finish the job
+              and clear the pictures, then once it is sent, take the
+              order off the books. The second button does not appear
+              until the first has been used, because removing the row
+              is what makes anything left in storage unreachable. */}
+          {canComplete ? (
+            <button type="button" className="admin__btn" disabled={busy}
+              onClick={() => { setFinishing('complete'); setError(''); setNote(''); }}>
+              <CheckCircle2 size={15} /> Complete
+            </button>
+          ) : null}
+
+          {canRemove ? (
+            <button type="button" className="admin__ghost admin__ghost--danger" disabled={busy}
+              onClick={() => { setFinishing('remove'); setFinishTyped(''); setError(''); setNote(''); }}>
+              <Truck size={15} /> Shipped — remove order
+            </button>
+          ) : null}
         </div>
       </div>
+
+      {finishing === 'complete' ? (
+        <div className="admin__notice">
+          <p>
+            <AlertTriangle size={16} /> Mark <strong>{order.order_code}</strong> completed and
+            permanently delete the {live.length} photograph{live.length === 1 ? '' : 's'} this
+            customer uploaded.
+          </p>
+          <p className="admin__hint">
+            The order, the customer details, the prices and the history all stay. Once it has been
+            sent you can remove the order itself.
+          </p>
+          <div className="admin__row">
+            <button type="button" className="admin__btn" disabled={busy} onClick={completeAndClear}>
+              {busy ? 'Completing…' : 'Complete and clear photos'}
+            </button>
+            <button type="button" className="admin__ghost" disabled={busy}
+              onClick={() => setFinishing(null)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {finishing === 'remove' ? (
+        <div className="admin__notice">
+          <p>
+            <AlertTriangle size={16} /> This removes <strong>{order.order_code}</strong> from the
+            shop entirely — the order, its lines, its payments and its history. The customer&rsquo;s
+            tracking link stops working. It cannot be undone and nothing is kept but a line in the
+            audit log.
+          </p>
+          <label htmlFor="remove-code">
+            Type <strong>{order.order_code}</strong> to confirm
+          </label>
+          <input
+            id="remove-code"
+            type="text"
+            value={finishTyped}
+            autoComplete="off"
+            onChange={(e) => setFinishTyped(e.target.value)}
+          />
+          <div className="admin__row">
+            <button
+              type="button"
+              className="admin__ghost admin__ghost--danger"
+              disabled={busy || finishTyped.trim().toUpperCase() !== order.order_code.toUpperCase()}
+              onClick={removeForGood}
+            >
+              {busy ? 'Removing…' : 'Remove this order for good'}
+            </button>
+            <button type="button" className="admin__ghost" disabled={busy}
+              onClick={() => setFinishing(null)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {note ? <p className="admin__ok">{note}</p> : null}
       {error ? <p className="admin__error">{error}</p> : null}

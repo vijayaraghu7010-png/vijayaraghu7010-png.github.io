@@ -12,9 +12,14 @@
 import { serviceClient, json, fail, corsHeaders, text, requireAdmin } from '../_shared/common.ts';
 import { notifyStatusChange } from '../_shared/notify.ts';
 
+/* 'paid' may go straight to 'completed'. Most orders here are made
+   and sent in one sitting, and the studio closes them from the
+   payment screen rather than walking an order through a stage it
+   never really sat in. 'in_progress' is still there for the ones
+   that do. */
 const ALLOWED: Record<string, string[]> = {
   pending: ['paid', 'cancelled'],
-  paid: ['in_progress', 'cancelled'],
+  paid: ['in_progress', 'completed', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
   completed: [],
   cancelled: []

@@ -6,3 +6,5 @@ export const Image        = icon('Image');
 export const RefreshCw    = icon('RefreshCw');
 export const Trash2       = icon('Trash2');
 export const Loader2      = icon('Loader2');
+export const CheckCircle2 = icon('CheckCircle2');
+export const Truck        = icon('Truck');

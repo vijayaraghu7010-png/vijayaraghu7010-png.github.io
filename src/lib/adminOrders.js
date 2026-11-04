@@ -55,3 +55,16 @@ export async function deleteOrderPhotos(orderId, confirmCode) {
     { asAdmin: true }
   );
 }
+
+/* Taking an order off the books once it has shipped.
+
+   Everything about this is decided by the server - that the order is
+   completed, that its photographs are gone, that the code typed is
+   this order's. The panel only asks. */
+export async function removeOrder(orderId, confirmCode) {
+  return await callFunction(
+    'order-remove',
+    { order_id: orderId, confirm_code: confirmCode },
+    { asAdmin: true }
+  );
+}
