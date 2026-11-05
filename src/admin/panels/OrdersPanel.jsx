@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, Download, FileArchive, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, Download, DownloadCloud, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
 
 import {
   deleteOrderPhotos,
-  downloadOrderPhotosZip,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
@@ -394,33 +393,50 @@ function OrderDetail({ orderId, onBack }) {
     }
   }
 
-  /* The whole order in one file.
+  /* Every photograph in the order, in one go.
 
-     The archive is built by the server and arrives as the finished
-     thing, so there is nothing to assemble here - the blob is handed
-     to a link and the browser saves it. One download, which is the
-     one thing Chrome never argues about.
+     No archive and no document: each picture is saved as itself, with
+     the name the customer gave it, straight into the download folder.
+     A zip had to be unpacked and a PDF had to be taken apart again
+     before anything could be printed from it.
 
-     The object URL is revoked straight afterwards: it pins the file
-     in memory until it is, and this one can be hundreds of
-     megabytes. */
+     The URLs are the same signed, five-minute, one-object ones the
+     single Download button uses - asked for in a batch rather than a
+     new kind of request. The browser is sent to each in turn rather
+     than fetching it, because the bucket answers these with
+     Content-Disposition: attachment, so a navigation saves the file
+     under its own name and the bucket never has to allow the page to
+     read from it.
+
+     Spaced out on purpose. Firing twenty navigations in the same
+     tick makes Chrome drop most of them; a pause between each is the
+     difference between twenty files and three. */
   async function downloadAll() {
     setSaving(true);
     setError('');
     setNote('');
     try {
-      const { blob, filename } = await downloadOrderPhotosZip(order.id);
+      const ready = await getPhotoDownloadUrls(order.id);
+      const files = (ready || []).filter((f) => f?.url);
+      if (!files.length) throw new Error('There is nothing here to download');
 
-      const href = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = href;
-      link.download = filename || `${order.order_code}-photos.zip`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(href);
+      for (const file of files) {
+        const link = document.createElement('a');
+        link.href = file.url;
+        /* Ignored for another origin - the bucket's own header is what
+           names the file - but right when it is honoured. */
+        link.download = file.filename || '';
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        await new Promise((r) => window.setTimeout(r, 350));
+      }
 
-      setNote(`${uploaded.length} photographs saved as ${link.download}.`);
+      setNote(
+        `${files.length} photograph${files.length > 1 ? 's' : ''} sent to your downloads. ` +
+          'If only the first arrived, allow this site to download several files and try again.'
+      );
     } catch (err) {
       setError(err.message || 'Those photographs could not be fetched');
     } finally {
@@ -636,17 +652,17 @@ function OrderDetail({ orderId, onBack }) {
             disabled={saving || busy}
             onClick={downloadAll}
           >
-            <FileArchive size={15} />
+            <DownloadCloud size={15} />
             {saving
-              ? 'Building the archive…'
-              : `Download all ${uploaded.length} as a ZIP`}
+              ? 'Saving them…'
+              : `Download all ${uploaded.length} photograph${uploaded.length > 1 ? 's' : ''}`}
           </button>
         ) : null}
 
         {saving ? (
           <p className="admin__hint">
-            The studio server is fetching each photograph and packing them. Larger orders take a
-            moment — this does not stop if you look at another tab.
+            Saving them one after another. The browser may ask once whether this site may download
+            several files — say yes.
           </p>
         ) : null}
 
