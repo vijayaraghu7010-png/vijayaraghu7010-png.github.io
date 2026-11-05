@@ -194,9 +194,11 @@ test('nothing to download is said, not silently done', async () => {
    Chrome never has to be asked whether this site may save several
    files - the question it answers by stopping after the first. */
 
-function mockFolder() {
+function mockFolder({ refuseMkdir = false } = {}) {
   const written = [];
-  const folder = {
+  const made = [];
+
+  const child = {
     async getFileHandle(name, opts) {
       const record = { name, create: opts?.create, bytes: null, closed: false };
       written.push(record);
@@ -210,7 +212,18 @@ function mockFolder() {
       };
     }
   };
-  return { written, folder };
+
+  /* What the picker hands back is the PARENT the studio chose; the
+     panel makes the order's own folder inside it. */
+  const folder = {
+    async getDirectoryHandle(name, opts) {
+      if (refuseMkdir) throw new Error('permission denied');
+      made.push({ name, create: opts?.create });
+      return child;
+    }
+  };
+
+  return { written, made, folder };
 }
 
 function withPicker(folder, downloads) {
@@ -305,6 +318,37 @@ test('dismissing the folder picker does nothing at all', async () => {
   try {
     await bulkButton(detail([uploaded(1)])).props.onClick();
     assert.equal(watch.made.length, 0, 'no fallback downloads behind their back');
+  } finally {
+    watch.restore();
+  }
+});
+
+test('a folder named after the order is made, and the pictures go in it', async () => {
+  const { written, made, folder } = mockFolder();
+  withPicker(folder, [signed(1), signed(2)]);
+
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1), uploaded(2)])).props.onClick();
+
+    assert.deepEqual(made, [{ name: 'WS-2026-0011', create: true }],
+      'one folder, named after the order');
+    assert.deepEqual(written.map((f) => f.name), ['IMG_0001.jpg', 'IMG_0002.jpg']);
+    assert.equal(watch.made.length, 0, 'still nothing for Chrome to block');
+  } finally {
+    watch.restore();
+  }
+});
+
+test('a folder the browser will not make is reported, not worked around', async () => {
+  const { written, folder } = mockFolder({ refuseMkdir: true });
+  withPicker(folder, [signed(1)]);
+
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1)])).props.onClick();
+    assert.equal(written.length, 0, 'nothing written');
+    assert.equal(watch.made.length, 0, 'and no downloads fired instead, behind their back');
   } finally {
     watch.restore();
   }

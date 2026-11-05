@@ -388,15 +388,34 @@ function OrderDetail({ orderId, onBack }) {
 
     let folder = null;
     if (canPickFolder) {
+      let parent;
       try {
-        folder = await window.showDirectoryPicker({ id: 'ws-order-photos', mode: 'readwrite' });
+        parent = await window.showDirectoryPicker({ id: 'ws-order-photos', mode: 'readwrite' });
       } catch {
         /* The picker was dismissed. Not an error, just nothing to do. */
         return;
       }
+
+      /* The studio says where, and the panel makes the folder - one
+         named after the order, so a morning's downloads do not end up
+         as forty loose pictures in one place with nothing to say
+         which order each belongs to.
+
+         Asking again for the same order opens the folder that is
+         already there and writes over it, which is what somebody
+         re-downloading an order means by it. */
+      setSaving(true);
+      try {
+        folder = await parent.getDirectoryHandle(order.order_code, { create: true });
+      } catch (err) {
+        setSaving(false);
+        setError(`That folder could not be made: ${err.message || 'the browser refused'}`);
+        return;
+      }
+    } else {
+      setSaving(true);
     }
 
-    setSaving(true);
     try {
       const ready = await getPhotoDownloadUrls(order.id);
       const files = (ready || []).filter((f) => f?.url);
@@ -453,7 +472,10 @@ function OrderDetail({ orderId, onBack }) {
         setNote(`Saving… ${written} of ${files.length}`);
       }
 
-      setNote(`${written} photograph${written > 1 ? 's' : ''} saved to the folder you chose.`);
+      setNote(
+        `${written} photograph${written > 1 ? 's' : ''} saved into a folder called ` +
+          `${order.order_code}.`
+      );
     } catch (err) {
       setError(err.message || 'Those photographs could not be saved');
     } finally {
@@ -685,7 +707,7 @@ function OrderDetail({ orderId, onBack }) {
         {uploaded.length > 1 && !order.photos_deleted_at && !saving ? (
           <p className="admin__hint">
             {canPickFolder
-              ? 'You will be asked to choose a folder; every photograph is saved into it under its own name.'
+              ? `You choose where to put it, and a folder called ${order.order_code} is made there with every photograph in it.`
               : 'This browser has no folder picker, so they arrive as separate downloads — it may ask once whether this site may save several files.'}
           </p>
         ) : null}
