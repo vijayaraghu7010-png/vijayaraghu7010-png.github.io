@@ -972,19 +972,47 @@
 .pdp__gallery {
   display: grid;
   gap: 10px;
+  /* The cap belongs on the width. Capping the HEIGHT of a box that
+     has an aspect-ratio narrows the box instead of letterboxing it -
+     the ratio is kept and the width follows the height down - so a
+     max-height here made the picture smaller, which was the opposite
+     of the point. This bounds it on a wide screen without touching
+     the shape. */
+  max-width: 560px;
 }
 
+/* The product photograph, as tall as the picture actually is.
+
+   This box was 4/3 - landscape - with object-fit: cover, and not one
+   product in the shop is photographed landscape. Every bouquet is
+   1086x1448, the frames are the same, and the kit shots are square.
+   So every picture was being cropped to a middle band and shown in
+   the smallest shape the page could give it.
+
+   3/4 is the shape the photographs are, so they now fill the box
+   edge to edge with nothing cut off, and the box is taller than it
+   was wide-ways, which is most of the extra size.
+
+   contain rather than cover, so a square shot is let alone too: it
+   sits in the middle with a little cream above and below instead of
+   losing a quarter of its width. Nothing in here is cropped now.
+
+   The cap keeps it sensible. Without it the single-column layout
+   would make a 1000px-wide column into a 1300px-tall picture, and
+   the Add to bag would be a scroll away. */
 .pdp__main {
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--cream);
   box-shadow: var(--shadow-sm);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  place-items: center;
 }
 .pdp__main img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .pdp__thumbs {

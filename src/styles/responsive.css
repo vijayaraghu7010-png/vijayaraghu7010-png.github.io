@@ -31,8 +31,17 @@
   .pdp {
     grid-template-columns: minmax(0, 1fr);
   }
+  /* Was 16/10 here - the widest it got, on the layout where the
+     picture is full width and matters most. Same portrait shape as
+     everywhere else, capped so it does not fill the whole screen. */
   .pdp__main {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 3 / 4;
+  }
+  /* Stacked, the gallery would otherwise be as wide as the page and
+     so half again as tall, putting Add to bag off the bottom. */
+  .pdp__gallery {
+    max-width: 440px;
+    margin-inline: auto;
   }
 }
 
