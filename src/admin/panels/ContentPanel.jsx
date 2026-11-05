@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Image as ImageIcon, Plus, RotateCcw, Save } from 'lucide-react';
 
 import { adminFetch, adminUpload } from '../../lib/adminClient';
+import { groupLabel, sortFields, sortGroups } from '../contentOrder';
 
 /* Every sentence on the site that has been given a key can be edited
    here. Adding a key is possible too, for copy wired up later.
@@ -52,10 +53,15 @@ export default function ContentPanel() {
             (r.value || '').toLowerCase().includes(q)
         )
       : rows;
-    return matching.reduce((acc, r) => {
+    const byGroup = matching.reduce((acc, r) => {
       (acc[r.group_name] ||= []).push(r);
       return acc;
     }, {});
+
+    /* The groups in the order the site is built, and the fields in
+       the order the page reads - not the alphabetical order the rows
+       arrive in, which separated every heading from its own text. */
+    return sortGroups(Object.keys(byGroup)).map((name) => [name, sortFields(byGroup[name])]);
   }, [rows, filter]);
 
   const dirty = Object.keys(draft).length;
@@ -194,9 +200,11 @@ export default function ContentPanel() {
         </form>
       )}
 
-      {Object.entries(groups).map(([group, items]) => (
+      {groups.map(([group, items]) => (
         <div className="admin__group" key={group}>
-          <h3>{group}</h3>
+          <h3>
+            {groupLabel(group)} <span className="admin__group-count">{items.length}</span>
+          </h3>
           {items.map((r) => {
             const value = draft[r.key] !== undefined ? draft[r.key] : r.value;
             return (
