@@ -69,3 +69,46 @@ export async function callFunction(name, body, { asAdmin = false } = {}) {
 
   return payload;
 }
+
+/* The same call, when what comes back is a file rather than JSON.
+
+   callFunction reads the body as JSON, which would turn an image
+   into a parse failure and lose the error message with it. This
+   keeps the body as a blob, and still reads a refusal as JSON - a
+   function that says no says it the same way whatever it would have
+   returned. */
+export async function callFunctionForBlob(name, body, { asAdmin = false } = {}) {
+  if (!BACKEND_READY) throw new Error('No backend is configured');
+
+  let bearer = key;
+  if (asAdmin) {
+    const { data } = await supabase.auth.getSession();
+    if (!data?.session) throw new Error('Your session has ended. Sign in again.');
+    bearer = data.session.access_token;
+  }
+
+  const res = await fetch(functionUrl(name), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: key,
+      Authorization: `Bearer ${bearer}`
+    },
+    body: JSON.stringify(body ?? {})
+  });
+
+  if (!res.ok) {
+    let message = `That request failed (${res.status})`;
+    try {
+      const payload = await res.json();
+      message = payload?.error || payload?.message || message;
+    } catch {
+      /* a refusal with no readable body is handled by the status */
+    }
+    const error = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
+
+  return { blob: await res.blob() };
+}

@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, ChevronLeft, Download, DownloadCloud, Imag
 
 import {
   deleteOrderPhotos,
+  fetchOrderPhoto,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
@@ -363,50 +364,98 @@ function OrderDetail({ orderId, onBack }) {
 
   /* Every photograph in the order, in one go.
 
-     No archive and no document: each picture is saved as itself, with
-     the name the customer gave it, straight into the download folder.
-     A zip had to be unpacked and a PDF had to be taken apart again
-     before anything could be printed from it.
+     Chrome refuses to let a page fire off a run of downloads - it
+     stops after the first and asks whether the site may save several
+     files - so this does not fire downloads at all where it can
+     avoid it. The studio picks a folder once and each picture is
+     written straight into it, which is one permission, asked plainly,
+     instead of a browser warning about a page behaving oddly.
 
-     The URLs are the same signed, five-minute, one-object ones the
-     single Download button uses - asked for in a batch rather than a
-     new kind of request. The browser is sent to each in turn rather
-     than fetching it, because the bucket answers these with
-     Content-Disposition: attachment, so a navigation saves the file
-     under its own name and the bucket never has to allow the page to
-     read from it.
+     The bytes come through the server rather than from the bucket.
+     Reading them in the page would mean letting a browser GET from
+     R2, and the download path has always avoided that; the single
+     Download button still navigates to a signed URL and the bucket
+     still allows nothing but PUT.
 
-     Spaced out on purpose. Firing twenty navigations in the same
-     tick makes Chrome drop most of them; a pause between each is the
-     difference between twenty files and three. */
+     Firefox and Safari have no folder picker, so there they get the
+     old way - a link per file, spaced out - and Chrome's prompt with
+     it. Said plainly in the note rather than left to be discovered. */
+  const canPickFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
   async function downloadAll() {
-    setSaving(true);
     setError('');
     setNote('');
+
+    let folder = null;
+    if (canPickFolder) {
+      try {
+        folder = await window.showDirectoryPicker({ id: 'ws-order-photos', mode: 'readwrite' });
+      } catch {
+        /* The picker was dismissed. Not an error, just nothing to do. */
+        return;
+      }
+    }
+
+    setSaving(true);
     try {
       const ready = await getPhotoDownloadUrls(order.id);
       const files = (ready || []).filter((f) => f?.url);
       if (!files.length) throw new Error('There is nothing here to download');
 
-      for (const file of files) {
-        const link = document.createElement('a');
-        link.href = file.url;
-        /* Ignored for another origin - the bucket's own header is what
-           names the file - but right when it is honoured. */
-        link.download = file.filename || '';
-        link.rel = 'noopener';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        await new Promise((r) => window.setTimeout(r, 350));
+      if (!folder) {
+        /* No picker here. One link per file, spaced out: twenty
+           navigations in a tick and Chrome keeps about three. */
+        for (const file of files) {
+          const link = document.createElement('a');
+          link.href = file.url;
+          link.download = file.filename || '';
+          link.rel = 'noopener';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          await new Promise((r) => window.setTimeout(r, 350));
+        }
+        setNote(
+          `${files.length} photograph${files.length > 1 ? 's' : ''} sent to your downloads. ` +
+            'If only the first arrived, allow this site to save several files and try again.'
+        );
+        return;
       }
 
-      setNote(
-        `${files.length} photograph${files.length > 1 ? 's' : ''} sent to your downloads. ` +
-          'If only the first arrived, allow this site to download several files and try again.'
-      );
+      /* A name the folder can hold, and no two the same - a phone
+         hands out IMG_0001.jpg over and over, and the second write
+         would silently replace the first. */
+      const used = new Set();
+      let written = 0;
+
+      for (const file of files) {
+        const raw = String(file.filename || `${file.photo_id}.jpg`)
+          .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_')
+          .replace(/^\.+/, '_') || 'photo.jpg';
+
+        let name = raw;
+        if (used.has(name.toLowerCase())) {
+          const dot = raw.lastIndexOf('.');
+          const stem = dot > 0 ? raw.slice(0, dot) : raw;
+          const ext = dot > 0 ? raw.slice(dot) : '';
+          let n = 2;
+          while (used.has(`${stem} (${n})${ext}`.toLowerCase())) n++;
+          name = `${stem} (${n})${ext}`;
+        }
+        used.add(name.toLowerCase());
+
+        const { blob } = await fetchOrderPhoto(order.id, file.photo_id);
+        const handle = await folder.getFileHandle(name, { create: true });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        written++;
+        setNote(`Saving… ${written} of ${files.length}`);
+      }
+
+      setNote(`${written} photograph${written > 1 ? 's' : ''} saved to the folder you chose.`);
     } catch (err) {
-      setError(err.message || 'Those photographs could not be fetched');
+      setError(err.message || 'Those photographs could not be saved');
     } finally {
       setSaving(false);
     }
@@ -629,8 +678,15 @@ function OrderDetail({ orderId, onBack }) {
 
         {saving ? (
           <p className="admin__hint">
-            Saving them one after another. The browser may ask once whether this site may download
-            several files — say yes.
+            Saving them one after another — larger orders take a moment.
+          </p>
+        ) : null}
+
+        {uploaded.length > 1 && !order.photos_deleted_at && !saving ? (
+          <p className="admin__hint">
+            {canPickFolder
+              ? 'You will be asked to choose a folder; every photograph is saved into it under its own name.'
+              : 'This browser has no folder picker, so they arrive as separate downloads — it may ask once whether this site may save several files.'}
           </p>
         ) : null}
 

@@ -1,4 +1,4 @@
-import { callFunction } from './supabaseClient';
+import { callFunction, callFunctionForBlob } from './supabaseClient';
 
 /* The studio's own calls about orders.
 
@@ -65,6 +65,19 @@ export async function removeOrder(orderId, confirmCode) {
   return await callFunction(
     'order-remove',
     { order_id: orderId, confirm_code: confirmCode },
+    { asAdmin: true }
+  );
+}
+
+/* One photograph's bytes, for saving into a folder the studio picked.
+
+   The panel cannot read them from the bucket itself - that would mean
+   opening R2 to the browser, which the download path has always
+   avoided - so they come back through the server. */
+export async function fetchOrderPhoto(orderId, photoId) {
+  return await callFunctionForBlob(
+    'photos-bytes',
+    { order_id: orderId, photo_id: photoId },
     { asAdmin: true }
   );
 }

@@ -186,3 +186,126 @@ test('nothing to download is said, not silently done', async () => {
     watch.restore();
   }
 });
+
+/* ----------------------------------------------- saving to a folder
+
+   The path Chrome actually takes. No downloads are fired at all:
+   the studio picks a folder and each picture is written into it, so
+   Chrome never has to be asked whether this site may save several
+   files - the question it answers by stopping after the first. */
+
+function mockFolder() {
+  const written = [];
+  const folder = {
+    async getFileHandle(name, opts) {
+      const record = { name, create: opts?.create, bytes: null, closed: false };
+      written.push(record);
+      return {
+        async createWritable() {
+          return {
+            async write(blob) { record.bytes = blob; },
+            async close() { record.closed = true; }
+          };
+        }
+      };
+    }
+  };
+  return { written, folder };
+}
+
+function withPicker(folder, downloads) {
+  globalThis.__session = { access_token: 'TEST-SESSION-TOKEN' };
+  let call = 0;
+  globalThis.fetch = async () => {
+    call++;
+    /* the first call is photos-download (JSON), the rest are bytes */
+    if (call === 1) {
+      return new Response(JSON.stringify({ downloads }), {
+        status: 200, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    return new Response(new Uint8Array([1, 2, 3]), {
+      status: 200, headers: { 'Content-Type': 'image/jpeg' }
+    });
+  };
+  globalThis.window = {
+    setTimeout: (fn) => { fn(); return 0; },
+    showDirectoryPicker: async () => {
+      if (folder === 'dismissed') throw new Error('AbortError');
+      return folder;
+    }
+  };
+}
+
+const signed = (n) => ({
+  photo_id: `p${n}`, filename: `IMG_000${n}.jpg`,
+  url: `https://bucket.example.com/s${n}?X-Amz-Signature=S`
+});
+
+test('with a folder picker, every photograph is written and no download is fired', async () => {
+  const { written, folder } = mockFolder();
+  withPicker(folder, [signed(1), signed(2), signed(3)]);
+
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1), uploaded(2), uploaded(3)])).props.onClick();
+
+    assert.equal(watch.made.length, 0, 'no links, so nothing for Chrome to block');
+    assert.deepEqual(written.map((f) => f.name),
+      ['IMG_0001.jpg', 'IMG_0002.jpg', 'IMG_0003.jpg']);
+    assert.ok(written.every((f) => f.create), 'created in the chosen folder');
+    assert.ok(written.every((f) => f.bytes), 'each one actually written');
+    assert.ok(written.every((f) => f.closed), 'and closed, or the file is empty');
+  } finally {
+    watch.restore();
+  }
+});
+
+test('two photographs with one name do not overwrite each other', async () => {
+  /* A phone hands out IMG_0001.jpg over and over. Writing the second
+     over the first would lose a picture silently. */
+  const { written, folder } = mockFolder();
+  withPicker(folder, [
+    { photo_id: 'p1', filename: 'IMG_0001.jpg', url: 'https://b/a?X-Amz-Signature=S' },
+    { photo_id: 'p2', filename: 'IMG_0001.jpg', url: 'https://b/b?X-Amz-Signature=S' },
+    { photo_id: 'p3', filename: 'IMG_0001.jpg', url: 'https://b/c?X-Amz-Signature=S' }
+  ]);
+
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1), uploaded(2), uploaded(3)])).props.onClick();
+    assert.equal(new Set(written.map((f) => f.name)).size, 3, 'three distinct names');
+    assert.deepEqual(written.map((f) => f.name),
+      ['IMG_0001.jpg', 'IMG_0001 (2).jpg', 'IMG_0001 (3).jpg']);
+  } finally {
+    watch.restore();
+  }
+});
+
+test('a name that could climb out of the folder is flattened', async () => {
+  const { written, folder } = mockFolder();
+  withPicker(folder, [
+    { photo_id: 'p1', filename: '../../evil.jpg', url: 'https://b/a?X-Amz-Signature=S' }
+  ]);
+
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1)])).props.onClick();
+    assert.equal(written.length, 1);
+    assert.ok(!written[0].name.includes('/'), written[0].name);
+    assert.ok(!written[0].name.startsWith('.'), written[0].name);
+  } finally {
+    watch.restore();
+  }
+});
+
+test('dismissing the folder picker does nothing at all', async () => {
+  withPicker('dismissed', [signed(1)]);
+  const watch = watchAnchors();
+  try {
+    await bulkButton(detail([uploaded(1)])).props.onClick();
+    assert.equal(watch.made.length, 0, 'no fallback downloads behind their back');
+  } finally {
+    watch.restore();
+  }
+});
