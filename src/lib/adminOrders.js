@@ -1,4 +1,4 @@
-import { callFunction, callFunctionForBlob } from './supabaseClient';
+import { callFunction } from './supabaseClient';
 
 /* The studio's own calls about orders.
 
@@ -67,15 +67,4 @@ export async function removeOrder(orderId, confirmCode) {
     { order_id: orderId, confirm_code: confirmCode },
     { asAdmin: true }
   );
-}
-
-/* Every photograph in one order, as a single PDF.
-
-   A zip is a container the studio has to unpack before it can see
-   anything; a PDF opens, scrolls and prints. The file is built by
-   the server, so the bucket is never opened to the browser, and the
-   JPEGs go in untouched - a print from this is a print from the
-   original. */
-export async function downloadOrderPhotosPdf(orderId) {
-  return await callFunctionForBlob('photos-pdf', { order_id: orderId }, { asAdmin: true });
 }
