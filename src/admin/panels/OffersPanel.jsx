@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Save, Trash2 } from 'lucide-react';
+import { Percent, Plus, Save, Trash2 } from 'lucide-react';
 
 import { adminFetch } from '../../lib/adminClient';
 import { discountOf, offerCovers } from '../../utils/offers';
@@ -178,7 +178,16 @@ export default function OffersPanel() {
             </button>
           </article>
         ))}
-        {!offers.length && <p className="admin__hint">No offers yet.</p>}
+        {!offers.length && (
+          <div className="admin__empty">
+            <Percent size={22} aria-hidden="true" />
+            <strong>No offers yet</strong>
+            <p>
+              An offer with a code is entered at checkout. One without a code runs by itself while
+              its dates are open.
+            </p>
+          </div>
+        )}
       </div>
 
       {editing && (

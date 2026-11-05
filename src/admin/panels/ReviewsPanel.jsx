@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Star, Trash2 } from 'lucide-react';
 
 import StarRating from '../../components/StarRating';
 import { adminFetch } from '../../lib/adminClient';
@@ -78,12 +78,23 @@ export default function ReviewsPanel() {
           <p className="admin__hint">
             {rows.length
               ? `${rows.length} left by customers. The stars on every card are the average of these.`
-              : 'Nobody has left one yet. The stars show the rating set on each product until somebody does.'}
+              : 'Every review a customer leaves shows here.'}
           </p>
         </div>
       </div>
 
       {error && <p className="admin__error">{error}</p>}
+
+      {!rows.length && !error ? (
+        <div className="admin__empty">
+          <Star size={22} aria-hidden="true" />
+          <strong>No reviews yet</strong>
+          <p>
+            Nobody has left one. A product shows the rating set against it until a customer does,
+            and the average here takes over from then on.
+          </p>
+        </div>
+      ) : null}
 
       {rows.map((r) => (
         <div className="admin__row" key={r.id}>

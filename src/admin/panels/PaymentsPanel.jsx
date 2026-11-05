@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Check, Eye, RefreshCw, Settings, TriangleAlert, X } from 'lucide-react';
+import { Check, Eye, IndianRupee, RefreshCw, Settings, TriangleAlert, X } from 'lucide-react';
 
 import {
   decidePayment,
@@ -104,7 +104,14 @@ export default function PaymentsPanel() {
       {loading ? (
         <p className="admin__hint">Reading the payments…</p>
       ) : rows.length === 0 ? (
-        <p className="admin__hint">Nothing here.</p>
+        <div className="admin__empty">
+          <IndianRupee size={22} aria-hidden="true" />
+          <strong>Nothing to check</strong>
+          <p>
+            Payments a customer has told the studio about appear here, waiting to be compared with
+            the account before they are verified.
+          </p>
+        </div>
       ) : (
         <div className="admin__stack">
           {rows.map((payment) => (

@@ -30,7 +30,7 @@ export default function AdminLogin({ onSignedIn }) {
 
   return (
     <div className="admin admin--center">
-      <div className="admin__card">
+      <div className="admin__card admin__card--gate">
         <img className="admin__logo" src="/images/logo.png" alt="" width="512" height="512" />
         <h1>Studio admin</h1>
         <p className="admin__hint">This is the staff entrance, not the shop login.</p>

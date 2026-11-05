@@ -9,3 +9,6 @@ export const Loader2      = icon('Loader2');
 export const CheckCircle2 = icon('CheckCircle2');
 export const Truck        = icon('Truck');
 export const DownloadCloud = icon('DownloadCloud');
+export const Percent      = icon('Percent');
+export const IndianRupee  = icon('IndianRupee');
+export const Star         = icon('Star');

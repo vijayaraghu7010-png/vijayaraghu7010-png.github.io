@@ -50,6 +50,38 @@ const LABEL = {
   cancelled: 'Cancelled'
 };
 
+/* What the history is actually saying.
+
+   These rows are written by the server under their own names -
+   order.created, photos.downloaded - and the panel printed them as
+   they are. They read like a log file, and the studio is not reading
+   a log file: it is reading what happened to somebody's order.
+
+   An event nobody has named here still shows, as its own words
+   rather than hidden, so a new one added later is legible without
+   this list being edited first. */
+const EVENT_NAMES = {
+  'order.created': 'Order placed',
+  'order.paid': 'Payment received',
+  'order.in_progress': 'Being made',
+  'order.completed': 'Completed',
+  'order.cancelled': 'Cancelled',
+  'order.removed': 'Order removed',
+  'payment.submitted': 'Payment submitted',
+  'payment.rejected': 'Payment refused',
+  'payment.correction_requested': 'Payment needs correcting',
+  'photos.uploaded': 'Photographs uploaded',
+  'photos.downloaded': 'Photographs downloaded',
+  'photos.deleted': 'Photographs deleted',
+  'photos.delete_partial': 'Photographs partly deleted'
+};
+
+const eventName = (event) =>
+  EVENT_NAMES[event] ||
+  String(event || '')
+    .replace(/[._-]+/g, ' ')
+    .replace(/^./, (c) => c.toUpperCase());
+
 const rupees = (paise) => formatRupees((Number(paise) || 0) / 100);
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-IN') : '—');
 const mb = (bytes) => `${((Number(bytes) || 0) / 1048576).toFixed(1)} MB`;
@@ -805,7 +837,7 @@ function OrderDetail({ orderId, onBack }) {
         <ul className="admin__stack">
           {events.map((event) => (
             <li key={event.id}>
-              <strong>{event.event}</strong> <span className="admin__hint">{when(event.created_at)} · {event.actor}</span>
+              <strong>{eventName(event.event)}</strong> <span className="admin__hint">{when(event.created_at)} · {event.actor}</span>
             </li>
           ))}
         </ul>
