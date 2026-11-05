@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Check, ChevronRight, Sparkles } from 'lucide-react';
+import { Check, ChevronRight, ShoppingBag, Sparkles } from 'lucide-react';
 
 import WishlistButton from '../components/WishlistButton';
+import { useCart } from '../context/CartContext';
 import StarRating from '../components/StarRating';
 import ProductReviews from '../components/ProductReviews';
 import ProductCard from '../components/ProductCard';
@@ -10,7 +11,6 @@ import MagazineCustomiser from '../components/MagazineCustomiser';
 import PolaroidStudio from '../components/PolaroidStudio';
 import FrameOptions from '../components/FrameOptions';
 import PosterOptions from '../components/PosterOptions';
-import BouquetOptions from '../components/BouquetOptions';
 import NotFound from './NotFound';
 import usePageMeta from '../hooks/usePageMeta';
 import { PRODUCTS, getProductBySlug } from '../data/products';
@@ -50,6 +50,7 @@ export default function ProductDetails() {
 
   /* an automatic offer shows here exactly as it shows on the card */
   const deal = bestOfferFor(product, offers);
+  const { addItem } = useCart();
   const rating = ratingFor(product, reviews);
 
   usePageMeta(product?.name, product?.shortDescription);
@@ -156,13 +157,26 @@ export default function ProductDetails() {
 
           {product.customiser === 'poster' && <PosterOptions product={product} />}
 
-          {/* A bouquet was the one customiser this page did not know
-              about, so its product page had no way to add anything to
-              a bag at all - the only route in was the quick-add on
-              the card, and a customer who opened the product reached
-              a dead end. It is the same component the bouquets page
-              opens from its banner. */}
-          {product.customiser === 'bouquet' && <BouquetOptions product={product} />}
+          {/* A bouquet on the shelf is bought as it is photographed,
+              so this is a plain add to bag. The builder that asks
+              what the flowers should be made of belongs to the
+              custom-gift banner on the bouquets page, where somebody
+              is designing one rather than choosing one - putting it
+              here asked a customer to specify a bouquet they had
+              already picked.
+
+              It is still a button rather than nothing: before this,
+              a bouquet's own page had no way to buy it at all, and
+              the only route in was the quick-add on the card. */}
+          {product.customiser === 'bouquet' && (
+            <button
+              className="btn btn--primary btn--block"
+              type="button"
+              onClick={() => addItem(product, { quantity: 1 })}
+            >
+              <ShoppingBag size={16} /> Add to bag — {formatRupees(product.price)}
+            </button>
+          )}
         </div>
       </div>
 

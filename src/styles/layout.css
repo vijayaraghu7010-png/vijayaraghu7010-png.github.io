@@ -307,41 +307,6 @@
   gap: 10px;
 }
 
-.hero__proof {
-  margin-top: clamp(16px, 1.6vw, 26px);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatars {
-  display: flex;
-}
-
-.avatars img {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--white);
-  box-shadow: var(--shadow-sm);
-}
-.avatars img + img {
-  margin-left: -11px;
-}
-
-.hero__rating {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.hero__stars {
-  display: flex;
-  gap: 2px;
-  color: var(--accent);
-}
-
 .hero__script {
   position: absolute;
   z-index: 2;

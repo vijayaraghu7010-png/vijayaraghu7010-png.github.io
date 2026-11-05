@@ -29,7 +29,6 @@ const base = [
   ['home.hero.ctaPrimaryLink', '/magazines', 'home', 'Hero primary button goes to'],
   ['home.hero.ctaSecondary', 'Custom Gifts', 'home', 'Hero secondary button'],
   ['home.hero.ctaSecondaryLink', '/custom-gifts', 'home', 'Hero secondary button goes to'],
-  ['home.hero.proof', '4.9/5 from 10K+ happy customers', 'home', 'Hero rating line'],
   ['home.hero.image', '/images/hero-sunset.jpg', 'home', 'Hero banner picture'],
   [
     'home.hero.imageAlt',

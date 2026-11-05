@@ -1,12 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useText } from '../context/SiteConfigContext';
-
-const AVATARS = [
-  { src: '/images/avatar-1.jpg', alt: 'A customer who ordered a personalised magazine' },
-  { src: '/images/avatar-2.jpg', alt: 'A customer who ordered polaroid prints' },
-  { src: '/images/avatar-3.jpg', alt: 'A customer who ordered a handmade bouquet' }
-];
 
 export default function HeroSection() {
   /* Every line here can be rewritten from the admin panel; what is
@@ -18,7 +12,6 @@ export default function HeroSection() {
   const ctaPrimaryLink = useText('home.hero.ctaPrimaryLink', '/magazines');
   const ctaSecondary = useText('home.hero.ctaSecondary', 'Custom Gifts');
   const ctaSecondaryLink = useText('home.hero.ctaSecondaryLink', '/custom-gifts');
-  const proof = useText('home.hero.proof', '4.9/5 from 10K+ happy customers');
   /* the hero art was a 2 MB PNG; it is a JPEG now. A hero picture
      saved in the admin panel before that still names the PNG, so the
      old name is read as the new one rather than 404ing. */
@@ -81,21 +74,6 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          <div className="hero__proof">
-            <div className="avatars" aria-hidden="true">
-              {AVATARS.map((a) => (
-                <img key={a.src} src={a.src} alt="" loading="lazy" decoding="async" />
-              ))}
-            </div>
-            <div>
-              <p className="hero__rating">{proof}</p>
-              <div className="hero__stars" aria-hidden="true">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} size={13} fill="currentColor" strokeWidth={0} />
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </section>

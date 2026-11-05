@@ -260,8 +260,8 @@ export const PRODUCTS = [
     customiser: 'magazine',
     sizeId: 'mag-a4-4',
     featured: true,
-    rating: 4.9,
-    reviews: 212,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-02-10'
   },
   {
@@ -285,8 +285,8 @@ export const PRODUCTS = [
     customiser: 'magazine',
     sizeId: 'mag-a4-8',
     featured: true,
-    rating: 4.8,
-    reviews: 164,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-02-10'
   },
   {
@@ -309,8 +309,8 @@ export const PRODUCTS = [
     keywords: ['magazine', 'photo book', 'personalised', 'zine', 'memories', 'pages', 'a5', 'small'],
     customiser: 'magazine',
     sizeId: 'mag-a5-4',
-    rating: 4.8,
-    reviews: 41,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-26'
   },
   {
@@ -333,8 +333,8 @@ export const PRODUCTS = [
     keywords: ['magazine', 'photo book', 'personalised', 'zine', 'memories', 'pages', 'a5', 'small'],
     customiser: 'magazine',
     sizeId: 'mag-a5-8',
-    rating: 4.8,
-    reviews: 33,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-26'
   },
 
@@ -366,8 +366,8 @@ export const PRODUCTS = [
     keywords: ['polaroid', 'prints', 'photos', 'instant', 'pictures', 'medium'],
     customiser: 'polaroid',
     featured: true,
-    rating: 4.9,
-    reviews: 148,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-03-02'
   },
   {
@@ -397,8 +397,8 @@ export const PRODUCTS = [
     keywords: ['polaroid', 'prints', 'photos', 'instant', 'pictures', 'large'],
     customiser: 'polaroid',
     featured: true,
-    rating: 4.8,
-    reviews: 96,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-26'
   },
 
@@ -647,8 +647,8 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 60,
-    rating: 4.8,
-    reviews: 87,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-23'
   },
   {
@@ -675,8 +675,8 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 61,
-    rating: 4.9,
-    reviews: 42,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-31'
   },
   {
@@ -703,8 +703,8 @@ export const PRODUCTS = [
     featured: false,
     published: true,
     sortOrder: 62,
-    rating: 4.8,
-    reviews: 31,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-31'
   },
   {
@@ -731,8 +731,8 @@ export const PRODUCTS = [
     featured: false,
     published: true,
     sortOrder: 63,
-    rating: 4.9,
-    reviews: 28,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-31'
   },
   {
@@ -760,8 +760,8 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 64,
-    rating: 5.0,
-    reviews: 19,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-31'
   },
   {
@@ -789,8 +789,8 @@ export const PRODUCTS = [
     featured: false,
     published: true,
     sortOrder: 65,
-    rating: 5.0,
-    reviews: 14,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-31'
   },
   /* ------------------------------------------------- posters */
@@ -829,7 +829,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 69,
-    rating: 5.0,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -857,7 +857,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 70,
-    rating: 4.8,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -884,7 +884,7 @@ export const PRODUCTS = [
     featured: false,
     published: true,
     sortOrder: 71,
-    rating: 4.7,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -912,7 +912,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 72,
-    rating: 4.9,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -939,7 +939,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 73,
-    rating: 4.8,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -966,7 +966,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 74,
-    rating: 4.9,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -993,7 +993,7 @@ export const PRODUCTS = [
     featured: false,
     published: true,
     sortOrder: 75,
-    rating: 4.7,
+    rating: null,
     reviews: 0,
     addedAt: '2026-11-01'
   },
@@ -1030,7 +1030,7 @@ export const PRODUCTS = [
     featured: true,
     published: true,
     sortOrder: 0,
-    rating: 0,
+    rating: null,
     reviews: 0,
     addedAt: '2026-10-24'
   },
@@ -1053,8 +1053,8 @@ export const PRODUCTS = [
     occasions: ['Love', 'Birthday', 'Anniversary'],
     keywords: ['hamper', 'gift box', 'perfume', 'clutch', 'jewellery', 'chocolate', 'luxury'],
     featured: true,
-    rating: 4.6,
-    reviews: 41,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-22'
   },
   {
@@ -1076,8 +1076,8 @@ export const PRODUCTS = [
     occasions: ['Rakhi', 'Birthday', 'Just Because'],
     keywords: ['hamper', 'gift box', 'engraved', 'message', 'bouquet', 'polaroid', 'rakhi'],
     featured: true,
-    rating: 4.9,
-    reviews: 119,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-22'
   },
   {
@@ -1099,8 +1099,8 @@ export const PRODUCTS = [
     occasions: ['Thank You', 'Just Because', 'Birthday'],
     keywords: ['hamper', 'gift box', 'candle', 'scrunchie', 'keyring', 'chocolate', 'thank you'],
     featured: false,
-    rating: 4.8,
-    reviews: 66,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-22'
   },
   {
@@ -1122,8 +1122,8 @@ export const PRODUCTS = [
     occasions: ['Love', 'Anniversary', 'Just Because'],
     keywords: ['hamper', 'gift box', 'brooch', 'earrings', 'purse', 'roses', 'romantic'],
     featured: false,
-    rating: 4.9,
-    reviews: 52,
+    rating: null,
+    reviews: 0,
     addedAt: '2026-10-22'
   },
 
