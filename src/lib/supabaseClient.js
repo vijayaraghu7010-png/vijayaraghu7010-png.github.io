@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { adminAccessToken } from './adminSession';
 
 /* The one connection to the backend.
 
@@ -37,11 +38,7 @@ export async function callFunction(name, body, { asAdmin = false } = {}) {
   if (!BACKEND_READY) throw new Error('No backend is configured');
 
   let bearer = key;
-  if (asAdmin) {
-    const { data } = await supabase.auth.getSession();
-    if (!data?.session) throw new Error('Your session has ended. Sign in again.');
-    bearer = data.session.access_token;
-  }
+  if (asAdmin) bearer = await adminAccessToken(supabase);
 
   const res = await fetch(functionUrl(name), {
     method: 'POST',
@@ -81,11 +78,7 @@ export async function callFunctionForBlob(name, body, { asAdmin = false } = {}) 
   if (!BACKEND_READY) throw new Error('No backend is configured');
 
   let bearer = key;
-  if (asAdmin) {
-    const { data } = await supabase.auth.getSession();
-    if (!data?.session) throw new Error('Your session has ended. Sign in again.');
-    bearer = data.session.access_token;
-  }
+  if (asAdmin) bearer = await adminAccessToken(supabase);
 
   const res = await fetch(functionUrl(name), {
     method: 'POST',

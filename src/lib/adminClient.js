@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { DEFAULT_CONTENT, DEFAULT_THEMES } from '../data/siteDefaults';
 import { currentAdmin } from './adminAuth';
+import { SessionEnded } from './adminSession';
 import { DATA_URL_OVERHEAD, compressFile, toDataUrl } from './imageCompress';
 import {
   contentFromDb,
@@ -42,7 +43,11 @@ function slugify(s) {
 }
 
 function requireAdmin() {
-  if (!currentAdmin()) throw new Error('Not signed in');
+  /* The remembered marker is enough to paint the panel, but not to
+     act. Anything that actually reaches the server takes the real
+     token through adminAccessToken, which says plainly when there is
+     not one. */
+  if (!currentAdmin()) throw new SessionEnded();
   if (!supabase) throw new Error('No backend is configured');
 }
 
