@@ -6,8 +6,13 @@ import { getByCategory, getProductById, MAGAZINE_THEMES } from '../data/products
 import { useText } from '../context/SiteConfigContext';
 
 export default function Magazines() {
+  /* The heading on the page is a picture, so the editable title
+     names that picture for a screen reader and titles the browser
+     tab. Editing it in the panel will not redraw the artwork. */
+  const title = useText('magazines.title', 'Personalised Magazines');
+
   usePageMeta(
-    'Personalised Magazines',
+    title,
     'Personalised photo magazines in A4 (₹300 for 4 pages, ₹550 for 8) and A5 (₹200 for 4 pages, ₹400 for 8). Choose a theme, send photos, approve the PDF preview.'
   );
 
@@ -20,11 +25,12 @@ export default function Magazines() {
      the rest stay in the list above until there is work to show. */
   const lookbook = MAGAZINE_THEMES.filter((theme) => theme.samples?.length);
 
+
   return (
     <div className="shell">
       <header className="page-head">
         <h1 className="page-head__art">
-          <img src="/images/headings/magazines.webp" alt="Personalised Magazines" width="1200" height="379" />
+          <img src="/images/headings/magazines.webp" alt={title} width="1200" height="379" />
         </h1>
         <p>{useText('magazines.subtitle', 'Turn your favourite memories into a magazine made just for you.')}</p>
       </header>

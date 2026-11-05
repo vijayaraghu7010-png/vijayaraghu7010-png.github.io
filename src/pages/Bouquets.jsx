@@ -38,8 +38,13 @@ const SORTS = [
 ];
 
 export default function Bouquets() {
+  /* The heading on the page is a picture, so the editable title
+     names that picture for a screen reader and titles the browser
+     tab. Editing it in the panel will not redraw the artwork. */
+  const title = useText('bouquets.title', 'Bouquets for Every Occasion');
+
   usePageMeta(
-    'Bouquets for Every Occasion',
+    title,
     'Handmade bouquets from ₹1,299 — roses, sunflowers and pastel blooms for birthdays, anniversaries and just because.'
   );
 
@@ -82,11 +87,12 @@ export default function Bouquets() {
      build: the first bouquet in the list as it is sorted now. */
   const start = products[0] || all[0];
 
+
   return (
     <div className="shell">
       <header className="page-head">
         <h1 className="page-head__art">
-          <img src="/images/headings/bouquets.webp" alt="Bouquets for Every Occasion" width="1200" height="404" />
+          <img src="/images/headings/bouquets.webp" alt={title} width="1200" height="404" />
         </h1>
         <p>{useText('bouquets.subtitle', 'Because every moment deserves a beautiful beginning.')}</p>
       </header>

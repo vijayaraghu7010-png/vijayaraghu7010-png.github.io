@@ -69,10 +69,13 @@ export async function removeOrder(orderId, confirmCode) {
   );
 }
 
-/* Every photograph in one order, as a single archive.
+/* Every photograph in one order, as a single PDF.
 
-   The zip is built by the server, so the bucket is never opened to
-   the browser. What comes back is the finished file. */
-export async function downloadOrderPhotosZip(orderId) {
-  return await callFunctionForBlob('photos-zip', { order_id: orderId }, { asAdmin: true });
+   A zip is a container the studio has to unpack before it can see
+   anything; a PDF opens, scrolls and prints. The file is built by
+   the server, so the bucket is never opened to the browser, and the
+   JPEGs go in untouched - a print from this is a print from the
+   original. */
+export async function downloadOrderPhotosPdf(orderId) {
+  return await callFunctionForBlob('photos-pdf', { order_id: orderId }, { asAdmin: true });
 }

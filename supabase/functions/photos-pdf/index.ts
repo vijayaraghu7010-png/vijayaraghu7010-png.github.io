@@ -1,35 +1,29 @@
-/* One order's photographs, as a single file.
+/* One order's photographs, as a single PDF.
 
-   The panel could already fetch them one at a time, and for an order
-   of nine prints that is nine clicks, nine save dialogs and nine
-   chances to put one in the wrong folder. This hands over the lot.
+   This replaces the zip. A zip is a container the studio has to
+   unpack before it can see anything; a PDF opens, scrolls and
+   prints, which is what these pictures are for.
 
-   It is the same claim as photos-download and checks the same things:
-   an administrator by token and by allowlist, an order that exists,
-   photographs that have not been deleted, and a manifest read with
-   the order id already in the query so another order's rows are not
-   there to be asked for.
+   Nothing is re-encoded. Each JPEG goes in exactly as the customer
+   uploaded it, so a print taken from this file is a print taken from
+   the original, and the pages are each the size of their own picture
+   so nothing is cropped or rotated.
 
-   The archive is built here rather than in the browser on purpose.
-   Zipping in the page would mean the bucket had to allow the browser
-   to GET from it, and the download path has always avoided that -
-   it navigates to a signed URL instead, so the bucket goes on
-   allowing PUT and nothing else. Widening that for a convenience is
-   the wrong trade.
-
-   It streams. One photograph is held at a time, so a hundred of them
-   cost no more memory than the largest one.                        */
+   The claim it checks is the one photos-download checks, because it
+   is the same claim: an administrator by token and by allowlist, an
+   order that exists, photographs that have not been deleted, and a
+   manifest read with the order id already in the query so another
+   order's rows are not there to ask about.                        */
 
 import { serviceClient, json, fail, corsHeaders, text, requireAdmin } from '../_shared/common.ts';
 import { presignGet, r2Configured } from '../_shared/r2.ts';
-import { zipStream, type ZipEntry } from '../_shared/zip.ts';
+import { buildPdf, type PdfPhoto } from '../_shared/pdf.ts';
 
-/* Below what the zip format would need ZIP64 for, and below what a
-   browser will hold while it saves the result. An order past either
-   is told plainly to use the one-at-a-time downloads rather than
-   being handed something broken. */
-const MOST_PHOTOS = 200;
-const MOST_BYTES = 1024 * 1024 * 1024; // 1GB
+/* The whole file is assembled in memory before it is sent, so this is
+   bounded by what the function may hold rather than by the format.
+   An order past it is told to use the one-at-a-time downloads. */
+const MOST_PHOTOS = 150;
+const MOST_BYTES = 180 * 1024 * 1024;
 
 const GOOD_FOR_SECONDS = 600;
 
@@ -77,7 +71,7 @@ Deno.serve(async (req) => {
 
   if (manifest.length > MOST_PHOTOS) {
     return fail(
-      `This order has ${manifest.length} photographs, which is more than one archive will take. ` +
+      `This order has ${manifest.length} photographs, which is more than one file will take. ` +
         'Download them individually.',
       413,
       origin
@@ -88,7 +82,7 @@ Deno.serve(async (req) => {
   if (total > MOST_BYTES) {
     return fail(
       `These photographs come to ${Math.round(total / 1048576)}MB, which is too much for one ` +
-        'archive. Download them individually.',
+        'file. Download them individually.',
       413,
       origin
     );
@@ -103,43 +97,46 @@ Deno.serve(async (req) => {
   }
 
   /* Written before a byte goes out. A download that failed halfway is
-     still an administrator having asked for somebody's photographs,
-     and that is the thing the log is for. */
+     still an administrator having asked for somebody's photographs. */
   await db.from('order_events').insert({
     order_id: orderId,
     actor: admin.email,
     event: 'photos.downloaded',
-    detail: { count: manifest.length, bytes: total, as: 'zip' }
+    detail: { count: manifest.length, bytes: total, as: 'pdf' }
   });
 
-  const entries: ZipEntry[] = manifest.map((photo) => ({
-    name: String(photo.original_filename || `${photo.id}.jpg`),
-    read: async () => {
-      /* Signed at the moment it is needed and used immediately. The
-         URL never leaves this function. */
-      const url = await presignGet(
-        String(photo.r2_key),
-        String(photo.original_filename || 'photo.jpg'),
-        GOOD_FOR_SECONDS
-      );
+  /* Fetched one at a time rather than all at once: a hundred parallel
+     reads of a bucket is how a function runs out of sockets, and the
+     pages have to be in order anyway. A picture that will not come
+     back gets a page saying so instead of failing the whole file -
+     the studio can still print the rest of the order. */
+  const pages: PdfPhoto[] = [];
+  for (const photo of manifest) {
+    const name = String(photo.original_filename || `${photo.id}.jpg`);
+    try {
+      const url = await presignGet(String(photo.r2_key), name, GOOD_FOR_SECONDS);
       const res = await fetch(url);
-      if (!res.ok) throw new Error(`photo ${photo.id} could not be read (${res.status})`);
-      return new Uint8Array(await res.arrayBuffer());
+      if (!res.ok) {
+        pages.push({ name, bytes: null, problem: `storage answered ${res.status}` });
+        continue;
+      }
+      pages.push({ name, bytes: new Uint8Array(await res.arrayBuffer()) });
+    } catch (e) {
+      pages.push({ name, bytes: null, problem: (e as Error).message.slice(0, 80) });
     }
-  }));
+  }
 
-  const filename = `${order.order_code}-photos.zip`;
+  const filename = `${order.order_code}-photos.pdf`;
+  const pdf = buildPdf(`${order.order_code} photographs`, pages);
 
-  return new Response(zipStream(entries), {
+  return new Response(pdf, {
     status: 200,
     headers: {
       ...corsHeaders(origin),
-      'Content-Type': 'application/zip',
+      'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${filename}"`,
-      /* So the panel can name the saved file without parsing the
-         header, which fetch does not expose by default. */
-      'X-Zip-Filename': filename,
-      'Access-Control-Expose-Headers': 'X-Zip-Filename',
+      'X-Pdf-Filename': filename,
+      'Access-Control-Expose-Headers': 'X-Pdf-Filename',
       'Cache-Control': 'no-store, private'
     }
   });

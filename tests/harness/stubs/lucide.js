@@ -8,4 +8,4 @@ export const Trash2       = icon('Trash2');
 export const Loader2      = icon('Loader2');
 export const CheckCircle2 = icon('CheckCircle2');
 export const Truck        = icon('Truck');
-export const FileArchive  = icon('FileArchive');
+export const FileText     = icon('FileText');

@@ -3,6 +3,7 @@ import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 
 import { BRAND, SOCIALS } from '../data/categories';
 import useContact from '../hooks/useContact';
+import useBrand from '../hooks/useBrand';
 
 const QUICK_LINKS = [
   { to: '/', label: 'Home' },
@@ -40,6 +41,7 @@ const SOCIAL_ICONS = {
 
 export default function Footer() {
   const contact = useContact();
+  const brand = useBrand();
 
   /* The WhatsApp entry is the studio's own number, so it follows the
      number in the panel rather than the one SOCIALS was built with at
@@ -54,16 +56,16 @@ export default function Footer() {
       <div className="shell">
         <div className="footer__inner">
           <div className="footer__brand-col">
-            <Link className="brand" to="/" aria-label={`${BRAND.name} — home`}>
+            <Link className="brand" to="/" aria-label={`${brand.name} — home`}>
               <img
                 className="footer__logo"
                 src="/images/logo.png"
-                alt={`${BRAND.name} — handmade bouquets & gifts`}
+                alt={`${brand.name} — handmade bouquets & gifts`}
                 width="512"
                 height="512"
               />
             </Link>
-            <p className="footer__brandline">{BRAND.footerLine}</p>
+            <p className="footer__brandline">{brand.footerLine}</p>
 
             <div className="footer__socials">
               {socials.map((social) => {
@@ -155,7 +157,7 @@ export default function Footer() {
 
         <div className="footer__bottom">
           <p>
-            © {new Date().getFullYear()} {BRAND.name}. Prices in Indian Rupees. Shipping charged separately.
+            © {new Date().getFullYear()} {brand.name}. Prices in Indian Rupees. Shipping charged separately.
           </p>
           <p className="footer__script">
             More than gifts,

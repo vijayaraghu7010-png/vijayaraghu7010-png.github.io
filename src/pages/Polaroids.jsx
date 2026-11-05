@@ -9,8 +9,13 @@ import { formatRupees } from '../utils/currency';
 import { useText } from '../context/SiteConfigContext';
 
 export default function Polaroids() {
+  /* The heading on the page is a picture, so the editable title
+     names that picture for a screen reader and titles the browser
+     tab. Editing it in the panel will not redraw the artwork. */
+  const title = useText('polaroids.title', 'Polaroids');
+
   usePageMeta(
-    'Polaroids',
+    title,
     'Medium polaroid prints at ₹6 each (minimum 9) and large prints at ₹10 each (minimum 10). Small prints, big memories.'
   );
 
@@ -18,11 +23,12 @@ export default function Polaroids() {
   const medium = products.find((p) => p.id === 'polaroid-medium');
   const large = products.find((p) => p.id === 'polaroid-large');
 
+
   return (
     <div className="shell">
       <header className="page-head">
         <h1 className="page-head__art">
-          <img src="/images/headings/polaroids.webp" alt="Polaroids" width="1200" height="385" />
+          <img src="/images/headings/polaroids.webp" alt={title} width="1200" height="385" />
         </h1>
         <p>{useText('polaroids.subtitle', 'Small prints. Big memories.')}</p>
       </header>

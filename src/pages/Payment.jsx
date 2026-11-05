@@ -4,7 +4,7 @@ import { Check, Clock, Copy, Loader2, Smartphone, TriangleAlert, Upload } from '
 
 import usePageMeta from '../hooks/usePageMeta';
 import { formatRupees } from '../utils/currency';
-import { BRAND } from '../data/categories';
+import useBrand from '../hooks/useBrand';
 import {
   fetchPaymentContext,
   submitPayment,
@@ -37,6 +37,7 @@ export default function Payment() {
   usePageMeta('Pay for your order', 'Complete your WrappedStudio order with UPI.');
 
   const { token: linkToken } = useParams();
+  const brand = useBrand();
   const [token, setToken] = useState(linkToken || '');
 
   const [context, setContext] = useState(null);
@@ -227,7 +228,7 @@ export default function Payment() {
                      printing the brand and hoping nobody notices. */
                   <p className="admin__hint">
                     Your app will show <strong>{upi.display_name}</strong> — that is
-                    {' '}{BRAND.name}&rsquo;s own account. If it shows any other name, stop and
+                    {' '}{brand.name}&rsquo;s own account. If it shows any other name, stop and
                     write to us before sending anything.
                   </p>
                 ) : null}

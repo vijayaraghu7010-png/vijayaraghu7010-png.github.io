@@ -18,8 +18,13 @@ const SORTS = [
 ];
 
 export default function Hampers() {
+  /* The heading on the page is a picture, so the editable title
+     names that picture for a screen reader and titles the browser
+     tab. Editing it in the panel will not redraw the artwork. */
+  const title = useText('hampers.title', 'Gift Hampers');
+
   usePageMeta(
-    'Gift Hampers',
+    title,
     'Keepsake gift hampers from ₹1,499 — candles, jewellery, chocolates and handwritten notes, packed by hand in Chennai.'
   );
 
@@ -43,11 +48,12 @@ export default function Hampers() {
     }
   }, [all, filter, sort]);
 
+
   return (
     <div className="shell">
       <header className="page-head">
         <h1 className="page-head__art">
-          <img src="/images/headings/hampers.webp" alt="HamperBox — gift hampers" width="1600" height="534" />
+          <img src="/images/headings/hampers.webp" alt={title} width="1600" height="534" />
         </h1>
         <p>{useText('hampers.subtitle', 'Keepsake boxes packed by hand, for the people you love most.')}</p>
       </header>

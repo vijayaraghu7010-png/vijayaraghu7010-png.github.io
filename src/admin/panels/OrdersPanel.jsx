@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, Download, FileArchive, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, Download, FileText, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
 
 import {
   deleteOrderPhotos,
-  downloadOrderPhotosZip,
+  downloadOrderPhotosPdf,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
@@ -364,9 +364,10 @@ function OrderDetail({ orderId, onBack }) {
 
   /* The whole order in one file.
 
-     The archive is built by the server and arrives as the finished
-     thing, so there is nothing to assemble here - the blob is handed
-     to a link and the browser saves it. The object URL is revoked
+     A PDF rather than a zip: one page per photograph, printable as
+     it is, and nothing to unpack. It is built by the server and
+     arrives finished, so there is nothing to assemble here - the
+     blob is handed to a link and the browser saves it. The object URL is revoked
      straight afterwards: it pins the file in memory until it is, and
      this one can be hundreds of megabytes.
 
@@ -377,12 +378,12 @@ function OrderDetail({ orderId, onBack }) {
     setError('');
     setNote('');
     try {
-      const { blob, filename } = await downloadOrderPhotosZip(order.id);
+      const { blob, filename } = await downloadOrderPhotosPdf(order.id);
 
       const href = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = href;
-      link.download = filename || `${order.order_code}-photos.zip`;
+      link.download = filename || `${order.order_code}-photos.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -604,17 +605,17 @@ function OrderDetail({ orderId, onBack }) {
             disabled={zipping || busy}
             onClick={downloadAll}
           >
-            <FileArchive size={15} />
+            <FileText size={15} />
             {zipping
-              ? 'Building the archive…'
-              : `Download all ${uploaded.length} as a ZIP`}
+              ? 'Building the file…'
+              : `Download all ${uploaded.length} as one PDF`}
           </button>
         ) : null}
 
         {zipping ? (
           <p className="admin__hint">
-            The studio server is fetching each photograph and packing them. Larger orders take a
-            moment — this does not stop if you look at another tab.
+            The studio server is fetching each photograph and laying them out, one to a page.
+            Larger orders take a moment — this does not stop if you look at another tab.
           </p>
         ) : null}
 
