@@ -402,107 +402,16 @@ export const PRODUCTS = [
     addedAt: '2026-10-26'
   },
 
-  /* ------------------------------------------------ bouquets */
-  {
-    id: 'bouquet-blush-coast',
-    slug: 'blush-sunset-bouquet',
-    name: 'Blush Sunset Bouquet',
-    category: 'bouquet',
-    categoryLabel: 'Bouquet',
-    price: 1299,
-    priceMode: PRICE_MODES.FIXED,
-    unitLabel: '',
-    image: '/images/p-blush-coast.jpg',
-    alt: 'A handmade bouquet of blush pink roses wrapped in pale paper',
-    gallery: ['/images/p-blush-coast.jpg', '/images/o-love.jpg'],
-    shortDescription: 'Soft, romantic and serene — blush roses tied by hand.',
-    description:
-      'Blush pink roses and soft fillers, tied by hand and wrapped in pale paper. Made to order, so every bouquet is a little different.',
-    details: ['Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
-    occasions: ['Love', 'Anniversary', 'Just Because'],
-    flowerType: 'Rose Bouquets',
-    keywords: ['bouquet', 'rose', 'pink', 'blush', 'flowers', 'romantic'],
-    customiser: 'bouquet',
-    featured: true,
-    rating: 4.8,
-    reviews: 131,
-    addedAt: '2026-01-18'
-  },
-  {
-    id: 'bouquet-golden-hour',
-    slug: 'golden-hour-bouquet',
-    name: 'Golden Hour Bouquet',
-    category: 'bouquet',
-    categoryLabel: 'Bouquet',
-    price: 1499,
-    priceMode: PRICE_MODES.FIXED,
-    unitLabel: '',
-    image: '/images/p-golden-hour.jpg',
-    alt: 'A warm bouquet of coral and cream roses in sunset light',
-    gallery: ['/images/p-golden-hour.jpg', '/images/o-anniversary.jpg'],
-    shortDescription: 'A warm blend of sunset hues, coral through cream.',
-    description:
-      'Coral, peach and cream blooms in the colours of the last hour of light. Our most-sent bouquet, and the one most often asked for again.',
-    details: ['Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
-    occasions: ['Anniversary', 'Congratulations', 'Love'],
-    flowerType: 'Rose Bouquets',
-    keywords: ['bouquet', 'rose', 'coral', 'sunset', 'flowers', 'golden'],
-    customiser: 'bouquet',
-    featured: true,
-    rating: 5.0,
-    reviews: 74,
-    addedAt: '2026-01-18'
-  },
-  {
-    id: 'bouquet-sunset-sunflower',
-    slug: 'sunset-sunflower-bouquet',
-    name: 'Sunset Sunflower Bouquet',
-    category: 'bouquet',
-    categoryLabel: 'Bouquet',
-    price: 1349,
-    priceMode: PRICE_MODES.FIXED,
-    unitLabel: '',
-    image: '/images/p-sunflower.jpg',
-    alt: 'A bright bouquet of sunflowers wrapped for gifting',
-    gallery: ['/images/p-sunflower.jpg', '/images/o-congrats.jpg'],
-    shortDescription: 'Radiates joy and positivity — sunflowers, front and centre.',
-    description:
-      'Big, bright sunflowers with warm fillers. The bouquet to send when the news is good and you want it to feel like it.',
-    details: ['Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
-    occasions: ['Congratulations', 'Birthday', 'Just Because'],
-    flowerType: 'Sunflower Bouquets',
-    keywords: ['bouquet', 'sunflower', 'yellow', 'bright', 'flowers', 'congratulations'],
-    customiser: 'bouquet',
-    featured: false,
-    rating: 4.7,
-    reviews: 58,
-    addedAt: '2026-04-06'
-  },
-  {
-    id: 'bouquet-ocean-breeze',
-    slug: 'ocean-breeze-bouquet',
-    name: 'Ocean Breeze Bouquet',
-    category: 'bouquet',
-    categoryLabel: 'Bouquet',
-    price: 1599,
-    priceMode: PRICE_MODES.FIXED,
-    unitLabel: '',
-    image: '/images/p-ocean-breeze.jpg',
-    alt: 'A cream and white bouquet with pastel blooms held in warm light',
-    gallery: ['/images/p-ocean-breeze.jpg', '/images/o-justbecause.jpg'],
-    shortDescription: 'A touch of calm, a lot of love — cream and pastel blooms.',
-    description:
-      'Cream and white blooms with cool pastel accents, tied loose and airy. Quiet, and the one people keep the longest.',
-    details: ['Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
-    occasions: ['Just Because', 'Birthday', 'Anniversary'],
-    flowerType: 'Rose Bouquets',
-    keywords: ['bouquet', 'white', 'cream', 'pastel', 'calm', 'flowers'],
-    customiser: 'bouquet',
-    featured: false,
-    rating: 4.9,
-    reviews: 103,
-    addedAt: '2026-04-06'
-  },
+  /* ------------------------------------------------ bouquets
+
+     The four the shop opened with have been taken off. The category,
+     the page and the bouquet customiser all stay, so new ones drop
+     straight in here and the shop picks them up.
+
+     The hamper's own small bouquet no longer depends on this shelf:
+     it is priced from `kit-bouquet-mini` in hamperItems.js, which is
+     where hamper fillers belong. Emptying this list does not take it
+     with them.                                                     */
   /* -------------------------------------------------- frames */
   {
     id: 'frame-couple-eye',

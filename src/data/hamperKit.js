@@ -726,7 +726,11 @@ export const GIFT_KINDS = [
     name: 'Handmade bouquet',
     blurb: 'A small wrapped bouquet, made to order.',
     category: 'keepsake',
-    productId: 'bouquet-blush-coast',
+    /* Priced from the hamper kit's own item rather than from the
+       shop's bouquet shelf, which is now empty. A hamper filler is
+       not one of the shop's bouquets, and tying the two together
+       meant clearing the shelf stopped this being orderable. */
+    productId: 'kit-bouquet-mini',
     model: 'bouquet',
     size: [13, 14, 13],
     proxy: [[0, 0.27, 0, 0.32, 0.27, 0.32], [0, 0.76, 0, 0.50, 0.24, 0.50]],

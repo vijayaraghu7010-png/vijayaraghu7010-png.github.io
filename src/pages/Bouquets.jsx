@@ -116,8 +116,14 @@ export default function Bouquets() {
       />
 
       <section className="section" aria-label="Custom bouquets">
+        {/* The inline customiser is priced from a bouquet on the
+            shelf, so with none there is nothing for it to open.
+            Without `onAction` the banner falls back to its link to
+            the custom-gift form, which is the right place to ask for
+            a bouquet the shop is not listing - rather than a button
+            that changes its own label and does nothing. */}
         <CustomGiftBanner
-          onAction={() => setBuilding((open) => !open)}
+          onAction={start ? () => setBuilding((open) => !open) : undefined}
           actionLabel={building ? 'Close the builder' : 'Create Something Personal'}
           expanded={building}
         />

@@ -200,6 +200,28 @@ export const HAMPER_ITEM_PRODUCTS = [
     keywords: ['lip balm', 'lakme', 'peptide', '9to5', 'hydrating']
   }),
 
+  /* ---------------------------------------------- keepsakes
+
+     The small wrapped bouquet that goes inside a hamper. It used to
+     be priced from `bouquet-blush-coast` on the shop's own bouquet
+     shelf; those have been taken off, and a gift in the kit that
+     cannot be priced is a gift nobody can order. It belongs here
+     anyway: it is a hamper filler, not one of the shop's bouquets,
+     and this is where hamper fillers are priced.
+
+     ₹1,299 is what it has been charging all along, carried over
+     unchanged rather than re-decided here. It is a full bouquet's
+     price for a 13cm one, so it is worth a look in Admin →
+     Products. */
+  item({
+    id: 'kit-bouquet-mini',
+    name: 'Handmade mini bouquet',
+    price: 1299,
+    image: '/images/p-blush-coast.jpg',
+    short: 'A small wrapped bouquet of satin flowers, made to order.',
+    keywords: ['bouquet', 'flowers', 'handmade', 'hamper', 'roses']
+  }),
+
   /* ---------------------------------------------- drinkware */
   item({
     id: 'kit-drink-tumbler-leather',
