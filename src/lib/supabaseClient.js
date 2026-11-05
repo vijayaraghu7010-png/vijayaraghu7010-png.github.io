@@ -72,7 +72,7 @@ export async function callFunction(name, body, { asAdmin = false } = {}) {
 
 /* The same call, when what comes back is a file rather than JSON.
 
-   callFunction reads the body as JSON, which would turn an image
+   callFunction reads the body as JSON, which would turn a zip
    into a parse failure and lose the error message with it. This
    keeps the body as a blob, and still reads a refusal as JSON - a
    function that says no says it the same way whatever it would have
@@ -110,5 +110,8 @@ export async function callFunctionForBlob(name, body, { asAdmin = false } = {}) 
     throw error;
   }
 
-  return { blob: await res.blob() };
+  return {
+    blob: await res.blob(),
+    filename: res.headers.get('X-Zip-Filename') || null
+  };
 }

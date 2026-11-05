@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, Download, DownloadCloud, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronLeft, Download, FileArchive, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
 
 import {
   deleteOrderPhotos,
-  fetchOrderPhoto,
+  downloadOrderPhotosZip,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
@@ -394,122 +394,35 @@ function OrderDetail({ orderId, onBack }) {
     }
   }
 
-  /* Every photograph in the order, in one go.
+  /* The whole order in one file.
 
-     Chrome refuses to let a page fire off a run of downloads - it
-     stops after the first and asks whether the site may save several
-     files - so this does not fire downloads at all where it can
-     avoid it. The studio picks a folder once and each picture is
-     written straight into it, which is one permission, asked plainly,
-     instead of a browser warning about a page behaving oddly.
+     The archive is built by the server and arrives as the finished
+     thing, so there is nothing to assemble here - the blob is handed
+     to a link and the browser saves it. One download, which is the
+     one thing Chrome never argues about.
 
-     The bytes come through the server rather than from the bucket.
-     Reading them in the page would mean letting a browser GET from
-     R2, and the download path has always avoided that; the single
-     Download button still navigates to a signed URL and the bucket
-     still allows nothing but PUT.
-
-     Firefox and Safari have no folder picker, so there they get the
-     old way - a link per file, spaced out - and Chrome's prompt with
-     it. Said plainly in the note rather than left to be discovered. */
-  const canPickFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
-
+     The object URL is revoked straight afterwards: it pins the file
+     in memory until it is, and this one can be hundreds of
+     megabytes. */
   async function downloadAll() {
+    setSaving(true);
     setError('');
     setNote('');
-
-    let folder = null;
-    if (canPickFolder) {
-      let parent;
-      try {
-        parent = await window.showDirectoryPicker({ id: 'ws-order-photos', mode: 'readwrite' });
-      } catch {
-        /* The picker was dismissed. Not an error, just nothing to do. */
-        return;
-      }
-
-      /* The studio says where, and the panel makes the folder - one
-         named after the order, so a morning's downloads do not end up
-         as forty loose pictures in one place with nothing to say
-         which order each belongs to.
-
-         Asking again for the same order opens the folder that is
-         already there and writes over it, which is what somebody
-         re-downloading an order means by it. */
-      setSaving(true);
-      try {
-        folder = await parent.getDirectoryHandle(order.order_code, { create: true });
-      } catch (err) {
-        setSaving(false);
-        setError(`That folder could not be made: ${err.message || 'the browser refused'}`);
-        return;
-      }
-    } else {
-      setSaving(true);
-    }
-
     try {
-      const ready = await getPhotoDownloadUrls(order.id);
-      const files = (ready || []).filter((f) => f?.url);
-      if (!files.length) throw new Error('There is nothing here to download');
+      const { blob, filename } = await downloadOrderPhotosZip(order.id);
 
-      if (!folder) {
-        /* No picker here. One link per file, spaced out: twenty
-           navigations in a tick and Chrome keeps about three. */
-        for (const file of files) {
-          const link = document.createElement('a');
-          link.href = file.url;
-          link.download = file.filename || '';
-          link.rel = 'noopener';
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          await new Promise((r) => window.setTimeout(r, 350));
-        }
-        setNote(
-          `${files.length} photograph${files.length > 1 ? 's' : ''} sent to your downloads. ` +
-            'If only the first arrived, allow this site to save several files and try again.'
-        );
-        return;
-      }
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = filename || `${order.order_code}-photos.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(href);
 
-      /* A name the folder can hold, and no two the same - a phone
-         hands out IMG_0001.jpg over and over, and the second write
-         would silently replace the first. */
-      const used = new Set();
-      let written = 0;
-
-      for (const file of files) {
-        const raw = String(file.filename || `${file.photo_id}.jpg`)
-          .replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_')
-          .replace(/^\.+/, '_') || 'photo.jpg';
-
-        let name = raw;
-        if (used.has(name.toLowerCase())) {
-          const dot = raw.lastIndexOf('.');
-          const stem = dot > 0 ? raw.slice(0, dot) : raw;
-          const ext = dot > 0 ? raw.slice(dot) : '';
-          let n = 2;
-          while (used.has(`${stem} (${n})${ext}`.toLowerCase())) n++;
-          name = `${stem} (${n})${ext}`;
-        }
-        used.add(name.toLowerCase());
-
-        const { blob } = await fetchOrderPhoto(order.id, file.photo_id);
-        const handle = await folder.getFileHandle(name, { create: true });
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        written++;
-        setNote(`Saving… ${written} of ${files.length}`);
-      }
-
-      setNote(
-        `${written} photograph${written > 1 ? 's' : ''} saved into a folder called ` +
-          `${order.order_code}.`
-      );
+      setNote(`${uploaded.length} photographs saved as ${link.download}.`);
     } catch (err) {
-      setError(err.message || 'Those photographs could not be saved');
+      setError(err.message || 'Those photographs could not be fetched');
     } finally {
       setSaving(false);
     }
@@ -723,24 +636,17 @@ function OrderDetail({ orderId, onBack }) {
             disabled={saving || busy}
             onClick={downloadAll}
           >
-            <DownloadCloud size={15} />
+            <FileArchive size={15} />
             {saving
-              ? 'Saving them…'
-              : `Download all ${uploaded.length} photograph${uploaded.length > 1 ? 's' : ''}`}
+              ? 'Building the archive…'
+              : `Download all ${uploaded.length} as a ZIP`}
           </button>
         ) : null}
 
         {saving ? (
           <p className="admin__hint">
-            Saving them one after another — larger orders take a moment.
-          </p>
-        ) : null}
-
-        {uploaded.length > 1 && !order.photos_deleted_at && !saving ? (
-          <p className="admin__hint">
-            {canPickFolder
-              ? `You choose where to put it, and a folder called ${order.order_code} is made there with every photograph in it.`
-              : 'This browser has no folder picker, so they arrive as separate downloads — it may ask once whether this site may save several files.'}
+            The studio server is fetching each photograph and packing them. Larger orders take a
+            moment — this does not stop if you look at another tab.
           </p>
         ) : null}
 

@@ -69,15 +69,10 @@ export async function removeOrder(orderId, confirmCode) {
   );
 }
 
-/* One photograph's bytes, for saving into a folder the studio picked.
+/* Every photograph in one order, as a single archive.
 
-   The panel cannot read them from the bucket itself - that would mean
-   opening R2 to the browser, which the download path has always
-   avoided - so they come back through the server. */
-export async function fetchOrderPhoto(orderId, photoId) {
-  return await callFunctionForBlob(
-    'photos-bytes',
-    { order_id: orderId, photo_id: photoId },
-    { asAdmin: true }
-  );
+   The zip is built by the server, so the bucket is never opened to
+   the browser. What comes back is the finished file. */
+export async function downloadOrderPhotosZip(orderId) {
+  return await callFunctionForBlob('photos-zip', { order_id: orderId }, { asAdmin: true });
 }
