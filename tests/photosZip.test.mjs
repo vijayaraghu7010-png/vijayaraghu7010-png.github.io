@@ -267,3 +267,128 @@ test('anything but POST is refused', async () => {
   reset();
   assert.equal((await handler(new Request('https://shop.test/photos-zip', { method: 'GET' }))).status, 405);
 });
+
+/* ------------------------------------------- the studio's email link
+
+   A customer's photographs arriving sends the studio a message with
+   a link that fetches them, so the person printing does not have to
+   sign in on a phone. That link is a credential: it is only ever
+   compared as a hash, it reaches one order, it expires, and it can
+   be revoked. These check each of those, because the thing on the
+   other side of it is somebody's photographs. */
+
+const ORDER_B = 'order-0002';
+
+function withToken({ link = {}, photos = null } = {}) {
+  reset({ photos });
+  globalThis.__admin = null; /* nobody is signed in: the token is the whole claim */
+  globalThis.__db.orders.push({
+    id: ORDER_B, order_code: 'WS-2026-0099', photos_deleted_at: null
+  });
+  globalThis.__db.order_download_tokens = [{
+    id: 'dl1',
+    order_id: ORDER_ID,
+    token_hash: null, /* filled in below */
+    expires_at: new Date(Date.now() + 86400000).toISOString(),
+    revoked_at: null,
+    used_count: 0,
+    ...link
+  }];
+}
+
+async function sha256Hex(s) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+const askToken = (token) =>
+  handler(new Request('https://shop.test/photos-zip', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://wrappedstudio.in' },
+    body: JSON.stringify({ token })
+  }));
+
+test('a good link fetches that order, with nobody signed in', async () => {
+  withToken();
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+
+  const res = await askToken('GOODTOKEN');
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('Content-Type'), 'application/zip');
+  assert.match(res.headers.get('X-Zip-Filename'), /WS-2026-0042-photos\.zip/);
+});
+
+test('an expired link is refused', async () => {
+  withToken({ link: { expires_at: new Date(Date.now() - 1000).toISOString() } });
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  assert.equal((await askToken('GOODTOKEN')).status, 403);
+});
+
+test('a revoked link is refused', async () => {
+  withToken({ link: { revoked_at: new Date().toISOString() } });
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  assert.equal((await askToken('GOODTOKEN')).status, 403);
+});
+
+test('a token nobody issued is refused', async () => {
+  withToken();
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  assert.equal((await askToken('GUESSED')).status, 403);
+});
+
+test('every refusal says the same thing, so a guess learns nothing', async () => {
+  const said = [];
+  for (const setup of [
+    { link: { expires_at: new Date(Date.now() - 1000).toISOString() } },
+    { link: { revoked_at: new Date().toISOString() } }
+  ]) {
+    withToken(setup);
+    globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+    said.push((await (await askToken('GOODTOKEN')).json()).error);
+  }
+  withToken();
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  said.push((await (await askToken('NOPE')).json()).error);
+
+  assert.equal(new Set(said).size, 1, said.join(' / '));
+});
+
+test('a token cannot be pointed at another order by naming one', async () => {
+  /* The token says which order. An order_id sent alongside it is not
+     read at all, so it cannot redirect the link. */
+  withToken();
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+
+  const res = await handler(new Request('https://shop.test/photos-zip', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Origin: 'https://wrappedstudio.in' },
+    body: JSON.stringify({ token: 'GOODTOKEN', order_id: ORDER_B })
+  }));
+
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('X-Zip-Filename'), /WS-2026-0042/, 'the token’s order, not the one asked for');
+});
+
+test('using the link is written into the order history', async () => {
+  withToken();
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  await askToken('GOODTOKEN');
+
+  const [event] = globalThis.__db.order_events;
+  assert.equal(event.event, 'photos.downloaded');
+  assert.equal(event.actor, 'studio link');
+  assert.equal(event.detail.via, 'email link');
+});
+
+test('photographs already deleted are not fetched by an old link', async () => {
+  withToken();
+  globalThis.__db.orders[0].photos_deleted_at = '2026-11-05T10:00:00Z';
+  globalThis.__db.order_download_tokens[0].token_hash = await sha256Hex('GOODTOKEN');
+  assert.equal((await askToken('GOODTOKEN')).status, 409);
+});
+
+test('without a token and without a session, nothing is handed over', async () => {
+  reset();
+  globalThis.__admin = null;
+  assert.equal((await ask()).status, 403);
+});

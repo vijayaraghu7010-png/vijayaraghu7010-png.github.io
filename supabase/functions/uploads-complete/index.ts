@@ -11,6 +11,7 @@
 
 import { serviceClient, json, fail, corsHeaders, text, hashToken } from '../_shared/common.ts';
 import { headObject, r2Configured } from '../_shared/r2.ts';
+import { notifyPhotosUploaded } from '../_shared/notify.ts';
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('Origin');
@@ -97,6 +98,27 @@ Deno.serve(async (req) => {
       event: 'photos.uploaded',
       detail: { confirmed: confirmed.length, failed: failed.length }
     });
+
+    /* The studio is told the pictures are in, with a link to fetch
+       them. Last, after everything that matters is written down, and
+       it swallows its own failures: a shop that cannot send mail is
+       still a shop that took the photographs.
+
+       Keyed on the order, so a customer uploading in three batches
+       sends one message rather than three. */
+    const { data: order } = await db
+      .from('orders')
+      .select('id, order_code')
+      .eq('id', orderId)
+      .maybeSingle();
+
+    if (order) {
+      await notifyPhotosUploaded(db, {
+        id: String(order.id),
+        order_code: String(order.order_code),
+        count: (good ?? []).length
+      });
+    }
   }
 
   return json(

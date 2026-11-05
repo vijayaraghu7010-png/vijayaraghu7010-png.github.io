@@ -366,3 +366,35 @@ export function paymentMessage(
     idempotency_key: key
   };
 }
+
+/* The studio, told that a customer's photographs have arrived.
+
+   This goes to the people who print, not to the customer, so it says
+   what is needed to get on with it: which order, how many pictures,
+   and a link that fetches them.
+
+   The link is a credential and the mail says so. It is good for
+   fourteen days and reaches that one order's photographs - nothing
+   else, and no part of the panel. */
+export function studioPhotosMessage(
+  to: string,
+  orderCode: string,
+  count: number,
+  downloadUrl: string,
+  panelUrl: string,
+  key: string
+): EmailMessage {
+  return {
+    to,
+    subject: `Photographs in for ${orderCode} (${count})`,
+    text:
+      `${count} photograph${count === 1 ? '' : 's'} have come in for order ${orderCode}.\n\n` +
+      `Download them as one zip:\n${downloadUrl}\n\n` +
+      `That link works for fourteen days and fetches this order's ` +
+      `photographs and nothing else. Anyone who has it can use it, so ` +
+      `treat it like the pictures themselves.\n\n` +
+      `Or open the order in the panel:\n${panelUrl}\n\n` +
+      `WrappedStudio\n`,
+    idempotency_key: key
+  };
+}

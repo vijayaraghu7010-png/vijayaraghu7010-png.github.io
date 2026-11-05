@@ -11,6 +11,8 @@
    address, never the subject, never the body - the same rule the
    email boundary keeps. */
 
+import { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+import { hashToken, newToken } from './common.ts';
 import {
   orderPlacedMessage,
   orderStatusMessage,
@@ -19,6 +21,7 @@ import {
   sendEmail,
   studioAlertMessage,
   studioPaymentAlertMessage,
+  studioPhotosMessage,
   type OrderLine
 } from './email.ts';
 
@@ -208,5 +211,54 @@ export async function notifyPaymentOutcome(order: {
     note(`payment ${order.outcome}`, order.order_code, out.delivered, out.reason);
   } catch (e) {
     console.warn(`[mail] payment for ${order.order_code} threw: ${(e as Error).message}`);
+  }
+}
+
+/* A customer's photographs have arrived; tell the people who print.
+
+   The link is minted here rather than in the function that takes the
+   upload, so the only thing that ever holds the plain token is the
+   mail. What goes in the table is its hash.
+
+   Keyed on the order, so a customer uploading in three batches gets
+   the studio one message rather than three. The link always fetches
+   whatever is there when it is clicked, so one mail stays true even
+   as more pictures arrive. */
+export async function notifyPhotosUploaded(
+  db: SupabaseClient,
+  order: { id: string; order_code: string; count: number }
+): Promise<void> {
+  try {
+    const token = newToken();
+    const { error } = await db.from('order_download_tokens').insert({
+      order_id: order.id,
+      token_hash: await hashToken(token),
+      expires_at: new Date(Date.now() + 14 * 24 * 60 * 60_000).toISOString()
+    });
+
+    /* No link rather than a broken one. */
+    if (error) {
+      console.warn(`[mail] could not mint a download link for ${order.order_code}`);
+      return;
+    }
+
+    const base = siteUrl();
+    for (const to of studioAddresses()) {
+      const sent = await sendEmail(
+        studioPhotosMessage(
+          to,
+          order.order_code,
+          order.count,
+          `${base}/studio/photos/${token}`,
+          `${base}/admin`,
+          /* Keyed per recipient, or the second is taken for a repeat
+             of the first and never arrives. */
+          `photos:${order.id}:${to}`
+        )
+      );
+      note('photographs in', order.order_code, sent.delivered, sent.reason);
+    }
+  } catch (e) {
+    console.warn(`[mail] photographs notice for ${order.order_code} threw: ${(e as Error).message}`);
   }
 }

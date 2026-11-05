@@ -58,6 +58,10 @@ const Account = lazy(() => import('./pages/Account'));
    reached from a link in an order confirmation, not from the shop. */
 const Payment = lazy(() => import('./pages/Payment'));
 
+/* The studio's own download link, from the mail that says a
+   customer's photographs have arrived. */
+const StudioPhotos = lazy(() => import('./pages/StudioPhotos'));
+
 function TrackFallback() {
   return (
     <div className="shell" style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
@@ -221,6 +225,22 @@ function Shop() {
                 element={
                   <Suspense fallback={<TrackFallback />}>
                     <Track />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/studio/photos/:token"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <StudioPhotos />
+                  </Suspense>
+                }
+              />
+              <Route
+                path="/studio/photos"
+                element={
+                  <Suspense fallback={<TrackFallback />}>
+                    <StudioPhotos />
                   </Suspense>
                 }
               />

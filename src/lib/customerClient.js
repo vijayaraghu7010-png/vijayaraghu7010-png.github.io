@@ -46,7 +46,7 @@ export async function customerToken() {
 /* The shop's own calls. A customer's token when there is one, the
    publishable key when there is not - which is what lets a guest
    place an order and look one up without an account. */
-export async function callCustomerFunction(name, body) {
+export async function callCustomerFunction(name, body, { raw = false } = {}) {
   if (!CUSTOMER_BACKEND_READY) throw new Error('No backend is configured');
 
   const token = await customerToken();
@@ -59,6 +59,25 @@ export async function callCustomerFunction(name, body) {
     },
     body: JSON.stringify(body ?? {})
   });
+
+  /* `raw` is for the one reply that is a file rather than JSON - the
+     studio's photograph download. Reading it as JSON would turn a zip
+     into a parse failure and lose the refusal with it, so a refusal
+     is still read as JSON here and only a success is handed back
+     whole. */
+  if (raw) {
+    if (res.ok) return res;
+    let message = `That request failed (${res.status})`;
+    try {
+      const refused = await res.json();
+      message = refused?.error || message;
+    } catch {
+      /* a refusal with no readable body is handled by the status */
+    }
+    const error = new Error(message);
+    error.status = res.status;
+    throw error;
+  }
 
   let payload = null;
   try {

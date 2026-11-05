@@ -20,7 +20,7 @@
    It streams. One photograph is held at a time, so a hundred of them
    cost no more memory than the largest one.                        */
 
-import { serviceClient, json, fail, corsHeaders, text, requireAdmin } from '../_shared/common.ts';
+import { serviceClient, json, fail, corsHeaders, text, requireAdmin, hashToken } from '../_shared/common.ts';
 import { presignGet, r2Configured } from '../_shared/r2.ts';
 import { zipStream, type ZipEntry } from '../_shared/zip.ts';
 
@@ -40,8 +40,6 @@ Deno.serve(async (req) => {
   if (!r2Configured()) return fail('Photo storage is not configured yet', 503, origin);
 
   const db = serviceClient();
-  const admin = await requireAdmin(req, db);
-  if (!admin) return fail('Not an administrator', 403, origin);
 
   let body: Record<string, unknown>;
   try {
@@ -50,8 +48,55 @@ Deno.serve(async (req) => {
     return fail('That request was not readable', 400, origin);
   }
 
-  const orderId = text(body.order_id, 40);
-  if (!orderId) return fail('Which order', 400, origin);
+  /* Two ways in, and they are not interchangeable.
+
+     An administrator asks for an order by its id, having signed in.
+     The studio's emailed link carries a token instead, because it is
+     read on a phone and nobody is going to sign in to fetch the
+     pictures they were just told about. That token reaches exactly
+     one order, expires, can be revoked, and is only ever compared as
+     a hash - the same arrangement the customer's tracking link uses.
+
+     The token names the order; it is never taken from the caller
+     alongside one, so a token for one order cannot be pointed at
+     another by adding an order_id to the request. */
+  const token = text(body.token, 200);
+  let orderId: string;
+  let viaToken = false;
+  let actor = 'studio link';
+
+  if (token) {
+    const { data: link } = await db
+      .from('order_download_tokens')
+      .select('id, order_id, expires_at, revoked_at, used_count')
+      .eq('token_hash', await hashToken(token))
+      .maybeSingle();
+
+    const NO = 'That download link is not valid any more.';
+    if (!link) return json({ error: NO }, 403, origin);
+    if (link.revoked_at) return json({ error: NO }, 403, origin);
+    if (new Date(String(link.expires_at)) < new Date()) return json({ error: NO }, 403, origin);
+
+    orderId = String(link.order_id);
+    viaToken = true;
+
+    /* Every use written down. Best effort: a download should not
+       fail because a counter did not save. */
+    await db
+      .from('order_download_tokens')
+      .update({
+        last_used_at: new Date().toISOString(),
+        used_count: Number(link.used_count || 0) + 1
+      })
+      .eq('id', link.id);
+  } else {
+    const admin = await requireAdmin(req, db);
+    if (!admin) return fail('Not an administrator', 403, origin);
+    actor = admin.email;
+
+    orderId = text(body.order_id, 40);
+    if (!orderId) return fail('Which order', 400, origin);
+  }
 
   const { data: order } = await db
     .from('orders')
@@ -107,9 +152,9 @@ Deno.serve(async (req) => {
      and that is the thing the log is for. */
   await db.from('order_events').insert({
     order_id: orderId,
-    actor: admin.email,
+    actor,
     event: 'photos.downloaded',
-    detail: { count: manifest.length, bytes: total, as: 'zip' }
+    detail: { count: manifest.length, bytes: total, as: 'zip', via: viaToken ? 'email link' : 'panel' }
   });
 
   const entries: ZipEntry[] = manifest.map((photo) => ({
