@@ -10,6 +10,7 @@ import MagazineCustomiser from '../components/MagazineCustomiser';
 import PolaroidStudio from '../components/PolaroidStudio';
 import FrameOptions from '../components/FrameOptions';
 import PosterOptions from '../components/PosterOptions';
+import BouquetOptions from '../components/BouquetOptions';
 import NotFound from './NotFound';
 import usePageMeta from '../hooks/usePageMeta';
 import { PRODUCTS, getProductBySlug } from '../data/products';
@@ -154,6 +155,14 @@ export default function ProductDetails() {
           {product.customiser === 'frame' && <FrameOptions product={product} />}
 
           {product.customiser === 'poster' && <PosterOptions product={product} />}
+
+          {/* A bouquet was the one customiser this page did not know
+              about, so its product page had no way to add anything to
+              a bag at all - the only route in was the quick-add on
+              the card, and a customer who opened the product reached
+              a dead end. It is the same component the bouquets page
+              opens from its banner. */}
+          {product.customiser === 'bouquet' && <BouquetOptions product={product} />}
         </div>
       </div>
 

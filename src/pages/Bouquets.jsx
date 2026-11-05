@@ -7,6 +7,14 @@ import usePageMeta from '../hooks/usePageMeta';
 import { getByCategory } from '../data/products';
 import { useText } from '../context/SiteConfigContext';
 
+/* The occasions first, then what the bouquets are actually made of -
+   which is how this shelf differs now. The old two chips were
+   'Sunflower Bouquets' and 'Rose Bouquets', from a shelf of four rose
+   and sunflower bouquets; a crochet lily and a polaroid bouquet match
+   neither, so a chip nothing can match is a dead chip.
+
+   Each of these is some product's `flowerType`. Adding a bouquet with
+   a new one means adding it here too, or it cannot be filtered to. */
 const FILTERS = [
   'All Bouquets',
   'Birthday',
@@ -14,8 +22,12 @@ const FILTERS = [
   'Love',
   'Congratulations',
   'Just Because',
-  'Sunflower Bouquets',
-  'Rose Bouquets'
+  'Pipe Cleaner Flowers',
+  'Crochet Flowers',
+  'Ribbon Flowers',
+  'Artificial Flowers',
+  'Fresh Flowers',
+  'Polaroid Bouquets'
 ];
 
 const SORTS = [

@@ -404,14 +404,220 @@ export const PRODUCTS = [
 
   /* ------------------------------------------------ bouquets
 
-     The four the shop opened with have been taken off. The category,
-     the page and the bouquet customiser all stay, so new ones drop
-     straight in here and the shop picks them up.
+     PRICES ARE PLACEHOLDERS. Every one below is the same 1299 - the
+     figure the shop has been showing for a bouquet - put in so the
+     shelf has something to total, and meant to be set properly in
+     Admin -> Products before the shop takes an order. One number
+     across eight very different things is deliberate: a plausible
+     spread would look considered, and none of these were quoted.
 
-     The hamper's own small bouquet no longer depends on this shelf:
-     it is priced from `kit-bouquet-mini` in hamperItems.js, which is
-     where hamper fillers belong. Emptying this list does not take it
-     with them.                                                     */
+     They all open the bouquet customiser, which records size,
+     material, flowers and cover but does not change what is charged,
+     so the figure here is the whole price of the bouquet.
+
+     The hamper's own small bouquet does not come from this shelf: it
+     is priced from `kit-bouquet-mini` in hamperItems.js, where
+     hamper fillers belong.                                         */
+  {
+    id: 'bouquet-rosy-harmony',
+    slug: 'rosy-harmony-bouquet',
+    name: 'Rosy Harmony',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-rosy-harmony.jpg',
+    alt: 'A bouquet of red and white roses with white gypsophila, wrapped in cream and gold paper and tied with a burgundy ribbon and a strand of pearls',
+    gallery: ['/images/p-rosy-harmony.jpg'],
+    shortDescription: 'Red and white roses together, wrapped in cream and gold.',
+    description:
+      'Red and white roses set against clouds of white gypsophila, wrapped in cream and gold paper and finished with a burgundy satin ribbon and a strand of pearls. Made from artificial flowers, so it keeps.',
+    details: ['Made from artificial flowers', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Love', 'Anniversary', 'Birthday'],
+    flowerType: 'Artificial Flowers',
+    keywords: ['bouquet', 'artificial', 'rose', 'red', 'white', 'pearls', 'romantic'],
+    customiser: 'bouquet',
+    featured: true,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-blooming-affection',
+    slug: 'blooming-affection-bouquet',
+    name: 'Blooming Affection',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-blooming-affection.jpg',
+    alt: 'Two large crocheted lilies in cream and pink with crocheted green leaves, wrapped in ivory paper edged with gold',
+    gallery: ['/images/p-blooming-affection.jpg'],
+    shortDescription: 'Lilies crocheted by hand, in cream and soft pink.',
+    description:
+      'Two lilies crocheted by hand in cream and soft pink, with crocheted leaves and stems, wrapped in ivory paper edged with gold. Every petal is stitched, so no two are quite alike.',
+    details: ['Crocheted by hand', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Birthday', 'Congratulations', 'Just Because'],
+    flowerType: 'Crochet Flowers',
+    keywords: ['bouquet', 'crochet', 'lily', 'handmade', 'yarn', 'cream', 'pink'],
+    customiser: 'bouquet',
+    featured: false,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-eternal-romance',
+    slug: 'eternal-romance-bouquet',
+    name: 'Eternal Romance',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-eternal-romance.jpg',
+    alt: 'A bouquet of deep red roses with white gypsophila, wrapped in black paper trimmed with gold and tied with a red satin bow',
+    gallery: ['/images/p-eternal-romance.jpg'],
+    shortDescription: 'Deep red roses in black and gold, with a card to write on.',
+    description:
+      'Deep red roses and white gypsophila, wrapped in black paper trimmed with gold and tied with a red satin bow. Made with fresh flowers, or in ribbon flowers if you would rather it lasted.',
+    details: ['Fresh flowers, or ribbon flowers to keep', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Love', 'Anniversary'],
+    flowerType: 'Fresh Flowers',
+    keywords: ['bouquet', 'rose', 'red', 'fresh', 'ribbon', 'black', 'gold', 'romantic'],
+    customiser: 'bouquet',
+    featured: true,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-forever-petals',
+    slug: 'forever-petals-bouquet',
+    name: 'Forever Petals',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-forever-petals.jpg',
+    alt: 'Pink and peach pipe cleaner lilies and buds with green pipe cleaner leaves, wrapped in black paper with a pearl strand and a red ribbon',
+    gallery: ['/images/p-forever-petals.jpg'],
+    shortDescription: 'Pipe cleaner lilies in pink and peach, that never wilt.',
+    description:
+      'Lilies and buds twisted from pipe cleaners in pink and peach, with green leaves, wrapped in black paper and finished with a pearl strand and a red ribbon. Soft to the touch and it never wilts.',
+    details: ['Twisted from pipe cleaners', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Birthday', 'Congratulations', 'Just Because'],
+    flowerType: 'Pipe Cleaner Flowers',
+    keywords: ['bouquet', 'pipe cleaner', 'lily', 'pink', 'peach', 'handmade', 'everlasting'],
+    customiser: 'bouquet',
+    featured: false,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-forever-yours',
+    slug: 'forever-yours-bouquet',
+    name: 'Forever Yours',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-forever-yours.jpg',
+    alt: 'Red, pink and cream roses with small white flowers, wrapped in black and gold paper and tied with a large black satin bow',
+    gallery: ['/images/p-forever-yours.jpg'],
+    shortDescription: 'Roses in red, pink and cream, finished with a black bow.',
+    description:
+      'Roses in red, pink and cream with sprigs of white, wrapped in black and gold paper and tied with a wide black satin bow. Made in ribbon flowers, folded petal by petal, so it keeps.',
+    details: ['Folded from ribbon, petal by petal', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Love', 'Anniversary'],
+    flowerType: 'Ribbon Flowers',
+    keywords: ['bouquet', 'ribbon', 'rose', 'red', 'pink', 'black', 'satin', 'romantic'],
+    customiser: 'bouquet',
+    featured: false,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-memory-bloom',
+    slug: 'memory-bloom-bouquet',
+    name: 'Memory Bloom',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-memory-bloom.jpg',
+    alt: 'A bouquet of blue pipe cleaner flowers holding two polaroid photographs, wrapped in magenta, black and cream paper with a yellow ribbon',
+    gallery: ['/images/p-memory-bloom.jpg'],
+    shortDescription: 'Your photographs, tucked in among handmade flowers.',
+    description:
+      'Your own photographs printed as polaroids and set among handmade flowers, wrapped in magenta, black and cream paper with a pearl strand and a yellow ribbon. Send us the pictures and we build the bouquet around them.',
+    details: ['Your photographs, printed as polaroids', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Birthday', 'Anniversary', 'Just Because'],
+    flowerType: 'Polaroid Bouquets',
+    keywords: ['bouquet', 'polaroid', 'photo', 'photographs', 'personalised', 'memories', 'blue'],
+    customiser: 'bouquet',
+    featured: true,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-ocean-whispers',
+    slug: 'ocean-whispers-bouquet',
+    name: 'Ocean Whispers',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-ocean-whispers.jpg',
+    alt: 'Blue and white pipe cleaner lilies and daisies with green leaves, wrapped in pale blue paper edged with gold and tied with a white ribbon',
+    gallery: ['/images/p-ocean-whispers.jpg'],
+    shortDescription: 'Blues and whites, twisted by hand into lilies and daisies.',
+    description:
+      'Lilies and daisies in every blue there is, twisted from pipe cleaners with green leaves, wrapped in pale blue paper edged with gold and tied with a white ribbon and pearls.',
+    details: ['Twisted from pipe cleaners', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Birthday', 'Congratulations', 'Just Because'],
+    flowerType: 'Pipe Cleaner Flowers',
+    keywords: ['bouquet', 'pipe cleaner', 'blue', 'white', 'lily', 'daisy', 'handmade', 'ocean'],
+    customiser: 'bouquet',
+    featured: false,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
+  {
+    id: 'bouquet-golden-smiles',
+    slug: 'golden-smiles-bouquet',
+    name: 'Golden Smiles',
+    category: 'bouquet',
+    categoryLabel: 'Bouquet',
+    price: 1299,
+    priceMode: PRICE_MODES.FIXED,
+    unitLabel: '',
+    image: '/images/p-golden-smiles.jpg',
+    alt: 'Handmade sunflowers with small white daisies and green leaves, wrapped in kraft paper and tied with twine and a plain tag',
+    gallery: ['/images/p-golden-smiles.jpg'],
+    shortDescription: 'Sunflowers made by hand, wrapped in brown paper and twine.',
+    description:
+      'Big handmade sunflowers with small white daisies and green leaves, wrapped in kraft paper and tied with twine and a plain tag to write on. Cheerful, and it lasts.',
+    details: ['Made by hand from pipe cleaners', 'Handmade to order', 'Choice of wrap colour', 'Optional message card', 'Shipping charged separately'],
+    occasions: ['Birthday', 'Congratulations', 'Just Because'],
+    flowerType: 'Pipe Cleaner Flowers',
+    keywords: ['bouquet', 'sunflower', 'yellow', 'pipe cleaner', 'handmade', 'kraft', 'cheerful'],
+    customiser: 'bouquet',
+    featured: false,
+    rating: null,
+    reviews: 0,
+    addedAt: '2026-11-05'
+  },
   /* -------------------------------------------------- frames */
   {
     id: 'frame-couple-eye',
