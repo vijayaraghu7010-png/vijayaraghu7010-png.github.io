@@ -1,14 +1,40 @@
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronLeft, Download, DownloadCloud, Image, RefreshCw, Trash2, Truck } from 'lucide-react';
+import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
+  Clock,
+  Dot,
+  Download,
+  DownloadCloud,
+  FolderOpen,
+  History,
+  Image,
+  IndianRupee,
+  Loader2,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  RefreshCw,
+  StickyNote,
+  Trash2,
+  Truck,
+  UserRound,
+  X
+} from 'lucide-react';
 
 import {
   deleteOrderPhotos,
+  downloadOrderPhotosZip,
   getOrder,
   getPhotoDownloadUrls,
   listOrders,
   removeOrder,
   setOrderStatus
 } from '../../lib/adminOrders';
+import { getProductById } from '../../data/products';
 import { formatRupees } from '../../utils/currency';
 
 /* The orders.
@@ -75,14 +101,48 @@ const EVENT_NAMES = {
   'photos.delete_partial': 'Photographs partly deleted'
 };
 
+/* A mark for each kind of entry, so a column of them can be read
+   down rather than word by word. */
+const EVENT_ICONS = {
+  'order.created': Package,
+  'order.paid': Check,
+  'order.in_progress': Package,
+  'order.completed': CheckCircle2,
+  'order.cancelled': X,
+  'order.removed': Trash2,
+  'payment.submitted': IndianRupee,
+  'payment.rejected': AlertTriangle,
+  'payment.correction_requested': AlertTriangle,
+  'photos.uploaded': Image,
+  'photos.downloaded': Download,
+  'photos.deleted': Trash2,
+  'photos.delete_partial': Trash2
+};
+
 const eventName = (event) =>
   EVENT_NAMES[event] ||
   String(event || '')
     .replace(/[._-]+/g, ' ')
     .replace(/^./, (c) => c.toUpperCase());
 
+/* The product's own photograph beside its line, so an order reads
+   as the things in it. A line names the product it was priced from,
+   and a product that has since gone simply shows no picture. */
+const productImage = (id) => getProductById(id)?.image || '';
+
 const rupees = (paise) => formatRupees((Number(paise) || 0) / 100);
 const when = (iso) => (iso ? new Date(iso).toLocaleString('en-IN') : '—');
+
+/* "5 Nov 2026 at 7:25 pm" - the way somebody says it out loud,
+   rather than 05/11/2026, 19:25:03. */
+const placedOn = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  const day = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  const time = d.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }).toLowerCase();
+  return `${day} at ${time}`;
+};
 const mb = (bytes) => `${((Number(bytes) || 0) / 1048576).toFixed(1)} MB`;
 
 export default function OrdersPanel() {
@@ -245,6 +305,8 @@ function OrderDetail({ orderId, onBack }) {
   const [finishing, setFinishing] = useState(null);
   const [finishTyped, setFinishTyped] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showFiles, setShowFiles] = useState(false);
+  const [thumbs, setThumbs] = useState([]);
 
   const load = useCallback(async () => {
     setError('');
@@ -285,6 +347,50 @@ function OrderDetail({ orderId, onBack }) {
   /* Completed and nothing of the customer's left in storage. Only
      then is there nothing to strand by deleting the row. */
   const canRemove = order.status === 'completed' && Boolean(order.photos_deleted_at);
+
+  /* The pill beside the order code. */
+  const StatusIcon =
+    order.status === 'completed' ? CheckCircle2
+      : order.status === 'cancelled' ? X
+      : order.status === 'paid' ? Check
+      : order.status === 'in_progress' ? Loader2
+      : Clock;
+
+  /* Previews for the photographs card.
+
+     The studio is looking for the one with the dog in it, and a
+     filename off a phone does not say which that is. These are the
+     same signed, five-minute, one-object URLs the download uses -
+     asked for when the card opens and never kept, so a page left
+     open all afternoon is not sitting on keys to somebody's
+     pictures.
+
+     It fails quietly: a card with no previews is a smaller problem
+     than an order that will not open. */
+  useEffect(() => {
+    let live = true;
+    if (!data?.order?.id || data.order.photos_deleted_at) {
+      setThumbs([]);
+      return undefined;
+    }
+
+    const ids = (data.photos || [])
+      .filter((p) => !p.deleted_at && p.upload_status === 'uploaded')
+      .map((p) => p.id);
+
+    if (!ids.length) {
+      setThumbs([]);
+      return undefined;
+    }
+
+    getPhotoDownloadUrls(data.order.id, ids)
+      .then((ready) => live && setThumbs((ready || []).filter((r) => r?.url)))
+      .catch(() => live && setThumbs([]));
+
+    return () => {
+      live = false;
+    };
+  }, [data]);
 
   async function move(next) {
     setBusy(true);
@@ -393,50 +499,33 @@ function OrderDetail({ orderId, onBack }) {
     }
   }
 
-  /* Every photograph in the order, in one go.
+  /* The whole order in one file.
 
-     No archive and no document: each picture is saved as itself, with
-     the name the customer gave it, straight into the download folder.
-     A zip had to be unpacked and a PDF had to be taken apart again
-     before anything could be printed from it.
+     The archive is built by the server and arrives as the finished
+     thing, so there is nothing to assemble here - the blob is handed
+     to a link and the browser saves it. One download, which is the
+     one thing Chrome never argues about.
 
-     The URLs are the same signed, five-minute, one-object ones the
-     single Download button uses - asked for in a batch rather than a
-     new kind of request. The browser is sent to each in turn rather
-     than fetching it, because the bucket answers these with
-     Content-Disposition: attachment, so a navigation saves the file
-     under its own name and the bucket never has to allow the page to
-     read from it.
-
-     Spaced out on purpose. Firing twenty navigations in the same
-     tick makes Chrome drop most of them; a pause between each is the
-     difference between twenty files and three. */
+     The object URL is revoked straight afterwards: it pins the file
+     in memory until it is, and this one can be hundreds of
+     megabytes. */
   async function downloadAll() {
     setSaving(true);
     setError('');
     setNote('');
     try {
-      const ready = await getPhotoDownloadUrls(order.id);
-      const files = (ready || []).filter((f) => f?.url);
-      if (!files.length) throw new Error('There is nothing here to download');
+      const { blob, filename } = await downloadOrderPhotosZip(order.id);
 
-      for (const file of files) {
-        const link = document.createElement('a');
-        link.href = file.url;
-        /* Ignored for another origin - the bucket's own header is what
-           names the file - but right when it is honoured. */
-        link.download = file.filename || '';
-        link.rel = 'noopener';
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        await new Promise((r) => window.setTimeout(r, 350));
-      }
+      const href = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      link.download = filename || `${order.order_code}-photos.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(href);
 
-      setNote(
-        `${files.length} photograph${files.length > 1 ? 's' : ''} sent to your downloads. ` +
-          'If only the first arrived, allow this site to download several files and try again.'
-      );
+      setNote(`${uploaded.length} photographs saved as ${link.download}.`);
     } catch (err) {
       setError(err.message || 'Those photographs could not be fetched');
     } finally {
@@ -467,49 +556,55 @@ function OrderDetail({ orderId, onBack }) {
 
   return (
     <section className="admin__panel">
-      <div className="admin__panel-head">
-        <div>
-          <button type="button" className="admin__ghost" onClick={onBack}>
-            <ChevronLeft size={15} /> All orders
+      <div className="admin__order-head">
+        <button type="button" className="admin__back" onClick={onBack} aria-label="All orders">
+          <ChevronLeft size={20} />
+        </button>
+
+        <div className="admin__order-title">
+          <h2>Order {order.order_code}</h2>
+          <p>Placed on {placedOn(order.created_at)}</p>
+        </div>
+
+        <span className={`admin__status admin__status--${order.status}`}>
+          <StatusIcon size={15} aria-hidden="true" /> {LABEL[order.status] || order.status}
+        </span>
+      </div>
+
+      <div className="admin__order-actions">
+        {(NEXT[order.status] || []).map((next, i) => (
+          <button
+            key={next}
+            type="button"
+            className={`admin__act${i === 0 && next !== 'cancelled' ? ' admin__act--go' : ''}${
+              next === 'cancelled' ? ' admin__act--stop' : ''
+            }`}
+            disabled={busy}
+            onClick={() => move(next)}
+          >
+            {next === 'cancelled' ? <X size={16} /> : next === 'paid' ? <Check size={16} /> : <Package size={16} />}
+            Mark {LABEL[next]}
           </button>
-          <h2>{order.order_code}</h2>
-          <p className="admin__hint">
-            Placed {when(order.created_at)} · <span className="admin__badge">{LABEL[order.status]}</span> ·
-            payment {order.payment_status}
-          </p>
-        </div>
-        <div className="admin__panel-actions">
-          {(NEXT[order.status] || []).map((next) => (
-            <button
-              key={next}
-              type="button"
-              className={next === 'cancelled' ? 'admin__ghost admin__ghost--danger' : 'admin__btn'}
-              disabled={busy}
-              onClick={() => move(next)}
-            >
-              Mark {LABEL[next]}
-            </button>
-          ))}
+        ))}
 
-          {/* The close-out, in the order it happens: finish the job
-              and clear the pictures, then once it is sent, take the
-              order off the books. The second button does not appear
-              until the first has been used, because removing the row
-              is what makes anything left in storage unreachable. */}
-          {canComplete ? (
-            <button type="button" className="admin__btn" disabled={busy}
-              onClick={() => { setFinishing('complete'); setError(''); setNote(''); }}>
-              <CheckCircle2 size={15} /> Complete
-            </button>
-          ) : null}
+        {/* The close-out, in the order it happens: finish the job and
+            clear the pictures, then once it is sent, take the order
+            off the books. The second does not appear until the first
+            has been used, because removing the row is what makes
+            anything left in storage unreachable. */}
+        {canComplete ? (
+          <button type="button" className="admin__act admin__act--go" disabled={busy}
+            onClick={() => { setFinishing('complete'); setError(''); setNote(''); }}>
+            <CheckCircle2 size={16} /> Complete
+          </button>
+        ) : null}
 
-          {canRemove ? (
-            <button type="button" className="admin__ghost admin__ghost--danger" disabled={busy}
-              onClick={() => { setFinishing('remove'); setFinishTyped(''); setError(''); setNote(''); }}>
-              <Truck size={15} /> Shipped — remove order
-            </button>
-          ) : null}
-        </div>
+        {canRemove ? (
+          <button type="button" className="admin__act admin__act--stop" disabled={busy}
+            onClick={() => { setFinishing('remove'); setFinishTyped(''); setError(''); setNote(''); }}>
+            <Truck size={16} /> Shipped — remove
+          </button>
+        ) : null}
       </div>
 
       {finishing === 'complete' ? (
@@ -573,104 +668,149 @@ function OrderDetail({ orderId, onBack }) {
       {note ? <p className="admin__ok">{note}</p> : null}
       {error ? <p className="admin__error">{error}</p> : null}
 
-      <div className="admin__pair">
-        <div className="admin__card">
-          <h3>Customer</h3>
-          <p>
-            <strong>{order.customer_name}</strong>
-            <br />
-            {order.customer_email}
-            <br />
-            {order.customer_phone}
+      <div className="admin__card admin__who-card">
+        <div className="admin__who-half">
+          <h3>
+            <UserRound size={16} aria-hidden="true" /> Customer Details
+          </h3>
+          <p className="admin__who-name">
+            <Mail size={14} aria-hidden="true" /> <strong>{order.customer_name}</strong>
           </p>
-          <h3>Delivery</h3>
           <p>
-            {order.address_line1}
-            {order.address_line2 ? (
-              <>
-                <br />
-                {order.address_line2}
-              </>
-            ) : null}
-            <br />
-            {order.city}, {order.state} {order.pincode}
+            <Mail size={14} aria-hidden="true" />{' '}
+            <a href={`mailto:${order.customer_email}`}>{order.customer_email}</a>
           </p>
-          {order.notes ? (
-            <>
-              <h3>Their note</h3>
-              <p>{order.notes}</p>
-            </>
-          ) : null}
+          <p>
+            <Phone size={14} aria-hidden="true" />{' '}
+            <a href={`tel:${order.customer_phone}`}>{order.customer_phone}</a>
+          </p>
         </div>
 
+        <div className="admin__who-half">
+          <h3>
+            <MapPin size={16} aria-hidden="true" /> Delivery Address
+          </h3>
+          <address>
+            {order.address_line1}
+            {order.address_line2 ? <>, {order.address_line2}</> : null}
+            <br />
+            {order.city},
+            <br />
+            {order.state} {order.pincode}
+          </address>
+        </div>
+      </div>
+
+      {order.notes ? (
         <div className="admin__card">
-          <h3>What was ordered</h3>
-          <table className="admin__orders admin__orders--lines">
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <strong>{item.product_name}</strong>
-                    <br />
-                    <span className="admin__hint">× {item.quantity}</span>
-                    <Config config={item.config} />
-                  </td>
-                  <td>{rupees(item.line_total_paise)}</td>
-                </tr>
-              ))}
-              <tr>
-                <th scope="row">Total</th>
-                <td>
-                  <strong>{rupees(order.total_paise)}</strong>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <h3>
+            <StickyNote size={16} aria-hidden="true" /> Their note
+          </h3>
+          <p>{order.notes}</p>
+        </div>
+      ) : null}
+
+      <div className="admin__card">
+        <h3>
+          <Package size={16} aria-hidden="true" /> Order Items
+        </h3>
+
+        <ul className="admin__lines">
+          {items.map((item) => (
+            <li className="admin__line" key={item.id}>
+              {productImage(item.product_id) ? (
+                <img
+                  className="admin__line-shot"
+                  src={productImage(item.product_id)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <span className="admin__line-shot admin__line-shot--none" aria-hidden="true">
+                  <Image size={18} />
+                </span>
+              )}
+
+              <div className="admin__line-body">
+                <strong>{item.product_name}</strong>
+                <Config config={item.config} quantity={item.quantity} />
+              </div>
+
+              <span className="admin__price">{rupees(item.line_total_paise)}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="admin__total">
+          <span>Total</span>
+          <span className="admin__price admin__price--total">{rupees(order.total_paise)}</span>
         </div>
       </div>
 
       <div className="admin__card">
-        <h3>
-          <Image size={16} /> Photographs
-        </h3>
-        {order.photos_deleted_at ? (
-          <p className="admin__hint">
-            Deleted {when(order.photos_deleted_at)}. The order and its details are kept.
-          </p>
-        ) : (
-          <p className="admin__hint">
-            {live.length} held · {mb(order.photo_bytes_total)} ·{' '}
-            {live.filter((p) => p.upload_status === 'uploaded').length} confirmed,{' '}
-            {live.filter((p) => p.upload_status !== 'uploaded').length} not
-          </p>
-        )}
+        <div className="admin__card-head">
+          <h3>
+            <Image size={16} aria-hidden="true" /> Photographs
+          </h3>
+          <span className="admin__card-note">
+            {order.photos_deleted_at
+              ? `Deleted ${when(order.photos_deleted_at)}`
+              : `${live.length} photo${live.length === 1 ? '' : 's'} \u2022 ${mb(order.photo_bytes_total)}`}
+          </span>
+        </div>
+
+        {/* The pictures themselves, not a list of their names. The
+            studio is looking for the one with the dog in it, and a
+            filename off a phone does not say which that is.
+
+            Each is a signed URL good for a few minutes, asked for
+            when the card opens and never kept - the same ones the
+            download uses. */}
+        {thumbs.length > 0 && !order.photos_deleted_at ? (
+          <ul className="admin__shots">
+            {thumbs.map((shot) => (
+              <li key={shot.photo_id}>
+                <img src={shot.url} alt={shot.filename} loading="lazy" decoding="async" />
+              </li>
+            ))}
+          </ul>
+        ) : null}
+
+        {!order.photos_deleted_at && uploaded.length > 0 && !thumbs.length ? (
+          <p className="admin__hint">Loading the previews…</p>
+        ) : null}
 
         {uploaded.length > 0 && !order.photos_deleted_at ? (
-          <button
-            type="button"
-            className="admin__btn"
-            disabled={saving || busy}
-            onClick={downloadAll}
-          >
-            <DownloadCloud size={15} />
-            {saving
-              ? 'Saving them…'
-              : `Download all ${uploaded.length} photograph${uploaded.length > 1 ? 's' : ''}`}
-          </button>
+          <div className="admin__order-actions admin__order-actions--tight">
+            <button
+              type="button"
+              className="admin__act admin__act--go"
+              disabled={saving || busy}
+              onClick={downloadAll}
+            >
+              <DownloadCloud size={16} />
+              {saving
+                ? 'Building the archive…'
+                : `Download all ${uploaded.length} photograph${uploaded.length > 1 ? 's' : ''} (ZIP)`}
+            </button>
+
+            <button
+              type="button"
+              className="admin__act"
+              onClick={() => setShowFiles((open) => !open)}
+              aria-expanded={showFiles ? 'true' : 'false'}
+            >
+              <FolderOpen size={16} /> {showFiles ? 'Hide files' : 'View files'}
+            </button>
+          </div>
         ) : null}
 
-        {saving ? (
-          <p className="admin__hint">
-            Saving them one after another. The browser may ask once whether this site may download
-            several files — say yes.
-          </p>
-        ) : null}
-
-        {live.length > 0 && !order.photos_deleted_at ? (
-          <ul className="admin__checks admin__photo-list">
+        {showFiles && live.length > 0 && !order.photos_deleted_at ? (
+          <ul className="admin__stack admin__files">
             {live.slice(0, 200).map((photo) => (
               <li key={photo.id}>
-                {photo.original_filename}{' '}
+                <span className="admin__file-name">{photo.original_filename}</span>
                 <span className="admin__hint">
                   {mb(photo.byte_size)} · {photo.upload_status}
                 </span>
@@ -752,16 +892,22 @@ function OrderDetail({ orderId, onBack }) {
       </div>
 
       <div className="admin__card">
-        <h3>History</h3>
-        {/* A log is a column. `admin__checks` is a flex row for
-            inline checkboxes, and borrowing it ran the entries
-            across the card on a narrow screen. */}
-        <ul className="admin__stack">
-          {events.map((event) => (
-            <li key={event.id}>
-              <strong>{eventName(event.event)}</strong> <span className="admin__hint">{when(event.created_at)} · {event.actor}</span>
-            </li>
-          ))}
+        <h3>
+          <History size={16} aria-hidden="true" /> History
+        </h3>
+        <ul className="admin__events">
+          {events.map((event) => {
+            const Icon = EVENT_ICONS[event.event] || Dot;
+            return (
+              <li key={event.id}>
+                <Icon size={15} aria-hidden="true" />
+                <span className="admin__event-what">{eventName(event.event)}</span>
+                <time dateTime={event.created_at} title={event.actor}>
+                  {when(event.created_at)}
+                </time>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </section>
@@ -804,14 +950,22 @@ const configLabel = (key) =>
    checkboxes. On a phone the labels lined up across the top like a
    table header with the values beneath them, which is not a table and
    did not read as one. */
-function Config({ config, depth = 0 }) {
+function Config({ config, depth = 0, quantity = null }) {
   const entries = Object.entries(config || {}).filter(
     ([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
   );
-  if (!entries.length) return null;
+  if (!entries.length && quantity === null) return null;
 
   return (
-    <ul className="admin__config">
+    <ul className={`admin__config${depth === 0 ? ' admin__config--inline' : ''}`}>
+      {/* How many, first, because it is the thing that changes what
+          is charged and the thing somebody checks first. */}
+      {quantity !== null ? (
+        <li>
+          <span className="admin__config-key">Qty</span>
+          <span className="admin__config-value">{quantity}</span>
+        </li>
+      ) : null}
       {entries.map(([key, value]) => {
         const label = configLabel(key);
 

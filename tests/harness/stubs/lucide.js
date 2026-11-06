@@ -1,14 +1,34 @@
-const icon = (name) => function Icon() { return { type: 'icon:' + name, props: {}, __node: true }; };
-export const AlertTriangle = icon('AlertTriangle');
-export const ChevronLeft  = icon('ChevronLeft');
-export const Download     = icon('Download');
-export const Image        = icon('Image');
-export const RefreshCw    = icon('RefreshCw');
-export const Trash2       = icon('Trash2');
-export const Loader2      = icon('Loader2');
-export const CheckCircle2 = icon('CheckCircle2');
-export const Truck        = icon('Truck');
-export const DownloadCloud = icon('DownloadCloud');
-export const Percent      = icon('Percent');
-export const IndianRupee  = icon('IndianRupee');
-export const Star         = icon('Star');
+/* Every lucide icon, without naming any of them.
+
+   This stub used to list the icons by hand, so adding one to a panel
+   broke four test files until somebody remembered to add it here
+   too. That is a test suite failing for a reason that has nothing to
+   do with what is being tested.
+
+   CommonJS on purpose: esbuild checks named imports against an ESM
+   module's exports and would refuse an unknown one, but it resolves
+   them against a CommonJS module at runtime, which lets this answer
+   for any name a panel asks for. */
+
+const made = new Map();
+
+const icon = (name) =>
+  function Icon() {
+    return { type: 'icon:' + name, props: {}, __node: true };
+  };
+
+module.exports = new Proxy(
+  {},
+  {
+    get(_target, name) {
+      if (typeof name !== 'string') return undefined;
+      /* Let the bundler's own interop questions through unanswered. */
+      if (name === '__esModule' || name === 'default') return undefined;
+      if (!made.has(name)) made.set(name, icon(name));
+      return made.get(name);
+    },
+    has() {
+      return true;
+    }
+  }
+);

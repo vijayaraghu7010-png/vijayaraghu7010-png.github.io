@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Boxes, IndianRupee, LogOut, Package, Palette, Percent, Star, Truck, Type } from 'lucide-react';
+import { Boxes, IndianRupee, LogOut, Menu, Package, Palette, Percent, Star, Truck, Type, User } from 'lucide-react';
 
 import { currentAdmin, restoreSession, signOut as endSession } from '../lib/adminAuth';
 import AdminLogin from './AdminLogin';
@@ -29,6 +29,7 @@ export default function AdminApp() {
   const [checking, setChecking] = useState(true);
   const [admin, setAdmin] = useState(null);
   const [tab, setTab] = useState('orders');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   /* A session kept from last time is checked with the server before
      the panel is drawn: the token has to still be good, and the
@@ -60,35 +61,60 @@ export default function AdminApp() {
   return (
     <div className="admin">
       <header className="admin__bar">
-        <div className="admin__brand">
-          <img src="/images/logo.png" alt="" width="512" height="512" />
-          <div>
-            <strong>Studio admin</strong>
-            <span>{admin.id}</span>
+        <div className="admin__bar-top">
+          <button
+            type="button"
+            className="admin__menu"
+            aria-label={menuOpen ? 'Hide the sections' : 'Show the sections'}
+            aria-expanded={menuOpen ? 'true' : 'false'}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <Menu size={20} />
+          </button>
+
+          <div className="admin__brand">
+            <img src="/images/logo.png" alt="" width="512" height="512" />
+            <span className="admin__brand-chip">Studio Admin</span>
           </div>
+
+          {/* The signed-in address, behind the avatar on a narrow
+              screen where there is no room to print it. */}
+          <details className="admin__who">
+            <summary aria-label={`Signed in as ${admin.id}`}>
+              <User size={18} />
+            </summary>
+            <div className="admin__who-menu">
+              <p className="admin__who-email">{admin.id}</p>
+              <Link className="admin__ghost" to="/">
+                View shop
+              </Link>
+              <button type="button" className="admin__ghost" onClick={signOut}>
+                <LogOut size={15} /> Sign out
+              </button>
+            </div>
+          </details>
         </div>
 
-        <nav className="admin__tabs">
+        {/* Every section as its own card, two rows of them, so the
+            whole panel is one glance rather than a strip that
+            scrolls sideways on a phone. */}
+        <nav className={`admin__tabs${menuOpen ? ' is-open' : ''}`} aria-label="Sections">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               type="button"
               className={`admin__tab${tab === id ? ' is-on' : ''}`}
-              onClick={() => setTab(id)}
+              aria-current={tab === id ? 'page' : undefined}
+              onClick={() => {
+                setTab(id);
+                setMenuOpen(false);
+              }}
             >
-              <Icon size={16} /> {label}
+              <Icon size={19} aria-hidden="true" />
+              <span>{label}</span>
             </button>
           ))}
         </nav>
-
-        <div className="admin__bar-actions">
-          <Link className="admin__ghost" to="/">
-            View shop
-          </Link>
-          <button type="button" className="admin__ghost" onClick={signOut}>
-            <LogOut size={15} /> Sign out
-          </button>
-        </div>
       </header>
 
       <main className="admin__main">

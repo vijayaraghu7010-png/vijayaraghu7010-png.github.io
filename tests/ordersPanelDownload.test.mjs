@@ -29,7 +29,12 @@ function renderDetail({ photos, order = {}, overrides = {} } = {}) {
   assert.ok(detailEl, 'OrdersPanel should render OrderDetail when an order is open');
 
   // OrderDetail's own state, in source order:
-  // 0 data, 1 error, 2 busy, 3 confirming, 4 typed, 5 note, 6 fetching
+  // 0 data, 1 error, 2 busy, 3 confirming, 4 typed, 5 note, 6 fetching,
+  // 7 finishing, 8 finishTyped, 9 saving, 10 showFiles, 11 thumbs
+  //
+  // The per-photograph list sits behind "View files" now, so it is
+  // opened here: these tests are about what the Download button does,
+  // not about whether the list is expanded.
   const data = {
     order: {
       id: ORDER_ID, order_code: 'WS-FIXTURE-0008', status: 'pending',
@@ -41,7 +46,7 @@ function renderDetail({ photos, order = {}, overrides = {} } = {}) {
     },
     items: [], events: [], photos
   };
-  globalThis.__hooks = { overrides: { 0: data, ...overrides }, setters: [], index: 0 };
+  globalThis.__hooks = { overrides: { 0: data, 10: true, ...overrides }, setters: [], index: 0 };
   const tree = detailEl.type(detailEl.props);
   return { tree, setters: globalThis.__hooks.setters };
 }

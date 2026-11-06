@@ -125,7 +125,8 @@ test('nothing the customer chose is dropped', () => {
 
 test('the config no longer borrows the inline-checkbox row', () => {
   const classes = classesIn(renderDetail(POLAROID));
-  assert.ok(classes.includes('admin__config'), 'it should have its own class');
+  const tokens = classes.flatMap((c) => c.split(/\s+/));
+  assert.ok(tokens.includes('admin__config'), 'it should have its own class');
   assert.ok(
     !classes.some((c) => c.split(/\s+/).includes('admin__checks') && !c.includes('admin__photo-list')),
     'admin__checks is a flex row and is what broke the layout on a phone'
