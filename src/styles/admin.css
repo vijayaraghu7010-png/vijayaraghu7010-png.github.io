@@ -1451,7 +1451,14 @@
   margin-top: 6px;
 }
 .admin__config--inline > li {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* However long a single value is, it wraps inside the card rather
+   than pushing the card out from under everything else. */
+.admin__config--inline .admin__config-value {
+  overflow-wrap: anywhere;
 }
 .admin__config--inline .admin__config-key {
   min-width: 0;

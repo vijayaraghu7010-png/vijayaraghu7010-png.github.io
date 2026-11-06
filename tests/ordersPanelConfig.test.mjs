@@ -103,22 +103,34 @@ const classesIn = (tree) => allClasses(tree);
 test('a stored key is shown as words', () => {
   const text = textOf(renderDetail(POLAROID));
   assert.ok(text.includes('Photographs'), 'photoCount should read as Photographs');
-  assert.ok(text.includes('Files'), 'photoNames should read as Files');
   assert.ok(!text.includes('photoCount'), 'the raw key should not be shown');
   assert.ok(!text.includes('photoNames'), 'the raw key should not be shown');
 });
 
-test('a list of filenames is a list, not JSON', () => {
-  const text = textOf(renderDetail(POLAROID));
-  assert.ok(text.includes('1000169043.png'), 'the filename is still there');
+test('a list of values is a list, not JSON', () => {
+  /* Nested, where there is no card carrying them instead. */
+  const text = textOf(renderDetail([{
+    id: 'l', product_name: 'Hamper', quantity: 1, line_total_paise: 100,
+    config: { design: { colours: ['blush', 'cream', 'gold'] } }
+  }]));
+  assert.ok(text.includes('blush, cream, gold'), 'joined, not stringified');
   assert.ok(!text.includes('["'), 'no JSON brackets');
   assert.ok(!text.includes('"]'), 'no JSON brackets');
+});
+
+test('the filenames are left to the photographs card', () => {
+  /* A dozen names off a phone is several hundred characters, and it
+     ran off the side of the order line while saying nothing the
+     pictures below do not say better. */
+  const text = textOf(renderDetail(POLAROID));
+  assert.ok(!text.includes('1000169043.png'), 'not on the order line');
+  assert.ok(!text.includes('Files'), 'and no empty label left behind');
 });
 
 test('nothing the customer chose is dropped', () => {
   /* The whole reason this is shown at all. */
   const text = textOf(renderDetail(POLAROID));
-  for (const expected of ['Classic White', '1', '1000169043.png']) {
+  for (const expected of ['Classic White', '1']) {
     assert.ok(text.includes(expected), `${expected} should still be on the order`);
   }
 });

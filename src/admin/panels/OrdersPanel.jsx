@@ -321,41 +321,6 @@ function OrderDetail({ orderId, onBack }) {
     load();
   }, [load]);
 
-  if (error && !data) {
-    return (
-      <section className="admin__panel">
-        <button type="button" className="admin__ghost" onClick={onBack}>
-          <ChevronLeft size={15} /> Back
-        </button>
-        <p className="admin__error">{error}</p>
-      </section>
-    );
-  }
-
-  if (!data) return <p className="admin__hint">Reading that order…</p>;
-
-  const { order, items, photos, events } = data;
-  const live = photos.filter((p) => !p.deleted_at);
-  const canDelete = order.status === 'completed' && !order.photos_deleted_at && live.length > 0;
-
-  /* Only a confirmed upload is in the bucket to be zipped. One that
-     was started and never finished has a row and no object. */
-  const uploaded = live.filter((p) => p.upload_status === 'uploaded');
-
-  /* Payment confirmed, so the job can be closed. */
-  const canComplete = order.status === 'paid' || order.status === 'in_progress';
-  /* Completed and nothing of the customer's left in storage. Only
-     then is there nothing to strand by deleting the row. */
-  const canRemove = order.status === 'completed' && Boolean(order.photos_deleted_at);
-
-  /* The pill beside the order code. */
-  const StatusIcon =
-    order.status === 'completed' ? CheckCircle2
-      : order.status === 'cancelled' ? X
-      : order.status === 'paid' ? Check
-      : order.status === 'in_progress' ? Loader2
-      : Clock;
-
   /* Previews for the photographs card.
 
      The studio is looking for the one with the dog in it, and a
@@ -391,6 +356,41 @@ function OrderDetail({ orderId, onBack }) {
       live = false;
     };
   }, [data]);
+
+  if (error && !data) {
+    return (
+      <section className="admin__panel">
+        <button type="button" className="admin__ghost" onClick={onBack}>
+          <ChevronLeft size={15} /> Back
+        </button>
+        <p className="admin__error">{error}</p>
+      </section>
+    );
+  }
+
+  if (!data) return <p className="admin__hint">Reading that order…</p>;
+
+  const { order, items, photos, events } = data;
+  const live = photos.filter((p) => !p.deleted_at);
+  const canDelete = order.status === 'completed' && !order.photos_deleted_at && live.length > 0;
+
+  /* Only a confirmed upload is in the bucket to be zipped. One that
+     was started and never finished has a row and no object. */
+  const uploaded = live.filter((p) => p.upload_status === 'uploaded');
+
+  /* Payment confirmed, so the job can be closed. */
+  const canComplete = order.status === 'paid' || order.status === 'in_progress';
+  /* Completed and nothing of the customer's left in storage. Only
+     then is there nothing to strand by deleting the row. */
+  const canRemove = order.status === 'completed' && Boolean(order.photos_deleted_at);
+
+  /* The pill beside the order code. */
+  const StatusIcon =
+    order.status === 'completed' ? CheckCircle2
+      : order.status === 'cancelled' ? X
+      : order.status === 'paid' ? Check
+      : order.status === 'in_progress' ? Loader2
+      : Clock;
 
   async function move(next) {
     setBusy(true);
@@ -952,7 +952,16 @@ const configLabel = (key) =>
    did not read as one. */
 function Config({ config, depth = 0, quantity = null }) {
   const entries = Object.entries(config || {}).filter(
-    ([, v]) => v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)
+    ([k, v]) => {
+      if (v === null || v === undefined || v === '') return false;
+      if (Array.isArray(v) && v.length === 0) return false;
+      /* The filenames are the Photographs card's job. Printed here
+         too they ran off the side of the line - a dozen names from a
+         phone is several hundred characters - and said nothing the
+         pictures below do not say better. */
+      if (depth === 0 && k === 'photoNames') return false;
+      return true;
+    }
   );
   if (!entries.length && quantity === null) return null;
 
